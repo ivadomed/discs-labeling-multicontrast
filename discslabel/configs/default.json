@@ -1,4 +1,19 @@
 {
+    "data_json": "whole-spine",
+    "out_name": "whole-spine",
+    "run_name": "whole-spine_UNet_default",
+
+    "steps": {
+        "download": true,
+        "prepare": true,
+        "train": true,
+        "inference": false
+    },
+
+    "orientation": "RPI",
+    "resolution": "1x1x1",
+    "label_sigma": 1.5,
+
     "model_name": "UNet",
     "in_channels": 1,
     "patch_size": [96, 320, 320],
@@ -22,5 +37,8 @@
     "loss_name": "focalLoss",
     "peak_threshold": 0.3,
 
-    "aug_config": null
+    "aug_config": null,
+
+    "inference_split": "test",
+    "inference_save_images": true
 }

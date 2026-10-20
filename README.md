@@ -41,28 +41,36 @@ The package is versioned automatically from git tags via `poetry-dynamic-version
 
 ## Quick start
 
+The whole pipeline is driven from one JSON config:
+
 ```bash
 export DISCSLABEL_DATA=/path/to/scratch/discslabel
+./scripts/run_pipeline.sh discslabel/configs/default.json
+```
 
-# 1. Download the BIDS data (see example dataset JSONs in discslabel/datasets/)
+`run_pipeline.sh` reads the config and runs:
+
+```
+download_datasets.sh  →  prepare_datasets.sh  →  discslabel_train  →  discslabel_inference
+```
+
+Each step runs when either `steps.<name>` is `true` **or** its output is missing from disk — so a fresh checkout always catches up, and setting a step to `false` only skips when the previous output is already present.
+
+Running the steps one at a time is still supported:
+
+```bash
 ./scripts/download_datasets.sh discslabel/datasets/<your-dataset>.json
-
-# 2. Reorient to RPI and resample to 1x1x1 mm
 ./scripts/prepare_datasets.sh discslabel/datasets/<your-dataset>.json
-
-# 3. Train the UNet (3D volumes in -> 2D heatmap loss out, everything on GPU)
 discslabel_train \
   --manifest "$DISCSLABEL_DATA/prepared/<your-dataset>/manifest.json" \
   --save-model-dir "$DISCSLABEL_DATA/weights/<your-dataset>" \
   --config discslabel/configs/default.json
-
-# 4. Run inference on the test split
 discslabel_inference \
   --weights "$DISCSLABEL_DATA/weights/<your-dataset>/best_model.pt" \
   --manifest "$DISCSLABEL_DATA/prepared/<your-dataset>/manifest.json" \
   --split test \
-  --out-csv "$DISCSLABEL_DATA/prepared/<your-dataset>/predictions.csv" \
-  --save-image-dir "$DISCSLABEL_DATA/prepared/<your-dataset>/visualize" \
+  --out-csv "$DISCSLABEL_DATA/weights/<your-dataset>/predictions_test.csv" \
+  --save-image-dir "$DISCSLABEL_DATA/weights/<your-dataset>/visualize_test" \
   --config discslabel/configs/default.json
 ```
 
@@ -71,7 +79,8 @@ discslabel_inference \
 ```
 ┌──────────────────────────────────────── offline, CPU ───────────────────────┐
 │  BIDS NIfTIs ──► reorient to RPI ──► resample to 1 mm iso                    │
-│                 (smaugbench_reorient_image / smaugbench_resample_image)      │
+│                 (discslabel_reorient_image / discslabel_resample_image,       │
+│                  with -int label for point-wise disc landmarks)              │
 │                                                                              │
 │  Output: $DISCSLABEL_DATA/prepared/<name>/{train,valid,test}/{images,labels} │
 │          + manifest.json                                                     │
@@ -110,7 +119,8 @@ discslabel/
 └── inference.py    # discslabel_inference: GPU inference + metrics
 scripts/
 ├── download_datasets.sh   # git clone + git annex get for a dataset JSON
-└── prepare_datasets.sh    # copy + reorient (RPI) + resample (1x1x1 mm)
+├── prepare_datasets.sh    # copy + reorient (RPI) + resample (1x1x1 mm)
+└── run_pipeline.sh        # drive download → prepare → train → inference from one JSON
 ```
 
 ## Dataset JSON schema
@@ -152,14 +162,51 @@ The mid-sagittal projection drops the R-L voxel coordinate from each labelled vo
 | `DISCSLABEL_DATA` | yes | Root folder for `bids/`, `prepared/<name>/` and training `weights/` |
 | `DISCSLABEL_JOBS` | no | CPU parallelism for reorient / resample (defaults to detected core count) |
 
-## Training config
+## Pipeline config
 
-Pass `--config` to `discslabel_train` and `discslabel_inference` to override the defaults in `discslabel/configs/default.json`. Common knobs:
+`discslabel/configs/default.json` is the single JSON consumed by both the pipeline driver and the training entry point. It carries three things:
 
-- `patch_size` — 3D volume shape fed to the GPU augmentations (default `[96, 320, 320]`, i.e. 96 R-L, 320 P-A, 320 I-S). Volumes smaller than the patch are zero-padded; larger ones are center-cropped.
+```jsonc
+{
+    "data_json": "whole-spine",                 // basename resolved under discslabel/datasets/,
+                                                // or an absolute path
+    "out_name":  "whole-spine",                 // sub-folder under $DISCSLABEL_DATA/prepared/
+    "run_name":  "whole-spine_UNet",            // sub-folder under $DISCSLABEL_DATA/weights/
+
+    "steps": {
+        "download":  true,
+        "prepare":   true,
+        "train":     true,
+        "inference": false
+    },
+
+    "orientation": "RPI",   // preprocessing axes
+    "resolution":  "1x1x1", // preprocessing resolution (mm)
+    "label_sigma": 1.5,     // sigma (in input voxels) for the 'label' resample mode
+
+    "model_name": "UNet",
+    "patch_size": [96, 320, 320],   // 3D volume shape (R-L, P-A, I-S after RPI)
+    "heatmap_sigma": 8.0,
+    "heatmap_radius": 20,
+    "loss_name": "focalLoss",       // focalLoss | L1 | MSE
+    "aug_config": null,             // path to a SmaugLab GPU-augmentation JSON
+
+    "inference_split": "test",
+    "inference_save_images": true,
+    "cuda_id": 0
+
+    // + the usual training hyperparams (lr, scheduler, batch_size, epochs, …)
+}
+```
+
+Common knobs:
+
+- `patch_size` — 3D volume shape fed to the GPU augmentations. Volumes smaller than the patch are zero-padded; larger ones are center-cropped.
 - `heatmap_sigma`, `heatmap_radius` — Gaussian spread and kernel radius for the on-GPU heatmap synthesis.
-- `loss_name` — `focalLoss` (default), `L1`, or `MSE`.
+- `label_sigma` — Gaussian spread of the sphere used to carry point labels through the resample step.
 - `aug_config` — path to a SmaugLab GPU augmentation JSON (same format as the ones used by SmaugLab-benchmark). Set to `null` to disable augmentation.
+
+The config is archived next to the trained weights (`$DISCSLABEL_DATA/weights/<run_name>/config.json`), together with the resolved `data.json` and a `pip freeze` snapshot, so each checkpoint carries the exact context used to produce it.
 
 ## License
 

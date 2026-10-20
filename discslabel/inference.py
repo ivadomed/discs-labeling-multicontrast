@@ -47,10 +47,9 @@ def predict(
     manifest_path: str,
     split: str,
     out_csv: str,
-    cuda_id: int = 0,
     save_image_dir: str | None = None,
 ) -> None:
-    device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 
     dataset = DiscVolumeDataset(
         manifest_path,
@@ -156,7 +155,6 @@ def main() -> None:
     parser.add_argument("--out-csv", required=True, help="Where to write predictions.csv.")
     parser.add_argument("--config", default=None, help="Optional JSON config overriding defaults.")
     parser.add_argument("--save-image-dir", default=None, help="If set, write overlay PNGs here.")
-    parser.add_argument("--cuda-id", type=int, default=0)
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
@@ -166,7 +164,6 @@ def main() -> None:
         manifest_path=args.manifest,
         split=args.split,
         out_csv=args.out_csv,
-        cuda_id=args.cuda_id,
         save_image_dir=args.save_image_dir,
     )
 

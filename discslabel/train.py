@@ -28,35 +28,9 @@ from .model import load_model
 from .utils.io import check_and_make_dir
 
 
-DEFAULT_CONFIG = {
-    "model_name": "UNet",
-    "in_channels": 1,
-    "patch_size": [96, 320, 320],
-    "heatmap_sigma": 8.0,
-    "heatmap_radius": 20,
-    "batch_size": 2,
-    "batch_size_valid": 1,
-    "num_workers": 2,
-    "train_max_epoch": 400,
-    "epoch_patience": 10,
-    "save_model_step": 10,
-    "lr": 1e-4,
-    "beta1": 0.9,
-    "beta2": 0.999,
-    "scheduler_step_size": 10,
-    "scheduler_gamma": 0.9,
-    "loss_name": "focalLoss",
-    "peak_threshold": 0.3,
-    # Path to a SmaugLab GPU augmentation config JSON. ``null`` disables augmentation.
-    "aug_config": None,
-}
-
-
 def _load_config(path: str | None) -> dict:
-    cfg = dict(DEFAULT_CONFIG)
-    if path:
-        with open(path, "r") as f:
-            cfg.update(json.load(f))
+    with open(path, "r") as f:
+        cfg = json.load(f)
     return cfg
 
 
@@ -94,9 +68,8 @@ def train(
     cfg: dict,
     manifest_path: str,
     save_model_dir: str,
-    cuda_id: int = 0,
 ) -> None:
-    device = torch.device(f"cuda:{cuda_id}" if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 
     train_ds = DiscVolumeDataset(manifest_path, split="train", patch_size=tuple(cfg["patch_size"]))
     valid_ds = DiscVolumeDataset(manifest_path, split="valid", patch_size=tuple(cfg["patch_size"]))
@@ -177,12 +150,11 @@ def main() -> None:
         help="Path to manifest.json produced by `discslabel_prepare` / `scripts/prepare_datasets.sh`.",
     )
     parser.add_argument("--save-model-dir", required=True, help="Where to write checkpoints.")
-    parser.add_argument("--config", default=None, help="Optional JSON config overriding defaults.")
-    parser.add_argument("--cuda-id", type=int, default=0)
+    parser.add_argument("--config", required=True, help="Optional JSON config overriding defaults.")
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
-    train(cfg, manifest_path=args.manifest, save_model_dir=args.save_model_dir, cuda_id=args.cuda_id)
+    train(cfg, manifest_path=args.manifest, save_model_dir=args.save_model_dir)
 
 
 if __name__ == "__main__":
