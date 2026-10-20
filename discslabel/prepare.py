@@ -1,10 +1,10 @@
 """Build the per-split manifest after reorient + resample has run on the BIDS folder.
 
 Preprocessing itself (reorient to RPI, resample to 1 mm isotropic) is done by
-``scripts/prepare_datasets.sh`` through the ``smaugbench_reorient_image`` /
-``smaugbench_resample_image`` CLIs, exactly like SmaugLab-benchmark. This script
-only copies/renames files into the per-split folders and emits ``manifest.json``,
-which the dataset reader consumes at training time.
+``scripts/prepare_datasets.sh`` through the ``discslabel_reorient_image`` /
+``discslabel_resample_image`` CLIs. This script only copies/renames files into
+the per-split folders and emits ``manifest.json``, which the dataset reader
+consumes at training time.
 
 The 2D mid-sagittal slice and the Gaussian heatmap targets are built **inside
 the data loader on the GPU** — not here. We keep both the image and the

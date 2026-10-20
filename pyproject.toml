@@ -45,16 +45,21 @@ numpy = "*"
 pandas = "*"
 scikit-image = "*"
 nibabel = "*"
+scipy = "*"
 tqdm = "*"
 torch = "*"
 torchvision = "*"
 # SmaugLab provides the 3D GPU augmentation pipeline used before the mid-sagittal projection.
-smauglab = "*"
-# SmaugLab-benchmark provides the reorient / resample console scripts invoked
-# by scripts/prepare_datasets.sh (same preprocessing shape as SmaugLab-benchmark).
-smaugbench = "*"
+# It is only needed at training time; inference does not import it.
+smauglab = { version = "*", optional = true }
+
+[tool.poetry.extras]
+# `pip install discslabel[training]` pulls the GPU augmentation stack.
+training = ["smauglab"]
 
 [tool.poetry.scripts]
+discslabel_reorient_image = "discslabel.utils.reorient_image:main"
+discslabel_resample_image = "discslabel.utils.resample_image:main"
 discslabel_prepare = "discslabel.prepare:main"
 discslabel_train = "discslabel.train:main"
 discslabel_inference = "discslabel.inference:main"

@@ -53,9 +53,10 @@ discslabel_prepare --data-json "$data_json" --out-name "$out_name"
 
 OUT_ROOT="$DISCSLABEL_DATA/prepared/$out_name"
 
-# 2. Reorient and resample every split. Reuses smaugbench's CLIs (same contract as
-#    SmaugLab-benchmark's prepare_datasets.sh — nearest for labels, linear for
-#    images).
+# 2. Reorient and resample every split.
+#    Images use linear interpolation; point-wise disc labels use the dedicated
+#    'label' mode added in discslabel_resample_image, which smooths each point
+#    to a Gaussian sphere before resampling then recovers the sphere centre.
 for split in train valid test; do
     IMAGES_DIR="$OUT_ROOT/$split/images"
     LABELS_DIR="$OUT_ROOT/$split/labels"
@@ -67,15 +68,19 @@ for split in train valid test; do
     fi
 
     echo "[prepare] reorienting split '$split' to $ORIENTATION"
-    smaugbench_reorient_image -i "$IMAGES_DIR" -o "$IMAGES_DIR" -ori "$ORIENTATION" -r -w "$JOBS"
+    discslabel_reorient_image -i "$IMAGES_DIR" -o "$IMAGES_DIR" -ori "$ORIENTATION" -r -w "$JOBS"
     if [ -d "$LABELS_DIR" ] && [ -n "$(ls -A "$LABELS_DIR" 2>/dev/null)" ]; then
-        smaugbench_reorient_image -i "$LABELS_DIR" -o "$LABELS_DIR" -ori "$ORIENTATION" -r -w "$JOBS"
+        discslabel_reorient_image -i "$LABELS_DIR" -o "$LABELS_DIR" -ori "$ORIENTATION" -r -w "$JOBS"
     fi
 
     echo "[prepare] resampling split '$split' to $RESOLUTION"
-    smaugbench_resample_image -i "$IMAGES_DIR" -o "$IMAGES_DIR" -res "$RESOLUTION" -int linear -r -w "$JOBS"
+    discslabel_resample_image -i "$IMAGES_DIR" -o "$IMAGES_DIR" -res "$RESOLUTION" -int linear -r -w "$JOBS"
     if [ -d "$LABELS_DIR" ] && [ -n "$(ls -A "$LABELS_DIR" 2>/dev/null)" ]; then
-        smaugbench_resample_image -i "$LABELS_DIR" -o "$LABELS_DIR" -res "$RESOLUTION" -int nn -r -w "$JOBS"
+        # 'label' interpolation: Gaussian-sphere around each point, resample
+        # linearly, then extract the sphere centre. This preserves the exact
+        # disc identity across the resample without the aliasing you get from
+        # plain nearest-neighbour on single-voxel landmarks.
+        discslabel_resample_image -i "$LABELS_DIR" -o "$LABELS_DIR" -res "$RESOLUTION" -int label -r -w "$JOBS"
     fi
 done
 

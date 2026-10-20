@@ -22,14 +22,22 @@ Requirements:
 
 - Python 3.10+
 - [`git-annex`](https://git-annex.branchable.com/) and `jq` (for the download script)
-- [SmaugLab](https://github.com/neuropoly/SmaugLab) (GPU augmentations) and [SmaugLab-benchmark](https://github.com/NathanMolinier/SmaugLab-benchmark) (reorient / resample CLIs). Both are declared as `pyproject.toml` dependencies.
-- PyTorch with CUDA — SmaugLab's augmentation stack is a kornia pipeline that needs a CUDA device at train time.
+- PyTorch with CUDA if you want to train with GPU augmentations.
 
 ```bash
 git clone https://github.com/NathanMolinier/discs-labeling-multicontrast
 cd discs-labeling-multicontrast
+
+# Inference / preprocessing only:
 pip install -e .
+
+# Training (pulls SmaugLab for the 3D GPU augmentation pipeline):
+pip install -e ".[training]"
 ```
+
+The reorient / resample CLIs (`discslabel_reorient_image`, `discslabel_resample_image`) are vendored from [SmaugLab-benchmark](https://github.com/NathanMolinier/SmaugLab-benchmark) so there is **no runtime dependency** on it. `discslabel_resample_image` adds a `label` interpolation mode on top of the vendored code (Gaussian-sphere smoothing → linear resample → peak extraction) so that point-wise disc landmarks survive resampling without aliasing.
+
+[SmaugLab](https://github.com/neuropoly/SmaugLab) is an **optional** dependency — needed only at training time when `aug_config` points to a GPU-augmentation JSON. Inference and preprocessing never import it.
 
 The package is versioned automatically from git tags via `poetry-dynamic-versioning` (same mechanism as SmaugLab-benchmark — `pyproject.toml` carries `version = "0.0.0"` as a placeholder; the real version is substituted at build time).
 
