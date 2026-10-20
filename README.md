@@ -2,7 +2,9 @@
 
 UNet heatmap-regression baseline for intervertebral disc landmark detection on **mid-sagittal MRI slices** extracted from 3D volumes.
 
-Point-wise 3D disc labels (values `1..25`, with the anchors `3 = C2C3`, `8 = C7T1`, `20 = T12L1`, `25 = L5S1`) are projected onto the mid-sagittal plane and converted into Gaussian heatmaps. The model outputs **5 heatmap channels**:
+Point-wise 3D disc labels (values `1..25`, with the anchors `3 = C2C3`, `8 = C7T1`, `20 = T12L1`, `25 = L5S1`) and the 3D MR images are reoriented to RPI and resampled to 1 mm iso offline. **Everything else happens inside the GPU data loader**: the batch is passed through SmaugLab's 3D GPU augmentations, the mid-sagittal slice is picked, the point-wise 3D label is projected onto that slice, and Gaussian heatmaps are synthesised as the training targets.
+
+Model output — **5 heatmap channels**:
 
 | Channel | Target |
 | ------- | ------ |
@@ -20,7 +22,8 @@ Requirements:
 
 - Python 3.10+
 - [`git-annex`](https://git-annex.branchable.com/) and `jq` (for the download script)
-- PyTorch with CUDA if you want to train on GPU
+- [SmaugLab](https://github.com/neuropoly/SmaugLab) (GPU augmentations) and [SmaugLab-benchmark](https://github.com/NathanMolinier/SmaugLab-benchmark) (reorient / resample CLIs). Both are declared as `pyproject.toml` dependencies.
+- PyTorch with CUDA — SmaugLab's augmentation stack is a kornia pipeline that needs a CUDA device at train time.
 
 ```bash
 git clone https://github.com/NathanMolinier/discs-labeling-multicontrast
@@ -38,45 +41,70 @@ export DISCSLABEL_DATA=/path/to/scratch/discslabel
 # 1. Download the BIDS data
 ./scripts/download_datasets.sh discslabel/datasets/<your-dataset>.json
 
-# 2. Extract mid-sagittal slices and write train/valid/test CSVs
+# 2. Reorient to RPI and resample to 1x1x1 mm (no 2D projection yet)
 ./scripts/prepare_datasets.sh discslabel/datasets/<your-dataset>.json
 
-# 3. Train the UNet
+# 3. Train the UNet (3D volumes in -> 2D heatmap loss out, everything on GPU)
 discslabel_train \
-  --train-csv "$DISCSLABEL_DATA/prepared/<your-dataset>/train.csv" \
-  --valid-csv "$DISCSLABEL_DATA/prepared/<your-dataset>/valid.csv" \
+  --manifest "$DISCSLABEL_DATA/prepared/<your-dataset>/manifest.json" \
   --save-model-dir "$DISCSLABEL_DATA/weights/<your-dataset>" \
   --config discslabel/configs/default.json
 
 # 4. Run inference on the test split
 discslabel_inference \
   --weights "$DISCSLABEL_DATA/weights/<your-dataset>/best_model.pt" \
-  --test-csv "$DISCSLABEL_DATA/prepared/<your-dataset>/test.csv" \
+  --manifest "$DISCSLABEL_DATA/prepared/<your-dataset>/manifest.json" \
+  --split test \
   --out-csv "$DISCSLABEL_DATA/prepared/<your-dataset>/predictions.csv" \
   --save-image-dir "$DISCSLABEL_DATA/prepared/<your-dataset>/visualize" \
   --config discslabel/configs/default.json
+```
+
+## Pipeline shape
+
+```
+┌──────────────────────────────────────── offline, CPU ───────────────────────┐
+│  BIDS NIfTIs ──► reorient to RPI ──► resample to 1 mm iso                    │
+│                 (smaugbench_reorient_image / smaugbench_resample_image)      │
+│                                                                              │
+│  Output: $DISCSLABEL_DATA/prepared/<name>/{train,valid,test}/{images,labels} │
+│          + manifest.json                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────── online, per batch, GPU ─────────────────────┐
+│  Dataset:  loads 3D image + 3D point-wise label, pads/crops to patch_size,   │
+│            yields (B, 1, D, H, W) tensors                                    │
+│                                                                              │
+│  GpuBatchProcessor (nn.Module on CUDA):                                      │
+│   1. SmaugLab AugTransformsGPU on 3D (image, label)    [kornia pipeline]    │
+│   2. mid-sagittal slice = image[..., D // 2, :, :]      → (B, 1, H, W)      │
+│   3. label projection:   label_3d.amax(dim=D)           → (B, 1, H, W)      │
+│   4. 5-channel heatmaps: depthwise Gaussian conv2d      → (B, 5, H, W)      │
+│                                                                              │
+│  UNet(1 → 5) ──► focal / L1 / MSE loss                                       │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Repository layout
 
 ```
 discslabel/
-├── configs/        # example training configs (default.json)
+├── configs/        # training configs (default.json)
 ├── datasets/       # dataset JSONs (SmaugLab-benchmark schema)
 ├── utils/
 │   ├── io.py       # directory helpers
 │   └── metrics.py  # heatmap decoding + visualization
 ├── __init__.py     # exports NUM_CLASSES, HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS
-├── dataset.py      # DiscLandmarkDataset (reads a prepared CSV)
+├── dataset.py      # DiscVolumeDataset — 3D NIfTI reader with pad/crop
+├── gpu_pipeline.py # GpuBatchProcessor — SmaugLab aug + mid-sag + heatmaps
 ├── losses.py       # focal / L1 / MSE losses
-├── model.py        # UNet backbone with 5 output channels
-├── transforms.py   # Rescale, flips, Gaussian heatmap generator, ToTensor
-├── prepare.py      # discslabel_prepare: BIDS NIfTI -> mid-sagittal slice + CSV
-├── train.py        # discslabel_train:   training loop with early stopping
-└── inference.py    # discslabel_inference: heatmap decoding + metrics
+├── model.py        # UNet backbone (1 input ch, 5 output heatmaps)
+├── prepare.py      # discslabel_prepare: copy BIDS files, emit manifest.json
+├── train.py        # discslabel_train: GPU training loop
+└── inference.py    # discslabel_inference: GPU inference + metrics
 scripts/
 ├── download_datasets.sh   # git clone + git annex get for a dataset JSON
-└── prepare_datasets.sh    # thin wrapper around discslabel_prepare
+└── prepare_datasets.sh    # copy + reorient (RPI) + resample (1x1x1 mm)
 ```
 
 ## Dataset JSON schema
@@ -102,33 +130,30 @@ Each dataset is described by a JSON file under `discslabel/datasets/`:
 - All files must be `.nii.gz`.
 - `LABEL` is a point-wise 3D volume with one voxel per disc at the posterior tip, carrying the disc-level value (`1..25`).
 
-## How the mid-sagittal projection works
+## Why the projection runs on GPU
 
-For every `(IMAGE, LABEL)` pair, `discslabel_prepare`:
+Keeping the 3D volumes until the data loader has two concrete benefits:
 
-1. Loads both NIfTIs and reorients them to **RAS+** (so axis 0 = R-L, axis 1 = A-P, axis 2 = S-I).
-2. Takes the slice at `shape[0] // 2` on the R-L axis — this is the mid-sagittal plane.
-3. For the labels, groups non-zero voxels by their label value and collapses each group to the median `(A-P, S-I)` location (this picks one 2D landmark per disc, robust against isolated label voxels).
-4. Rotates/flips the slice so superior is up and anterior is left, and stores it as a `.npy` file.
-5. Writes one CSV row per subject: `slice_path, slice_h, slice_w, label_1, x_1, y_1, label_2, x_2, y_2, ...`.
+- **3D augmentations.** Rotations, elastic deformations, noise and intensity transforms from [SmaugLab](https://github.com/neuropoly/SmaugLab) can be applied to the paired `(image, label)` 3D tensors on the GPU. If we projected to 2D offline we'd lose any R-L information those augmentations might rely on and we'd have to re-implement each transform in 2D.
+- **No CPU bottleneck.** Projection and heatmap generation are reduced to one `amax` call and one depthwise `conv2d`. Everything stays on-device, so the DataLoader workers don't have to materialise large heatmap tensors — they only load and pad the NIfTIs.
 
-The resulting CSVs are what `DiscLandmarkDataset` reads at training time, which turns the `(label, x, y)` triples into the 5-channel Gaussian heatmap target.
+The mid-sagittal projection drops the R-L voxel coordinate from each labelled voxel; posterior-tip disc annotations sit on the midline, so collapsing with `amax` yields one labelled pixel per disc on the mid-sagittal plane.
 
 ## Environment variables
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `DISCSLABEL_DATA` | yes | Root folder for `bids/`, `prepared/<name>/` and training `weights/` |
+| `DISCSLABEL_JOBS` | no | CPU parallelism for reorient / resample (defaults to detected core count) |
 
 ## Training config
 
 Pass `--config` to `discslabel_train` and `discslabel_inference` to override the defaults in `discslabel/configs/default.json`. Common knobs:
 
-- `image_height`, `image_width` — model input size (defaults to 512 x 512).
-- `heatmap_sigma`, `heatmap_radius` — Gaussian spread and kernel radius.
+- `patch_size` — 3D volume shape fed to the GPU augmentations (default `[96, 320, 320]`, i.e. 96 R-L, 320 P-A, 320 I-S). Volumes smaller than the patch are zero-padded; larger ones are center-cropped.
+- `heatmap_sigma`, `heatmap_radius` — Gaussian spread and kernel radius for the on-GPU heatmap synthesis.
 - `loss_name` — `focalLoss` (default), `L1`, or `MSE`.
-- `vertical_flip_prob` — leave at `0.0` for disc labelling (vertical flips scramble the anchor identities).
-- `intensity_jitter` — multiplicative + additive jitter in normalised intensity units.
+- `aug_config` — path to a SmaugLab GPU augmentation JSON (same format as the ones used by SmaugLab-benchmark). Set to `null` to disable augmentation.
 
 ## License
 

@@ -48,6 +48,11 @@ nibabel = "*"
 tqdm = "*"
 torch = "*"
 torchvision = "*"
+# SmaugLab provides the 3D GPU augmentation pipeline used before the mid-sagittal projection.
+smauglab = "*"
+# SmaugLab-benchmark provides the reorient / resample console scripts invoked
+# by scripts/prepare_datasets.sh (same preprocessing shape as SmaugLab-benchmark).
+smaugbench = "*"
 
 [tool.poetry.scripts]
 discslabel_prepare = "discslabel.prepare:main"

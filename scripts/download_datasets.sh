@@ -2,7 +2,7 @@
 
 # Download BIDS datasets referenced by a discslabel dataset JSON.
 #
-# The JSON schema is the same used by SmaugLab-benchmark:
+# The JSON schema is:
 #   SOURCE[i] / COMMIT[i]       paired git-annex repo URL and checkout commit
 #   TRAINING / VALIDATION /
 #   TESTING                     lists of {IMAGE, LABEL} paths relative to
