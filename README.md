@@ -1,6 +1,6 @@
-# discs-labeling-multicontrast
+# Discs labeling multicontrast
 
-UNet heatmap-regression baseline for intervertebral disc landmark detection on **mid-sagittal MRI slices** extracted from 3D volumes.
+UNet heatmap-regression method for intervertebral disc landmark detection on **mid-sagittal MRI slices** extracted from 3D volumes.
 
 Point-wise 3D disc labels (values `1..25`, with the anchors `3 = C2C3`, `8 = C7T1`, `20 = T12L1`, `25 = L5S1`) and the 3D MR images are reoriented to RPI and resampled to 1 mm iso offline. **Everything else happens inside the GPU data loader**: the batch is passed through SmaugLab's 3D GPU augmentations, the mid-sagittal slice is picked, the point-wise 3D label is projected onto that slice, and Gaussian heatmaps are synthesised as the training targets.
 
@@ -35,8 +35,6 @@ pip install -e .
 pip install -e ".[training]"
 ```
 
-The reorient / resample CLIs (`discslabel_reorient_image`, `discslabel_resample_image`) are vendored from [SmaugLab-benchmark](https://github.com/NathanMolinier/SmaugLab-benchmark) so there is **no runtime dependency** on it. `discslabel_resample_image` adds a `label` interpolation mode on top of the vendored code (Gaussian-sphere smoothing → linear resample → peak extraction) so that point-wise disc landmarks survive resampling without aliasing.
-
 [SmaugLab](https://github.com/neuropoly/SmaugLab) is an **optional** dependency — needed only at training time when `aug_config` points to a GPU-augmentation JSON. Inference and preprocessing never import it.
 
 The package is versioned automatically from git tags via `poetry-dynamic-versioning` (same mechanism as SmaugLab-benchmark — `pyproject.toml` carries `version = "0.0.0"` as a placeholder; the real version is substituted at build time).
@@ -46,10 +44,10 @@ The package is versioned automatically from git tags via `poetry-dynamic-version
 ```bash
 export DISCSLABEL_DATA=/path/to/scratch/discslabel
 
-# 1. Download the BIDS data
+# 1. Download the BIDS data (see example dataset JSONs in discslabel/datasets/)
 ./scripts/download_datasets.sh discslabel/datasets/<your-dataset>.json
 
-# 2. Reorient to RPI and resample to 1x1x1 mm (no 2D projection yet)
+# 2. Reorient to RPI and resample to 1x1x1 mm
 ./scripts/prepare_datasets.sh discslabel/datasets/<your-dataset>.json
 
 # 3. Train the UNet (3D volumes in -> 2D heatmap loss out, everything on GPU)
