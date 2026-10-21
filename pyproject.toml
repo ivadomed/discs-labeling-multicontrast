@@ -50,8 +50,6 @@ scipy = "*"
 # matplotlib backs the `--debug-dir` PNG in discslabel_resample_image.
 matplotlib = "*"
 tqdm = "*"
-torch = "*"
-torchvision = "*"
 # SmaugLab provides the 3D GPU augmentation pipeline used before the mid-sagittal projection.
 # It is only needed at training time; inference does not import it.
 smauglab = { version = "*", optional = true }
