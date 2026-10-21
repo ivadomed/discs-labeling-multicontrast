@@ -52,12 +52,11 @@ def _collect_split(entries: List[dict], split_name: str, data_root: str, out_roo
     check_and_make_dir(images_dst)
     check_and_make_dir(labels_dst)
     seg_dsts = {}
-    for json_key, folder, _val in SEG_KEYS:
+    for json_key, _manifest_key, folder in SEG_KEYS:
         seg_dsts[json_key] = os.path.join(out_root, split_name, folder)
         check_and_make_dir(seg_dsts[json_key])
 
-    # Manifest key used in the output JSON for each SEG field (SEG_SPINE -> seg_spine).
-    seg_manifest_keys = {json_key: json_key.lower() for json_key, _folder, _val in SEG_KEYS}
+    seg_manifest_keys = {json_key: manifest_key for json_key, manifest_key, _folder in SEG_KEYS}
 
     manifest = []
     for entry in entries:
@@ -87,7 +86,7 @@ def _collect_split(entries: List[dict], split_name: str, data_root: str, out_roo
             shutil.copyfile(label_src, label_dst)
             row["label"] = label_dst
 
-        for json_key, _folder, _val in SEG_KEYS:
+        for json_key, _manifest_key, _folder in SEG_KEYS:
             seg_rel = entry.get(json_key)
             if seg_rel is None:
                 continue

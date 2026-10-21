@@ -149,7 +149,16 @@ Each dataset is described by a JSON file under `discslabel/datasets/`:
 - `IMAGE` / `LABEL` paths are relative to `$DISCSLABEL_DATA/bids/`, and the first path segment names the repo (used by `git annex get`).
 - All files must be `.nii.gz`.
 - `LABEL` is a point-wise 3D volume with one voxel per disc at the posterior tip, carrying the disc-level value (`1..25`).
-- `SEG_SPINE` / `SEG_CORD` / `SEG_CANAL` are per-structure binary 3D NIfTIs. The prepare step reorients and resamples them with nearest-neighbour interpolation, and the dataset reader combines them into a single int volume (`SPINE = 1`, `CORD = 2`, `CANAL = 3`; later keys overwrite earlier ones so a voxel in both cord and canal is kept as `CANAL`). This combined segmentation is what gets fed as the **second parameter** to SmaugLab's `AugTransformsGPU` — the disc label is not augmented. Each SEG_* field is optional per entry.
+- `SEG_SPINE` is a dense discrete segmentation of the whole spine (vertebrae at low label values, discs at high label values; the two populations are separated by the `spine_disc_min_label` threshold in the config, default `60`). `SEG_CORD` and `SEG_CANAL` are binary structure masks. The prepare step reorients and resamples all three with nearest-neighbour interpolation, and the dataset reader packs them into a **4-channel binary tensor** — one channel per structure, no value overlap between channels:
+
+  | Channel | Source | Rule |
+  | ------- | ------ | ---- |
+  | 0 — vertebrae | `SEG_SPINE` | `0 < value < spine_disc_min_label` |
+  | 1 — discs | `SEG_SPINE` | `value >= spine_disc_min_label` |
+  | 2 — spinal cord | `SEG_CORD` | `value > 0` |
+  | 3 — spinal canal | `SEG_CANAL` | `value > 0` |
+
+  This 4-channel tensor is fed as the **second parameter** to SmaugLab's `AugTransformsGPU`: every channel receives the same 3D spatial transforms with nearest resampling. The point-wise disc landmark volume (`LABEL`) is not augmented. Each SEG_* field is optional per entry.
 
 ## Why the projection runs on GPU
 

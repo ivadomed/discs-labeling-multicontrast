@@ -8,14 +8,16 @@ Volumes carried per sample:
 
     image : the T1w / T2w / … MRI volume
     label : the point-wise disc landmark volume (background = 0, discs = 1..25)
-    seg   : SEG_SPINE / SEG_CORD / SEG_CANAL combined into one int volume
-            with non-overlapping values (``SEG_LABEL_SPINE``,
-            ``SEG_LABEL_CORD``, ``SEG_LABEL_CANAL``). This is what gets fed
-            as the second parameter to SmaugLab's ``AugTransformsGPU`` so
-            that any 3D spatial augmentation keeps the image aligned with
-            its anatomy mask.
+    seg   : the four anatomy BINARY channels, stacked:
+              ch 0 : vertebrae (from SEG_SPINE values < spine_disc_min_label)
+              ch 1 : discs     (from SEG_SPINE values >= spine_disc_min_label)
+              ch 2 : spinal cord (from SEG_CORD > 0)
+              ch 3 : spinal canal (from SEG_CANAL > 0)
+            This 4-channel tensor is fed as the second parameter of
+            SmaugLab's ``AugTransformsGPU`` so that any 3D spatial
+            augmentation keeps the image aligned with each anatomy mask.
 
-All three are padded/center-cropped to a configurable ``patch_size`` so a
+All volumes are padded/center-cropped to a configurable ``patch_size`` so a
 batch of volumes has a uniform shape — which is what SmaugLab's GPU
 augmentations expect.
 """
@@ -31,7 +33,14 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from . import SEG_KEYS
+from . import (
+    NUM_SEG_CHANNELS,
+    SEG_CH_CANAL,
+    SEG_CH_CORD,
+    SEG_CH_DISCS,
+    SEG_CH_VERTEBRAE,
+    SEG_SPINE_DISC_MIN_LABEL,
+)
 
 
 def _load_nifti(path: str) -> np.ndarray:
@@ -79,32 +88,50 @@ def _center_crop_or_pad(arr: np.ndarray, patch_size: Tuple[int, int, int], pad_v
     return out
 
 
-def _combine_segs(entry: Dict[str, str], patch_size: Tuple[int, int, int]) -> np.ndarray | None:
-    """Build the combined anatomy segmentation from the three per-structure NIfTIs.
+def _build_binary_seg_channels(
+    entry: Dict[str, str],
+    patch_size: Tuple[int, int, int],
+    spine_disc_min_label: int = SEG_SPINE_DISC_MIN_LABEL,
+) -> np.ndarray | None:
+    """Build the 4-channel binary anatomy tensor fed to AugTransformsGPU.
 
-    Each present SEG_* file is turned into a binary mask of its structure and
-    stamped into a shared int volume at the structure's dedicated value
-    (``SEG_LABEL_SPINE`` / ``SEG_LABEL_CORD`` / ``SEG_LABEL_CANAL``). On a
-    voxel that belongs to several structures, later keys in ``SEG_KEYS`` win —
-    which is why canal (last) overwrites cord, and cord overwrites spine.
+    Channels (indexing matches ``discslabel.SEG_CH_*``):
+        0  vertebrae    : SEG_SPINE voxels with value in (0, spine_disc_min_label)
+        1  discs        : SEG_SPINE voxels with value >= spine_disc_min_label
+        2  spinal cord  : SEG_CORD > 0
+        3  spinal canal : SEG_CANAL > 0
 
-    Returns ``None`` if none of the three segmentations is present for this
-    entry.
+    Every channel is a {0, 1} mask so kornia's mask data-key treats them as
+    label masks with nearest resampling.
+
+    Returns ``None`` if none of the SEG_* files is present for this entry.
     """
-    out: np.ndarray | None = None
-    for json_key, _folder, seg_value in SEG_KEYS:
-        manifest_key = json_key.lower()
-        seg_path = entry.get(manifest_key)
-        if not seg_path:
-            continue
-        arr = _load_nifti(seg_path)
-        mask = np.rint(arr) > 0
-        if out is None:
-            out = np.zeros_like(mask, dtype=np.int16)
-        out[mask] = int(seg_value)
-    if out is None:
-        return None
-    return _center_crop_or_pad(out.astype(np.float32), patch_size, pad_value=0.0)
+    patch = tuple(int(s) for s in patch_size)
+    out = np.zeros((NUM_SEG_CHANNELS,) + patch, dtype=np.float32)
+    present = False
+
+    spine_path = entry.get("seg_spine")
+    if spine_path:
+        spine = np.rint(_load_nifti(spine_path)).astype(np.int32)
+        vert = ((spine > 0) & (spine < int(spine_disc_min_label))).astype(np.float32)
+        disc = (spine >= int(spine_disc_min_label)).astype(np.float32)
+        out[SEG_CH_VERTEBRAE] = _center_crop_or_pad(vert, patch, pad_value=0.0)
+        out[SEG_CH_DISCS] = _center_crop_or_pad(disc, patch, pad_value=0.0)
+        present = True
+
+    cord_path = entry.get("seg_cord")
+    if cord_path:
+        cord = (np.rint(_load_nifti(cord_path)) > 0).astype(np.float32)
+        out[SEG_CH_CORD] = _center_crop_or_pad(cord, patch, pad_value=0.0)
+        present = True
+
+    canal_path = entry.get("seg_canal")
+    if canal_path:
+        canal = (np.rint(_load_nifti(canal_path)) > 0).astype(np.float32)
+        out[SEG_CH_CANAL] = _center_crop_or_pad(canal, patch, pad_value=0.0)
+        present = True
+
+    return out if present else None
 
 
 class DiscVolumeDataset(Dataset):
@@ -115,9 +142,9 @@ class DiscVolumeDataset(Dataset):
     Each sample is a dict:
         image : (1, D, H, W) float tensor, intensities in [0, 1]
         label : (1, D, H, W) float tensor, integer disc labels (0 = background)
-        seg   : (1, D, H, W) float tensor, combined SPINE / CORD / CANAL
-                segmentation with non-overlapping values. Omitted when none
-                of the three SEG_* files is listed for this entry.
+        seg   : (NUM_SEG_CHANNELS, D, H, W) binary tensor — one channel per
+                anatomical structure (see ``SEG_CHANNELS``). Omitted when
+                none of the three SEG_* files is listed for this entry.
         name  : basename of the volume (useful for debugging / inference output)
     """
 
@@ -127,6 +154,7 @@ class DiscVolumeDataset(Dataset):
         split: str,
         patch_size: Tuple[int, int, int] = (96, 320, 320),
         require_label: bool = True,
+        spine_disc_min_label: int = SEG_SPINE_DISC_MIN_LABEL,
     ):
         super().__init__()
         with open(manifest_path, "r") as f:
@@ -138,6 +166,7 @@ class DiscVolumeDataset(Dataset):
             self.entries = [e for e in self.entries if e.get("label")]
         self.patch_size = tuple(int(s) for s in patch_size)
         self.require_label = require_label
+        self.spine_disc_min_label = int(spine_disc_min_label)
 
     def __len__(self) -> int:
         return len(self.entries)
@@ -165,7 +194,10 @@ class DiscVolumeDataset(Dataset):
         elif self.require_label:
             raise KeyError(f"Entry {entry} has no label but require_label=True")
 
-        seg_arr = _combine_segs(entry, self.patch_size)
+        seg_arr = _build_binary_seg_channels(
+            entry, self.patch_size, spine_disc_min_label=self.spine_disc_min_label
+        )
         if seg_arr is not None:
-            sample["seg"] = torch.from_numpy(seg_arr).unsqueeze(0).contiguous()
+            # Already (NUM_SEG_CHANNELS, D, H, W); no extra unsqueeze.
+            sample["seg"] = torch.from_numpy(seg_arr).contiguous()
         return sample

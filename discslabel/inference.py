@@ -56,6 +56,7 @@ def predict(
         split=split,
         patch_size=tuple(cfg["patch_size"]),
         require_label=False,
+        spine_disc_min_label=int(cfg.get("spine_disc_min_label", 60)),
     )
     loader = DataLoader(
         dataset,

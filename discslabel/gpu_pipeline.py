@@ -10,12 +10,14 @@ All operations run on the GPU with no CPU round-trips.
 Expected tensor layout:
     image : (B, 1, D, H, W) float, intensities in [0, 1]
     label : (B, 1, D, H, W) float, integer disc values (0 = background, 1..25 = discs)
-    seg   : (B, 1, D, H, W) float, combined anatomy mask (SPINE / CORD / CANAL
-            with non-overlapping values from ``discslabel.SEG_LABEL_*``).
-            Used as the SECOND parameter of ``AugTransformsGPU`` — the disc
-            label is NOT fed to the augmentation pipeline, so the aug config
-            should stay intensity-only (or add a dedicated spatial-replay
-            path for the disc label if you want to use spatial transforms).
+    seg   : (B, NUM_SEG_CHANNELS, D, H, W) binary tensor — one channel per
+            anatomical structure (``discslabel.SEG_CHANNELS``):
+                0: vertebrae, 1: discs, 2: spinal cord, 3: spinal canal.
+            Used as the SECOND parameter of ``AugTransformsGPU`` — the
+            point-wise disc landmark volume is NOT fed to the augmentation
+            pipeline, so the aug config should stay intensity-only (or add
+            a dedicated spatial-replay path for the disc label if you want
+            to use spatial transforms).
 
 Prepared NIfTIs are RPI, so axis D = R→L, axis H = P→A, axis W = I→S. The
 mid-sagittal slice is ``image[..., D // 2, :, :]`` — that is axis 2 in the

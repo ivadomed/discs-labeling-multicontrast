@@ -78,8 +78,19 @@ def train(
 ) -> None:
     device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 
-    train_ds = DiscVolumeDataset(manifest_path, split="train", patch_size=tuple(cfg["patch_size"]))
-    valid_ds = DiscVolumeDataset(manifest_path, split="valid", patch_size=tuple(cfg["patch_size"]))
+    spine_disc_min = int(cfg.get("spine_disc_min_label", 60))
+    train_ds = DiscVolumeDataset(
+        manifest_path,
+        split="train",
+        patch_size=tuple(cfg["patch_size"]),
+        spine_disc_min_label=spine_disc_min,
+    )
+    valid_ds = DiscVolumeDataset(
+        manifest_path,
+        split="valid",
+        patch_size=tuple(cfg["patch_size"]),
+        spine_disc_min_label=spine_disc_min,
+    )
 
     train_loader = DataLoader(
         train_ds,

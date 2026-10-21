@@ -15,6 +15,8 @@
     "resolution": "1x1x1",
     "label_sigma": 2.0,
 
+    "spine_disc_min_label": 60,
+
     "model_name": "UNet",
     "in_channels": 1,
     "patch_size": [96, 320, 320],
