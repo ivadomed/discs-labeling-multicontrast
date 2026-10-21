@@ -21,7 +21,7 @@
     "in_channels": 1,
     "patch_size": [96, 320, 320],
     "heatmap_sigma": 8.0,
-    "heatmap_radius": 20,
+    "heatmap_radius": 5,
 
     "batch_size": 2,
     "batch_size_valid": 1,
