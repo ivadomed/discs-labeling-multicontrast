@@ -3,11 +3,21 @@
 The training loop pulls 3D volumes from the dataset, moves the batch to the
 GPU, and lets ``GpuBatchProcessor`` do:
 
-    1. optional SmaugLab 3D augmentations on the paired (image, label)
+    1. optional SmaugLab 3D augmentations on the paired (image, seg)
     2. mid-sagittal slice extraction (axis R-L)
     3. point-wise label projection + Gaussian heatmap synthesis
 
 The 2D model then sees ``(image_2d, heatmap_2d)`` for the loss.
+
+Debug / dry-run mode
+--------------------
+Pass ``--dry-run`` (or set ``debug: true`` in the pipeline config) to skip
+training entirely and instead render 10 random training samples through the
+full pipeline, saving one PNG per sample under
+``<save-model-dir>/dry_run/`` that shows the mid-sagittal image fed to the
+network with each disc-heatmap target channel overlaid. Use it to sanity-
+check patch size, random crop, z-score normalisation and heatmap sigmas
+before launching a long run.
 """
 
 from __future__ import annotations
@@ -21,6 +31,7 @@ import torch
 import tqdm
 from torch.utils.data import DataLoader
 
+from . import HEATMAP_CHANNELS
 from .dataset import DiscVolumeDataset
 from .gpu_pipeline import GpuBatchProcessor
 from .losses import load_loss
@@ -69,6 +80,133 @@ def _one_epoch(
                 optimizer.step()
             losses.append(loss.item())
     return float(np.mean(losses)) if losses else float("inf")
+
+
+def _display_slice(slice_2d: np.ndarray) -> np.ndarray:
+    """Reorient a mid-sagittal (P-A, I-S) slice for display: superior up, anterior left."""
+    return np.ascontiguousarray(slice_2d.T[::-1, :])
+
+
+def _save_dry_run_png(path: str, image_2d: np.ndarray, heatmap_2d: np.ndarray, title: str) -> None:
+    """Render one sample: the image fed to the network + each heatmap overlaid."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    img = _display_slice(image_2d)
+    n_cols = len(HEATMAP_CHANNELS) + 1
+    fig, axes = plt.subplots(1, n_cols, figsize=(3.2 * n_cols, 3.6))
+
+    # Robust intensity window for the gray background.
+    vmin, vmax = float(np.percentile(img, 1.0)), float(np.percentile(img, 99.0))
+    if vmax <= vmin:
+        vmin, vmax = float(img.min()), float(img.max() + 1e-6)
+
+    axes[0].imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
+    axes[0].set_title("image → network")
+    axes[0].set_xticks([])
+    axes[0].set_yticks([])
+
+    for i, ch_name in enumerate(HEATMAP_CHANNELS):
+        hm = _display_slice(heatmap_2d[i])
+        ax = axes[i + 1]
+        ax.imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
+        # Only draw heatmap pixels where there is signal, so the gray behind
+        # stays visible everywhere else.
+        hm_masked = np.ma.masked_where(hm < 0.05, hm)
+        ax.imshow(hm_masked, cmap="hot", alpha=0.65, vmin=0.0, vmax=1.0)
+        ax.set_title(f"ch{i}: {ch_name}")
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+    fig.suptitle(title, fontsize=10)
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=110, bbox_inches="tight")
+    plt.close(fig)
+
+
+def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int = 10) -> None:
+    """Pull ``n_samples`` training batches through the data pipeline and the
+    GPU processor and save one PNG per sample with the 2D mid-sagittal image
+    (as it is fed to the network) and each disc-heatmap channel overlaid.
+
+    No model is trained. Augmentations are applied so the PNG reflects exactly
+    what the forward pass would see for a given sample.
+    """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"[dry-run] device: {device}, pulling {n_samples} samples")
+
+    spine_disc_min = int(cfg.get("spine_disc_min_label", 60))
+    dataset = DiscVolumeDataset(
+        manifest_path,
+        split="train",
+        patch_size=tuple(cfg["patch_size"]),
+        spine_disc_min_label=spine_disc_min,
+        random_crop=True,
+    )
+    if len(dataset) == 0:
+        raise RuntimeError("Train split is empty — nothing to dry-run against.")
+
+    loader = DataLoader(
+        dataset,
+        batch_size=1,
+        shuffle=True,
+        num_workers=0,  # keep the worker RNG trace reproducible-ish and errors in-process
+        pin_memory=device.type == "cuda",
+    )
+
+    processor = GpuBatchProcessor(
+        aug_config=cfg.get("aug_config"),
+        heatmap_sigma=cfg["heatmap_sigma"],
+        heatmap_radius=cfg["heatmap_radius"],
+    ).to(device)
+
+    out_dir = os.path.join(save_model_dir, "dry_run")
+    check_and_make_dir(out_dir)
+
+    collected = 0
+    iterator = iter(loader)
+    while collected < n_samples:
+        try:
+            batch = next(iterator)
+        except StopIteration:
+            iterator = iter(loader)
+            batch = next(iterator)
+
+        image_3d = batch["image"].to(device, non_blocking=True).float()
+        label_3d = batch["label"].to(device, non_blocking=True).float()
+        seg_3d = batch.get("seg")
+        if seg_3d is not None:
+            seg_3d = seg_3d.to(device, non_blocking=True).float()
+
+        image_2d, heatmap_2d, _label_2d, _seg_2d = processor(
+            image_3d, label_3d, seg_3d=seg_3d, apply_augmentation=True
+        )
+
+        name = batch["name"][0] if isinstance(batch["name"], (list, tuple)) else str(batch["name"])
+        name_stem = name
+        for ext in (".nii.gz", ".nii"):
+            if name_stem.endswith(ext):
+                name_stem = name_stem[: -len(ext)]
+                break
+
+        png_path = os.path.join(out_dir, f"sample_{collected:02d}_{name_stem}.png")
+        try:
+            _save_dry_run_png(
+                png_path,
+                image_2d[0, 0].detach().cpu().numpy(),
+                heatmap_2d[0].detach().cpu().numpy(),
+                title=f"[dry-run #{collected}] {name_stem}",
+            )
+        except ImportError:
+            print("[dry-run] matplotlib unavailable; cannot render PNGs")
+            return
+        print(f"[dry-run] wrote {png_path}")
+        collected += 1
+
+    print(f"[dry-run] done. {collected} PNGs in {out_dir}")
 
 
 def train(
@@ -171,9 +309,35 @@ def main() -> None:
     )
     parser.add_argument("--save-model-dir", required=True, help="Where to write checkpoints.")
     parser.add_argument("--config", required=True, help="Optional JSON config overriding defaults.")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "Skip training. Pull 10 random training samples through the data "
+            "pipeline + GPU processor and save a PNG per sample under "
+            "<save-model-dir>/dry_run/ showing the mid-sagittal image fed to "
+            "the network with the disc-heatmap target channels overlaid. "
+            "Can also be enabled by setting `debug: true` in the config."
+        ),
+    )
+    parser.add_argument(
+        "--dry-run-samples",
+        type=int,
+        default=10,
+        help="How many random samples to render in dry-run mode (default: 10).",
+    )
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
+    is_dry = bool(args.dry_run) or bool(cfg.get("debug", False))
+    if is_dry:
+        dry_run(
+            cfg,
+            manifest_path=args.manifest,
+            save_model_dir=args.save_model_dir,
+            n_samples=int(args.dry_run_samples),
+        )
+        return
     train(cfg, manifest_path=args.manifest, save_model_dir=args.save_model_dir)
 
 
