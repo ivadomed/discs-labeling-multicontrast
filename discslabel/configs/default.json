@@ -2,10 +2,10 @@
     "data_json": "whole-spine",
     "out_name": "whole-spine",
     "run_name": "whole-spine_UNet_default",
-    "debug": true,
+    "debug": false,
 
     "steps": {
-        "download": true,
+        "download": false,
         "prepare": true,
         "train": false,
         "inference": false
@@ -13,7 +13,7 @@
 
     "orientation": "RPI",
     "resolution": "1x1x1",
-    "label_sigma": 1.5,
+    "label_sigma": 2.0,
 
     "model_name": "UNet",
     "in_channels": 1,
