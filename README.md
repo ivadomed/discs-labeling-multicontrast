@@ -24,6 +24,19 @@ Requirements:
 - [`git-annex`](https://git-annex.branchable.com/) and `jq` (for the download script)
 - PyTorch with CUDA if you want to train with GPU augmentations.
 
+1. Create a virtual environment and activate it:
+  - venv
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+   - conda env
+   ```
+   conda create -n myenv python=3.10
+   conda activate myenv
+   ```
+
+2. Clone the repo and install the package:
 ```bash
 git clone https://github.com/NathanMolinier/discs-labeling-multicontrast
 cd discs-labeling-multicontrast
@@ -33,6 +46,16 @@ pip install -e .
 
 # Training (pulls SmaugLab for the 3D GPU augmentation pipeline):
 pip install -e ".[training]"
+```
+
+3. Install pytorch following the instructions on their [website](https://pytorch.org/)
+```bash
+python3 -m pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu118 --upgrade
+```
+
+4. Define a folder where data and weights will be stored:
+```bash
+export DISCSLABEL_DATA=/path/to/scratch/discslabel
 ```
 
 [SmaugLab](https://github.com/neuropoly/SmaugLab) is an **optional** dependency — needed only at training time when `aug_config` points to a GPU-augmentation JSON. Inference and preprocessing never import it.
