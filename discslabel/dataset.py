@@ -4,29 +4,35 @@ The dataset returns 3D ``(image, label, seg)`` tensors with no 2D projection
 applied: all augmentation, mid-sagittal extraction and heatmap generation
 runs **on the GPU** via ``discslabel.gpu_pipeline.GpuBatchProcessor``.
 
-Volumes carried per sample:
+Per-sample pipeline:
 
-    image : the T1w / T2w / … MRI volume
-    label : the point-wise disc landmark volume (background = 0, discs = 1..25)
-    seg   : the four anatomy BINARY channels, stacked:
-              ch 0 : vertebrae (from SEG_SPINE values < spine_disc_min_label)
-              ch 1 : discs     (from SEG_SPINE values >= spine_disc_min_label)
-              ch 2 : spinal cord (from SEG_CORD > 0)
-              ch 3 : spinal canal (from SEG_CANAL > 0)
-            This 4-channel tensor is fed as the second parameter of
-            SmaugLab's ``AugTransformsGPU`` so that any 3D spatial
-            augmentation keeps the image aligned with each anatomy mask.
+    1. Load the image, the point-wise disc label, and the three SEG_* NIfTIs
+       raw (whatever shape they have on disk after reorient + resample).
+    2. Pick a 3D crop origin so that the extracted mid-sagittal slice of the
+       crop contains spine voxels. In train mode the origin is drawn randomly
+       from the set of spine-bearing sagittal slices (plus a small H/W jitter
+       around the spine centroid); in valid / inference mode we use the
+       median spine slice and the exact spine centroid.
+    3. Apply the SAME crop (plus zero-padding if the volume is smaller than
+       ``patch_size``) to every volume so every tensor stays co-registered.
+    4. Z-score normalise the cropped image using the non-background voxels.
 
-All volumes are padded/center-cropped to a configurable ``patch_size`` so a
-batch of volumes has a uniform shape — which is what SmaugLab's GPU
-augmentations expect.
+Returned sample dict:
+
+    image : (1, D, H, W) float tensor, z-scored
+    label : (1, D, H, W) float tensor, integer disc labels (0 = background)
+    seg   : (NUM_SEG_CHANNELS, D, H, W) binary tensor — one channel per
+            anatomical structure (see ``discslabel.SEG_CHANNELS``):
+                0: vertebrae, 1: discs, 2: spinal cord, 3: spinal canal.
+            Omitted when none of the three SEG_* files is listed.
+    name  : basename of the volume
 """
 
 from __future__ import annotations
 
 import json
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import nibabel as nib
 import numpy as np
@@ -56,96 +62,150 @@ def _load_nifti(path: str) -> np.ndarray:
     return arr
 
 
-def _normalize_image(arr: np.ndarray) -> np.ndarray:
-    """Min/max normalise to [0, 1] per volume. Flat volumes map to zero."""
-    lo, hi = float(arr.min()), float(arr.max())
-    if hi - lo < 1e-6:
+def _z_score_normalize(arr: np.ndarray) -> np.ndarray:
+    """Z-score normalise ``arr`` using the mean and std of the non-background voxels.
+
+    Background voxels (which are typically zero in MRI) would otherwise drag
+    the mean toward zero and inflate the std, so we restrict the statistics to
+    strictly positive voxels. The output is returned as float32 with no
+    clipping — SmaugLab's downstream augmentations tolerate any float range.
+    """
+    arr = arr.astype(np.float32)
+    nonzero = arr[arr > 0]
+    if nonzero.size < 10:
         return np.zeros_like(arr, dtype=np.float32)
-    return ((arr - lo) / (hi - lo)).astype(np.float32)
+    mean = float(nonzero.mean())
+    std = float(nonzero.std())
+    if std < 1e-6:
+        return np.zeros_like(arr, dtype=np.float32)
+    return ((arr - mean) / std).astype(np.float32)
 
 
-def _center_crop_or_pad(arr: np.ndarray, patch_size: Tuple[int, int, int], pad_value: float = 0.0) -> np.ndarray:
-    """Center-crop then zero-pad ``arr`` to ``patch_size``.
+def _crop_or_pad_at(
+    arr: np.ndarray,
+    origin: Tuple[int, int, int],
+    patch_size: Tuple[int, int, int],
+    pad_value: float = 0.0,
+) -> np.ndarray:
+    """Extract ``arr[d0:d0+pD, h0:h0+pH, w0:w0+pW]``, zero-padding on the
+    axes where the source is smaller than the patch.
 
-    No interpolation: the data stays on its original grid, discrete label
-    values are preserved exactly.
+    No interpolation: discrete label values pass through unchanged.
     """
     out_shape = tuple(int(s) for s in patch_size)
     out = np.full(out_shape, pad_value, dtype=arr.dtype)
 
+    pD, pH, pW = out_shape
+    D, H, W = arr.shape[:3]
+
     src_slices = []
     dst_slices = []
-    for src_len, dst_len in zip(arr.shape, out_shape):
+    for src_len, dst_len, start in zip((D, H, W), (pD, pH, pW), origin):
         if src_len >= dst_len:
-            start = (src_len - dst_len) // 2
+            start = int(max(0, min(start, src_len - dst_len)))
             src_slices.append(slice(start, start + dst_len))
             dst_slices.append(slice(0, dst_len))
         else:
-            start = (dst_len - src_len) // 2
+            # Volume is smaller than the patch on this axis: center-pad.
+            dst_start = (dst_len - src_len) // 2
             src_slices.append(slice(0, src_len))
-            dst_slices.append(slice(start, start + src_len))
+            dst_slices.append(slice(dst_start, dst_start + src_len))
+
     out[tuple(dst_slices)] = arr[tuple(src_slices)]
     return out
 
 
-def _build_binary_seg_channels(
-    entry: Dict[str, str],
+def _pick_crop_origin(
+    vol_shape: Tuple[int, int, int],
     patch_size: Tuple[int, int, int],
-    spine_disc_min_label: int = SEG_SPINE_DISC_MIN_LABEL,
-) -> np.ndarray | None:
-    """Build the 4-channel binary anatomy tensor fed to AugTransformsGPU.
+    spine_presence: Optional[np.ndarray],
+    random_crop: bool,
+    rng: np.random.Generator,
+    hw_jitter_frac: float = 0.125,
+) -> Tuple[int, int, int]:
+    """Pick a 3D crop origin ``(d0, h0, w0)``.
 
-    Channels (indexing matches ``discslabel.SEG_CH_*``):
-        0  vertebrae    : SEG_SPINE voxels with value in (0, spine_disc_min_label)
-        1  discs        : SEG_SPINE voxels with value >= spine_disc_min_label
-        2  spinal cord  : SEG_CORD > 0
-        3  spinal canal : SEG_CANAL > 0
+    When ``spine_presence`` is given, it is a 3D bool mask of spine voxels.
+    The origin is chosen so that the crop's mid-sagittal slice
+    (``cropped[pD // 2, :, :]``) lands on a sagittal slice with spine voxels,
+    and so that the crop's H/W window overlaps the spine on that slice.
 
-    Every channel is a {0, 1} mask so kornia's mask data-key treats them as
-    label masks with nearest resampling.
+    When ``spine_presence`` is None, falls back to a plain center crop.
 
-    Returns ``None`` if none of the SEG_* files is present for this entry.
+    Train mode (``random_crop=True``) draws:
+        - a random spine-bearing R-L slice as the mid-sag anchor;
+        - H/W jitter of up to ``hw_jitter_frac * patch_size`` around the spine
+          centroid on that slice.
+    Valid / inference (``random_crop=False``) uses the median spine slice and
+    the spine centroid exactly, so the output is deterministic.
     """
-    patch = tuple(int(s) for s in patch_size)
-    out = np.zeros((NUM_SEG_CHANNELS,) + patch, dtype=np.float32)
-    present = False
+    D, H, W = vol_shape[:3]
+    pD, pH, pW = (int(s) for s in patch_size)
 
-    spine_path = entry.get("seg_spine")
-    if spine_path:
-        spine = np.rint(_load_nifti(spine_path)).astype(np.int32)
-        vert = ((spine > 0) & (spine < int(spine_disc_min_label))).astype(np.float32)
-        disc = (spine >= int(spine_disc_min_label)).astype(np.float32)
-        out[SEG_CH_VERTEBRAE] = _center_crop_or_pad(vert, patch, pad_value=0.0)
-        out[SEG_CH_DISCS] = _center_crop_or_pad(disc, patch, pad_value=0.0)
-        present = True
+    def _axis_center_fallback(src_len: int, dst_len: int) -> int:
+        return max(0, (src_len - dst_len) // 2)
 
-    cord_path = entry.get("seg_cord")
-    if cord_path:
-        cord = (np.rint(_load_nifti(cord_path)) > 0).astype(np.float32)
-        out[SEG_CH_CORD] = _center_crop_or_pad(cord, patch, pad_value=0.0)
-        present = True
+    if spine_presence is None:
+        return (
+            _axis_center_fallback(D, pD),
+            _axis_center_fallback(H, pH),
+            _axis_center_fallback(W, pW),
+        )
 
-    canal_path = entry.get("seg_canal")
-    if canal_path:
-        canal = (np.rint(_load_nifti(canal_path)) > 0).astype(np.float32)
-        out[SEG_CH_CANAL] = _center_crop_or_pad(canal, patch, pad_value=0.0)
-        present = True
+    sag_hits = np.where(spine_presence.any(axis=(1, 2)))[0]
+    if len(sag_hits) == 0:
+        return (
+            _axis_center_fallback(D, pD),
+            _axis_center_fallback(H, pH),
+            _axis_center_fallback(W, pW),
+        )
 
-    return out if present else None
+    # 1) R-L anchor: a sagittal slice index where the spine is visible.
+    if random_crop:
+        d_mid = int(rng.choice(sag_hits))
+    else:
+        d_mid = int(sag_hits[len(sag_hits) // 2])
+
+    # 2) H/W centroid of the spine ON that chosen slice.
+    hw_slice = spine_presence[d_mid]
+    hw_coords = np.argwhere(hw_slice)
+    if len(hw_coords) == 0:
+        h_center, w_center = H // 2, W // 2
+    else:
+        h_center = int(np.median(hw_coords[:, 0]))
+        w_center = int(np.median(hw_coords[:, 1]))
+
+    if random_crop:
+        h_amp = max(1, int(hw_jitter_frac * pH))
+        w_amp = max(1, int(hw_jitter_frac * pW))
+        h_center += int(rng.integers(-h_amp, h_amp + 1))
+        w_center += int(rng.integers(-w_amp, w_amp + 1))
+
+    # 3) Convert from (d_mid, h_center, w_center) to origins and clamp.
+    d0 = d_mid - pD // 2
+    h0 = h_center - pH // 2
+    w0 = w_center - pW // 2
+    if D >= pD:
+        d0 = int(max(0, min(d0, D - pD)))
+    else:
+        d0 = 0
+    if H >= pH:
+        h0 = int(max(0, min(h0, H - pH)))
+    else:
+        h0 = 0
+    if W >= pW:
+        w0 = int(max(0, min(w0, W - pW)))
+    else:
+        w0 = 0
+    return (d0, h0, w0)
 
 
 class DiscVolumeDataset(Dataset):
     """Reads a prepared split (``manifest.json`` + per-split ``images/`` /
-    ``labels/`` / ``segs_{spine,cord,canal}/`` folders) and yields padded 3D
-    tensors.
+    ``labels/`` / ``segs_{spine,cord,canal}/`` folders) and yields 3D tensors
+    cropped around the spine.
 
-    Each sample is a dict:
-        image : (1, D, H, W) float tensor, intensities in [0, 1]
-        label : (1, D, H, W) float tensor, integer disc labels (0 = background)
-        seg   : (NUM_SEG_CHANNELS, D, H, W) binary tensor — one channel per
-                anatomical structure (see ``SEG_CHANNELS``). Omitted when
-                none of the three SEG_* files is listed for this entry.
-        name  : basename of the volume (useful for debugging / inference output)
+    See the module docstring for the per-sample pipeline and output format.
     """
 
     def __init__(
@@ -155,6 +215,7 @@ class DiscVolumeDataset(Dataset):
         patch_size: Tuple[int, int, int] = (96, 320, 320),
         require_label: bool = True,
         spine_disc_min_label: int = SEG_SPINE_DISC_MIN_LABEL,
+        random_crop: bool = False,
     ):
         super().__init__()
         with open(manifest_path, "r") as f:
@@ -167,37 +228,83 @@ class DiscVolumeDataset(Dataset):
         self.patch_size = tuple(int(s) for s in patch_size)
         self.require_label = require_label
         self.spine_disc_min_label = int(spine_disc_min_label)
+        self.random_crop = bool(random_crop)
 
     def __len__(self) -> int:
         return len(self.entries)
 
+    def _rng(self) -> np.random.Generator:
+        """Fresh RNG per __getitem__ call so DataLoader worker seeding sticks."""
+        return np.random.default_rng()
+
     def __getitem__(self, index: int) -> Dict[str, torch.Tensor | str]:
         entry = self.entries[index]
-        image_path = entry["image"]
-        image = _normalize_image(_load_nifti(image_path))
-        image = _center_crop_or_pad(image, self.patch_size, pad_value=0.0)
-        image_t = torch.from_numpy(image).unsqueeze(0).contiguous()  # (1, D, H, W)
 
-        sample: Dict[str, torch.Tensor | str] = {
-            "image": image_t,
-            "name": os.path.basename(image_path),
-        }
+        # 1. Load every 3D volume we need (raw, pre-crop).
+        image_raw = _load_nifti(entry["image"])
 
+        label_raw: Optional[np.ndarray] = None
         label_path = entry.get("label")
         if label_path:
-            label_arr = _load_nifti(label_path)
-            # Point-wise labels are small integers; round to defend against
-            # resample-induced float drift and clamp into the known range.
-            label_arr = np.rint(label_arr).astype(np.float32)
-            label_arr = _center_crop_or_pad(label_arr, self.patch_size, pad_value=0.0)
-            sample["label"] = torch.from_numpy(label_arr).unsqueeze(0).contiguous()
+            label_raw = np.rint(_load_nifti(label_path)).astype(np.float32)
         elif self.require_label:
             raise KeyError(f"Entry {entry} has no label but require_label=True")
 
-        seg_arr = _build_binary_seg_channels(
-            entry, self.patch_size, spine_disc_min_label=self.spine_disc_min_label
+        seg_spine_raw: Optional[np.ndarray] = None
+        if entry.get("seg_spine"):
+            seg_spine_raw = np.rint(_load_nifti(entry["seg_spine"])).astype(np.int32)
+
+        seg_cord_raw: Optional[np.ndarray] = None
+        if entry.get("seg_cord"):
+            seg_cord_raw = (np.rint(_load_nifti(entry["seg_cord"])) > 0).astype(np.float32)
+
+        seg_canal_raw: Optional[np.ndarray] = None
+        if entry.get("seg_canal"):
+            seg_canal_raw = (np.rint(_load_nifti(entry["seg_canal"])) > 0).astype(np.float32)
+
+        # 2. Pick a crop origin keyed on the SEG_SPINE presence mask.
+        #    "Spine" here spans both vertebrae and discs because SEG_SPINE is
+        #    the dense spine labelling we have on disk; both populations guide
+        #    where in the volume there is something interesting to see.
+        spine_presence = seg_spine_raw > 0 if seg_spine_raw is not None else None
+        origin = _pick_crop_origin(
+            image_raw.shape,
+            self.patch_size,
+            spine_presence,
+            random_crop=self.random_crop,
+            rng=self._rng(),
         )
-        if seg_arr is not None:
-            # Already (NUM_SEG_CHANNELS, D, H, W); no extra unsqueeze.
-            sample["seg"] = torch.from_numpy(seg_arr).contiguous()
+
+        # 3. Crop + z-score normalise the image.
+        image_cropped = _crop_or_pad_at(image_raw, origin, self.patch_size, pad_value=0.0)
+        image_norm = _z_score_normalize(image_cropped)
+        image_t = torch.from_numpy(image_norm).unsqueeze(0).contiguous()  # (1, D, H, W)
+
+        sample: Dict[str, torch.Tensor | str] = {
+            "image": image_t,
+            "name": os.path.basename(entry["image"]),
+        }
+
+        # 4. Crop the disc label volume at the same origin.
+        if label_raw is not None:
+            label_cropped = _crop_or_pad_at(label_raw, origin, self.patch_size, pad_value=0.0)
+            sample["label"] = torch.from_numpy(label_cropped).unsqueeze(0).contiguous()
+
+        # 5. Crop the three SEG_* masks and pack them into the 4-channel tensor.
+        if seg_spine_raw is not None or seg_cord_raw is not None or seg_canal_raw is not None:
+            seg_out = np.zeros((NUM_SEG_CHANNELS,) + self.patch_size, dtype=np.float32)
+            if seg_spine_raw is not None:
+                spine_cropped = _crop_or_pad_at(seg_spine_raw, origin, self.patch_size, pad_value=0)
+                seg_out[SEG_CH_VERTEBRAE] = (
+                    (spine_cropped > 0) & (spine_cropped < self.spine_disc_min_label)
+                ).astype(np.float32)
+                seg_out[SEG_CH_DISCS] = (spine_cropped >= self.spine_disc_min_label).astype(np.float32)
+            if seg_cord_raw is not None:
+                cord_cropped = _crop_or_pad_at(seg_cord_raw, origin, self.patch_size, pad_value=0.0)
+                seg_out[SEG_CH_CORD] = (cord_cropped > 0).astype(np.float32)
+            if seg_canal_raw is not None:
+                canal_cropped = _crop_or_pad_at(seg_canal_raw, origin, self.patch_size, pad_value=0.0)
+                seg_out[SEG_CH_CANAL] = (canal_cropped > 0).astype(np.float32)
+            sample["seg"] = torch.from_numpy(seg_out).contiguous()
+
         return sample

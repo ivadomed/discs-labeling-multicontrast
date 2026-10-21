@@ -84,12 +84,14 @@ def train(
         split="train",
         patch_size=tuple(cfg["patch_size"]),
         spine_disc_min_label=spine_disc_min,
+        random_crop=True,
     )
     valid_ds = DiscVolumeDataset(
         manifest_path,
         split="valid",
         patch_size=tuple(cfg["patch_size"]),
         spine_disc_min_label=spine_disc_min,
+        random_crop=False,
     )
 
     train_loader = DataLoader(
