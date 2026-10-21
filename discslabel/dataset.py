@@ -9,10 +9,13 @@ Per-sample pipeline:
     1. Load the image, the point-wise disc label, and the three SEG_* NIfTIs
        raw (whatever shape they have on disk after reorient + resample).
     2. Pick a 3D crop origin so that the extracted mid-sagittal slice of the
-       crop contains spine voxels. In train mode the origin is drawn randomly
-       from the set of spine-bearing sagittal slices (plus a small H/W jitter
-       around the spine centroid); in valid / inference mode we use the
-       median spine slice and the exact spine centroid.
+       crop contains **disc** voxels. The disc mask is the dense disc
+       segmentation from SEG_SPINE (voxels with value ``>= spine_disc_min_label``);
+       when SEG_SPINE is unavailable we fall back to the point-wise ``LABEL``
+       (any non-zero disc landmark). In train mode the origin is drawn
+       randomly from the set of disc-bearing sagittal slices (plus a small
+       H/W jitter around the disc centroid); in valid / inference mode we use
+       the median disc slice and the exact disc centroid.
     3. Apply the SAME crop (plus zero-padding if the volume is smaller than
        ``patch_size``) to every volume so every tensor stays co-registered.
     4. Z-score normalise the cropped image using the non-background voxels.
@@ -118,26 +121,26 @@ def _crop_or_pad_at(
 def _pick_crop_origin(
     vol_shape: Tuple[int, int, int],
     patch_size: Tuple[int, int, int],
-    spine_presence: Optional[np.ndarray],
+    disc_presence: Optional[np.ndarray],
     random_crop: bool,
     rng: np.random.Generator,
     hw_jitter_frac: float = 0.125,
 ) -> Tuple[int, int, int]:
     """Pick a 3D crop origin ``(d0, h0, w0)``.
 
-    When ``spine_presence`` is given, it is a 3D bool mask of spine voxels.
+    When ``disc_presence`` is given, it is a 3D bool mask of disc voxels.
     The origin is chosen so that the crop's mid-sagittal slice
-    (``cropped[pD // 2, :, :]``) lands on a sagittal slice with spine voxels,
-    and so that the crop's H/W window overlaps the spine on that slice.
+    (``cropped[pD // 2, :, :]``) lands on a sagittal slice with disc voxels,
+    and so that the crop's H/W window overlaps the disc centroid on that slice.
 
-    When ``spine_presence`` is None, falls back to a plain center crop.
+    When ``disc_presence`` is None, falls back to a plain center crop.
 
     Train mode (``random_crop=True``) draws:
-        - a random spine-bearing R-L slice as the mid-sag anchor;
-        - H/W jitter of up to ``hw_jitter_frac * patch_size`` around the spine
+        - a random disc-bearing R-L slice as the mid-sag anchor;
+        - H/W jitter of up to ``hw_jitter_frac * patch_size`` around the disc
           centroid on that slice.
-    Valid / inference (``random_crop=False``) uses the median spine slice and
-    the spine centroid exactly, so the output is deterministic.
+    Valid / inference (``random_crop=False``) uses the median disc slice and
+    the disc centroid exactly, so the output is deterministic.
     """
     D, H, W = vol_shape[:3]
     pD, pH, pW = (int(s) for s in patch_size)
@@ -145,14 +148,14 @@ def _pick_crop_origin(
     def _axis_center_fallback(src_len: int, dst_len: int) -> int:
         return max(0, (src_len - dst_len) // 2)
 
-    if spine_presence is None:
+    if disc_presence is None:
         return (
             _axis_center_fallback(D, pD),
             _axis_center_fallback(H, pH),
             _axis_center_fallback(W, pW),
         )
 
-    sag_hits = np.where(spine_presence.any(axis=(1, 2)))[0]
+    sag_hits = np.where(disc_presence.any(axis=(1, 2)))[0]
     if len(sag_hits) == 0:
         return (
             _axis_center_fallback(D, pD),
@@ -160,14 +163,14 @@ def _pick_crop_origin(
             _axis_center_fallback(W, pW),
         )
 
-    # 1) R-L anchor: a sagittal slice index where the spine is visible.
+    # 1) R-L anchor: a sagittal slice index where discs are visible.
     if random_crop:
         d_mid = int(rng.choice(sag_hits))
     else:
         d_mid = int(sag_hits[len(sag_hits) // 2])
 
-    # 2) H/W centroid of the spine ON that chosen slice.
-    hw_slice = spine_presence[d_mid]
+    # 2) H/W centroid of the discs ON that chosen slice.
+    hw_slice = disc_presence[d_mid]
     hw_coords = np.argwhere(hw_slice)
     if len(hw_coords) == 0:
         h_center, w_center = H // 2, W // 2
@@ -203,7 +206,7 @@ def _pick_crop_origin(
 class DiscVolumeDataset(Dataset):
     """Reads a prepared split (``manifest.json`` + per-split ``images/`` /
     ``labels/`` / ``segs_{spine,cord,canal}/`` folders) and yields 3D tensors
-    cropped around the spine.
+    cropped so the extracted mid-sagittal slice always lands on a disc.
 
     See the module docstring for the per-sample pipeline and output format.
     """
@@ -262,15 +265,24 @@ class DiscVolumeDataset(Dataset):
         if entry.get("seg_canal"):
             seg_canal_raw = (np.rint(_load_nifti(entry["seg_canal"])) > 0).astype(np.float32)
 
-        # 2. Pick a crop origin keyed on the SEG_SPINE presence mask.
-        #    "Spine" here spans both vertebrae and discs because SEG_SPINE is
-        #    the dense spine labelling we have on disk; both populations guide
-        #    where in the volume there is something interesting to see.
-        spine_presence = seg_spine_raw > 0 if seg_spine_raw is not None else None
+        # 2. Pick a crop origin keyed on the DISC mask so the extracted
+        #    mid-sagittal slice always intersects a disc — which is what the
+        #    heatmap-regression task actually cares about.
+        #    Preferred source: dense disc mask from SEG_SPINE (value >= threshold).
+        #    Fallback: the point-wise LABEL (any non-zero disc landmark).
+        disc_presence: Optional[np.ndarray] = None
+        if seg_spine_raw is not None:
+            dense_discs = seg_spine_raw >= self.spine_disc_min_label
+            if dense_discs.any():
+                disc_presence = dense_discs
+        if disc_presence is None and label_raw is not None:
+            label_points = label_raw > 0
+            if label_points.any():
+                disc_presence = label_points
         origin = _pick_crop_origin(
             image_raw.shape,
             self.patch_size,
-            spine_presence,
+            disc_presence,
             random_crop=self.random_crop,
             rng=self._rng(),
         )
