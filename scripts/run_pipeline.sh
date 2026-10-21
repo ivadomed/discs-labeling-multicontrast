@@ -144,7 +144,7 @@ if [ "$DO_TRAIN" = "true" ]; then
     discslabel_train \
         --manifest "$MANIFEST" \
         --save-model-dir "$WEIGHTS_DIR" \
-        --config "$config_json" \
+        --config "$config_json"
 fi
 
 # -------- 5. Inference --------
