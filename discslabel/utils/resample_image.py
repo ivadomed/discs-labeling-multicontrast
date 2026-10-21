@@ -327,7 +327,13 @@ def _resample_label_pointwise(image, new_size, new_size_type, sigma_mm=1.5, debu
             sigma_mm=float(sigma_mm),
         )
 
-    out_img = nib.nifti1.Nifti1Image(out_data.astype(np.int16), out_affine, probe_r.header)
+    # Match the header dtype to the output array (int16) BEFORE building the
+    # Nifti1Image, so `Image.save` doesn't log a header/dtype mismatch warning.
+    # Copy the header so we don't mutate the probe object.
+    out_header = probe_r.header.copy()
+    out_header.set_data_dtype(np.int16)
+    out_data_i16 = out_data.astype(np.int16)
+    out_img = nib.nifti1.Nifti1Image(out_data_i16, out_affine, out_header)
     return Image(
         np.asanyarray(out_img.dataobj),
         hdr=out_img.header,
