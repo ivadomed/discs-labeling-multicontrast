@@ -91,7 +91,8 @@ discslabel_inference \
 │            yields (B, 1, D, H, W) tensors                                    │
 │                                                                              │
 │  GpuBatchProcessor (nn.Module on CUDA):                                      │
-│   1. SmaugLab AugTransformsGPU on 3D (image, label)    [kornia pipeline]    │
+│   1. SmaugLab AugTransformsGPU on 3D (image, seg)      [kornia pipeline]    │
+│      where seg = combined SPINE / CORD / CANAL mask                           │
 │   2. mid-sagittal slice = image[..., D // 2, :, :]      → (B, 1, H, W)      │
 │   3. label projection:   label_3d.amax(dim=D)           → (B, 1, H, W)      │
 │   4. 5-channel heatmaps: depthwise Gaussian conv2d      → (B, 5, H, W)      │
@@ -134,10 +135,13 @@ Each dataset is described by a JSON file under `discslabel/datasets/`:
     "SOURCE": ["git@data.neuro.polymtl.ca:datasets/<bids-ds>.git"],
     "COMMIT": ["<commit-sha>"],
     "LABELS": {"3": "disc_C2C3", "8": "disc_C7T1", "20": "disc_T12L1", "25": "disc_L5S1"},
-    "TRAINING":   [{ "IMAGE": "<bids-ds>/sub-001/anat/sub-001_T2w.nii.gz",
-                     "LABEL": "<bids-ds>/derivatives/labels/sub-001/anat/sub-001_T2w_label-discs.nii.gz" }],
-    "VALIDATION": [{ "IMAGE": "...", "LABEL": "..." }],
-    "TESTING":    [{ "IMAGE": "...", "LABEL": "..." }]
+    "TRAINING":   [{ "IMAGE":     "<bids-ds>/sub-001/anat/sub-001_T2w.nii.gz",
+                     "LABEL":     "<bids-ds>/derivatives/labels/sub-001/anat/sub-001_T2w_label-discs.nii.gz",
+                     "SEG_SPINE": "<bids-ds>/derivatives/labels/sub-001/anat/sub-001_T2w_label-spine_dseg.nii.gz",
+                     "SEG_CORD":  "<bids-ds>/derivatives/labels/sub-001/anat/sub-001_T2w_label-SC_seg.nii.gz",
+                     "SEG_CANAL": "<bids-ds>/derivatives/labels/sub-001/anat/sub-001_T2w_label-canal_seg.nii.gz" }],
+    "VALIDATION": [{ "IMAGE": "...", "LABEL": "...", "SEG_SPINE": "...", "SEG_CORD": "...", "SEG_CANAL": "..." }],
+    "TESTING":    [{ "IMAGE": "...", "LABEL": "...", "SEG_SPINE": "...", "SEG_CORD": "...", "SEG_CANAL": "..." }]
 }
 ```
 
@@ -145,6 +149,7 @@ Each dataset is described by a JSON file under `discslabel/datasets/`:
 - `IMAGE` / `LABEL` paths are relative to `$DISCSLABEL_DATA/bids/`, and the first path segment names the repo (used by `git annex get`).
 - All files must be `.nii.gz`.
 - `LABEL` is a point-wise 3D volume with one voxel per disc at the posterior tip, carrying the disc-level value (`1..25`).
+- `SEG_SPINE` / `SEG_CORD` / `SEG_CANAL` are per-structure binary 3D NIfTIs. The prepare step reorients and resamples them with nearest-neighbour interpolation, and the dataset reader combines them into a single int volume (`SPINE = 1`, `CORD = 2`, `CANAL = 3`; later keys overwrite earlier ones so a voxel in both cord and canal is kept as `CANAL`). This combined segmentation is what gets fed as the **second parameter** to SmaugLab's `AugTransformsGPU` — the disc label is not augmented. Each SEG_* field is optional per entry.
 
 ## Why the projection runs on GPU
 

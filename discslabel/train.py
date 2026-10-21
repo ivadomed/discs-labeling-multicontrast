@@ -51,8 +51,15 @@ def _one_epoch(
         for batch in tqdm.tqdm(loader, desc=desc):
             image_3d = batch["image"].to(device, non_blocking=True).float()
             label_3d = batch["label"].to(device, non_blocking=True).float()
+            # Combined SPINE/CORD/CANAL anatomy mask — this is the "mask"
+            # fed to AugTransformsGPU (not the disc label).
+            seg_3d = batch.get("seg")
+            if seg_3d is not None:
+                seg_3d = seg_3d.to(device, non_blocking=True).float()
 
-            image_2d, heatmap_2d, _label_2d = processor(image_3d, label_3d, apply_augmentation=train)
+            image_2d, heatmap_2d, _label_2d, _seg_2d = processor(
+                image_3d, label_3d, seg_3d=seg_3d, apply_augmentation=train
+            )
             pred = model(image_2d)
             loss = loss_fn(pred, heatmap_2d)
 

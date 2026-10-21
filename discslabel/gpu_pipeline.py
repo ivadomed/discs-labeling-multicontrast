@@ -1,15 +1,21 @@
 """GPU-side batch processor.
 
-Takes a batch of 3D ``(image, label)`` volumes, optionally runs the SmaugLab
-3D GPU augmentations, extracts the mid-sagittal slice, projects the 3D
-point-wise label onto the mid-sagittal plane, and builds the 5-channel
-Gaussian heatmap target.
+Takes a batch of 3D ``(image, label, seg)`` volumes, optionally runs the
+SmaugLab 3D GPU augmentations, extracts the mid-sagittal slice, projects the
+3D point-wise disc label onto the mid-sagittal plane, and builds the
+5-channel Gaussian heatmap target.
 
 All operations run on the GPU with no CPU round-trips.
 
 Expected tensor layout:
     image : (B, 1, D, H, W) float, intensities in [0, 1]
     label : (B, 1, D, H, W) float, integer disc values (0 = background, 1..25 = discs)
+    seg   : (B, 1, D, H, W) float, combined anatomy mask (SPINE / CORD / CANAL
+            with non-overlapping values from ``discslabel.SEG_LABEL_*``).
+            Used as the SECOND parameter of ``AugTransformsGPU`` — the disc
+            label is NOT fed to the augmentation pipeline, so the aug config
+            should stay intensity-only (or add a dedicated spatial-replay
+            path for the disc label if you want to use spatial transforms).
 
 Prepared NIfTIs are RPI, so axis D = R→L, axis H = P→A, axis W = I→S. The
 mid-sagittal slice is ``image[..., D // 2, :, :]`` — that is axis 2 in the
@@ -117,13 +123,15 @@ class GpuBatchProcessor(nn.Module):
             self._aug = self._build_aug()
         return self._aug
 
-    def _augment_3d(self, image: torch.Tensor, label: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _augment_3d(
+        self, image: torch.Tensor, seg: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         aug = self._ensure_aug()
         if isinstance(aug, nn.Identity):
-            return image, label
-        # AugmentationSequential expects paired inputs; mask stays discrete via
+            return image, seg
+        # AugmentationSequential expects paired inputs; seg stays discrete via
         # kornia's nearest resampling because the entry's data_key is "mask".
-        out = aug(image, label)
+        out = aug(image, seg)
         if isinstance(out, (list, tuple)) and len(out) == 2:
             return out[0], out[1]
         raise RuntimeError(f"Unexpected AugTransformsGPU output: {type(out)}")
@@ -132,23 +140,34 @@ class GpuBatchProcessor(nn.Module):
         self,
         image_3d: torch.Tensor,
         label_3d: Optional[torch.Tensor] = None,
+        seg_3d: Optional[torch.Tensor] = None,
         apply_augmentation: bool = True,
-    ) -> Tuple[torch.Tensor, Optional[torch.Tensor], torch.Tensor]:
-        """Returns ``(image_2d, heatmap_2d, label_2d)``.
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
+        """Return ``(image_2d, heatmap_2d, label_2d, seg_2d)``.
 
         ``label_3d`` may be ``None`` at inference time (no ground truth); then
-        ``heatmap_2d`` and ``label_2d`` are also ``None``.
+        ``heatmap_2d`` and ``label_2d`` are also ``None``. ``seg_3d`` is
+        passed through ``AugTransformsGPU`` as the "mask" tensor; the disc
+        label is left untouched so it is only sensible to configure
+        ``aug_config`` with intensity-only transforms unless you add a
+        separate spatial-replay path for the label.
         """
         if image_3d.dim() != 5:
             raise ValueError(f"image_3d must be (B, 1, D, H, W), got {tuple(image_3d.shape)}")
-        if label_3d is not None and apply_augmentation:
-            image_3d, label_3d = self._augment_3d(image_3d, label_3d)
+
+        if apply_augmentation and seg_3d is not None:
+            image_3d, seg_3d = self._augment_3d(image_3d, seg_3d)
 
         mid = image_3d.size(_SAGITTAL_AXIS) // 2
         image_2d = image_3d.narrow(_SAGITTAL_AXIS, mid, 1).squeeze(_SAGITTAL_AXIS)  # (B, 1, H, W)
+        seg_2d = (
+            seg_3d.narrow(_SAGITTAL_AXIS, mid, 1).squeeze(_SAGITTAL_AXIS)
+            if seg_3d is not None
+            else None
+        )
 
         if label_3d is None:
-            return image_2d, None, None
+            return image_2d, None, None, seg_2d
 
         label_2d = _project_label_to_2d(label_3d)
         heatmap_2d = build_heatmaps_2d(
@@ -156,4 +175,4 @@ class GpuBatchProcessor(nn.Module):
             sigma=self.heatmap_sigma,
             radius=self.heatmap_radius,
         )
-        return image_2d, heatmap_2d, label_2d
+        return image_2d, heatmap_2d, label_2d, seg_2d

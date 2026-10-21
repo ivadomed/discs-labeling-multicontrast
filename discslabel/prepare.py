@@ -20,6 +20,7 @@ import os
 import shutil
 from typing import Dict, List
 
+from . import SEG_KEYS
 from .utils.io import check_and_make_dir
 
 
@@ -50,6 +51,13 @@ def _collect_split(entries: List[dict], split_name: str, data_root: str, out_roo
     labels_dst = os.path.join(out_root, split_name, "labels")
     check_and_make_dir(images_dst)
     check_and_make_dir(labels_dst)
+    seg_dsts = {}
+    for json_key, folder, _val in SEG_KEYS:
+        seg_dsts[json_key] = os.path.join(out_root, split_name, folder)
+        check_and_make_dir(seg_dsts[json_key])
+
+    # Manifest key used in the output JSON for each SEG field (SEG_SPINE -> seg_spine).
+    seg_manifest_keys = {json_key: json_key.lower() for json_key, _folder, _val in SEG_KEYS}
 
     manifest = []
     for entry in entries:
@@ -78,6 +86,18 @@ def _collect_split(entries: List[dict], split_name: str, data_root: str, out_roo
             label_dst = os.path.join(labels_dst, base + ".nii.gz")
             shutil.copyfile(label_src, label_dst)
             row["label"] = label_dst
+
+        for json_key, _folder, _val in SEG_KEYS:
+            seg_rel = entry.get(json_key)
+            if seg_rel is None:
+                continue
+            seg_src = os.path.join(data_root, "bids", seg_rel)
+            if not os.path.isfile(seg_src):
+                print(f"[prepare] missing {json_key.lower()}: {seg_src}")
+                continue
+            seg_dst = os.path.join(seg_dsts[json_key], base + ".nii.gz")
+            shutil.copyfile(seg_src, seg_dst)
+            row[seg_manifest_keys[json_key]] = seg_dst
 
         manifest.append(row)
     return manifest

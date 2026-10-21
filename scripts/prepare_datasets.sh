@@ -76,6 +76,14 @@ for split in train valid test; do
     if [ -d "$LABELS_DIR" ] && [ -n "$(ls -A "$LABELS_DIR" 2>/dev/null)" ]; then
         discslabel_reorient_image -i "$LABELS_DIR" -o "$LABELS_DIR" -ori "$ORIENTATION" -r -w "$JOBS"
     fi
+    # Anatomy segmentations (SEG_SPINE / SEG_CORD / SEG_CANAL) share the same
+    # 3D grid as the image; reorient them alongside it and resample with NN.
+    for SEG_FOLDER in segs_spine segs_cord segs_canal; do
+        SEG_DIR="$OUT_ROOT/$split/$SEG_FOLDER"
+        if [ -d "$SEG_DIR" ] && [ -n "$(ls -A "$SEG_DIR" 2>/dev/null)" ]; then
+            discslabel_reorient_image -i "$SEG_DIR" -o "$SEG_DIR" -ori "$ORIENTATION" -r -w "$JOBS"
+        fi
+    done
 
     echo "[prepare] resampling split '$split' to $RESOLUTION"
     discslabel_resample_image -i "$IMAGES_DIR" -o "$IMAGES_DIR" -res "$RESOLUTION" -int linear -r -w "$JOBS"
@@ -91,6 +99,14 @@ for split in train valid test; do
         fi
         discslabel_resample_image "${label_args[@]}"
     fi
+    # Anatomy segmentations use nearest-neighbour interpolation since they
+    # carry an integer class per voxel and we don't want fractional values.
+    for SEG_FOLDER in segs_spine segs_cord segs_canal; do
+        SEG_DIR="$OUT_ROOT/$split/$SEG_FOLDER"
+        if [ -d "$SEG_DIR" ] && [ -n "$(ls -A "$SEG_DIR" 2>/dev/null)" ]; then
+            discslabel_resample_image -i "$SEG_DIR" -o "$SEG_DIR" -res "$RESOLUTION" -int nn -r -w "$JOBS"
+        fi
+    done
 done
 
 echo "[prepare] done. Manifest at $OUT_ROOT/manifest.json"

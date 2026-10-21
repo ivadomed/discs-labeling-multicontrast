@@ -49,7 +49,7 @@ while IFS=$'\t' read -r source commit; do
     cd ..
 done < <(jq -r '[.SOURCE, .COMMIT] | transpose | .[] | @tsv' "$data_json")
 
-for key in IMAGE LABEL; do
+for key in IMAGE LABEL SEG_SPINE SEG_CORD SEG_CANAL; do
     for split in TRAINING VALIDATION TESTING; do
         for path in $(jq -r ".${split} | .[].${key} // empty" "$data_json"); do
             IFS='/' read -r rep_path rel_path <<< "$path"

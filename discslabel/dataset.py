@@ -1,13 +1,23 @@
 """Dataset reader for prepared 3D NIfTI volumes.
 
-The dataset returns 3D ``(image, label)`` tensors with no 2D projection
+The dataset returns 3D ``(image, label, seg)`` tensors with no 2D projection
 applied: all augmentation, mid-sagittal extraction and heatmap generation
 runs **on the GPU** via ``discslabel.gpu_pipeline.GpuBatchProcessor``.
 
-Both the image and the point-wise 3D label (background = 0, discs = 1..25
-placed at the posterior tip) are padded/center-cropped to a configurable
-``patch_size`` so a batch of volumes has a uniform shape — which is what
-SmaugLab's GPU augmentations expect.
+Volumes carried per sample:
+
+    image : the T1w / T2w / … MRI volume
+    label : the point-wise disc landmark volume (background = 0, discs = 1..25)
+    seg   : SEG_SPINE / SEG_CORD / SEG_CANAL combined into one int volume
+            with non-overlapping values (``SEG_LABEL_SPINE``,
+            ``SEG_LABEL_CORD``, ``SEG_LABEL_CANAL``). This is what gets fed
+            as the second parameter to SmaugLab's ``AugTransformsGPU`` so
+            that any 3D spatial augmentation keeps the image aligned with
+            its anatomy mask.
+
+All three are padded/center-cropped to a configurable ``patch_size`` so a
+batch of volumes has a uniform shape — which is what SmaugLab's GPU
+augmentations expect.
 """
 
 from __future__ import annotations
@@ -20,6 +30,8 @@ import nibabel as nib
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+
+from . import SEG_KEYS
 
 
 def _load_nifti(path: str) -> np.ndarray:
@@ -67,13 +79,45 @@ def _center_crop_or_pad(arr: np.ndarray, patch_size: Tuple[int, int, int], pad_v
     return out
 
 
+def _combine_segs(entry: Dict[str, str], patch_size: Tuple[int, int, int]) -> np.ndarray | None:
+    """Build the combined anatomy segmentation from the three per-structure NIfTIs.
+
+    Each present SEG_* file is turned into a binary mask of its structure and
+    stamped into a shared int volume at the structure's dedicated value
+    (``SEG_LABEL_SPINE`` / ``SEG_LABEL_CORD`` / ``SEG_LABEL_CANAL``). On a
+    voxel that belongs to several structures, later keys in ``SEG_KEYS`` win —
+    which is why canal (last) overwrites cord, and cord overwrites spine.
+
+    Returns ``None`` if none of the three segmentations is present for this
+    entry.
+    """
+    out: np.ndarray | None = None
+    for json_key, _folder, seg_value in SEG_KEYS:
+        manifest_key = json_key.lower()
+        seg_path = entry.get(manifest_key)
+        if not seg_path:
+            continue
+        arr = _load_nifti(seg_path)
+        mask = np.rint(arr) > 0
+        if out is None:
+            out = np.zeros_like(mask, dtype=np.int16)
+        out[mask] = int(seg_value)
+    if out is None:
+        return None
+    return _center_crop_or_pad(out.astype(np.float32), patch_size, pad_value=0.0)
+
+
 class DiscVolumeDataset(Dataset):
-    """Reads a prepared split (``manifest.json`` + its ``images/`` + ``labels/``)
-    and yields padded 3D tensors.
+    """Reads a prepared split (``manifest.json`` + per-split ``images/`` /
+    ``labels/`` / ``segs_{spine,cord,canal}/`` folders) and yields padded 3D
+    tensors.
 
     Each sample is a dict:
         image : (1, D, H, W) float tensor, intensities in [0, 1]
         label : (1, D, H, W) float tensor, integer disc labels (0 = background)
+        seg   : (1, D, H, W) float tensor, combined SPINE / CORD / CANAL
+                segmentation with non-overlapping values. Omitted when none
+                of the three SEG_* files is listed for this entry.
         name  : basename of the volume (useful for debugging / inference output)
     """
 
@@ -120,4 +164,8 @@ class DiscVolumeDataset(Dataset):
             sample["label"] = torch.from_numpy(label_arr).unsqueeze(0).contiguous()
         elif self.require_label:
             raise KeyError(f"Entry {entry} has no label but require_label=True")
+
+        seg_arr = _combine_segs(entry, self.patch_size)
+        if seg_arr is not None:
+            sample["seg"] = torch.from_numpy(seg_arr).unsqueeze(0).contiguous()
         return sample

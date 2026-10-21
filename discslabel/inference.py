@@ -90,8 +90,16 @@ def predict(
             label_3d = batch.get("label")
             if label_3d is not None:
                 label_3d = label_3d.to(device, non_blocking=True).float()
+            # Anatomy seg (SPINE+CORD+CANAL) is harmless to pass through at
+            # inference time — augmentation is disabled, so the processor only
+            # extracts its mid-sagittal slice.
+            seg_3d = batch.get("seg")
+            if seg_3d is not None:
+                seg_3d = seg_3d.to(device, non_blocking=True).float()
 
-            image_2d, _hm_target, label_2d = processor(image_3d, label_3d, apply_augmentation=False)
+            image_2d, _hm_target, label_2d, _seg_2d = processor(
+                image_3d, label_3d, seg_3d=seg_3d, apply_augmentation=False
+            )
             heatmaps = model(image_2d)[0].cpu().numpy()  # (NUM_CLASSES, H, W)
             decoded = decode_predictions(heatmaps, peak_threshold=peak_thr)
 
