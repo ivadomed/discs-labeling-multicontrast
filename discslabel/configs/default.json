@@ -20,7 +20,7 @@
     "model_name": "UNet",
     "in_channels": 1,
     "patch_size": [96, 320, 320],
-    "heatmap_sigma": 8.0,
+    "heatmap_sigma": 2.0,
     "heatmap_radius": 5,
 
     "batch_size": 2,
