@@ -37,6 +37,7 @@ packages = [{ include = "discslabel" }]
 include = [
     { path = "discslabel/datasets/*.json", format = ["sdist", "wheel"] },
     { path = "discslabel/configs/*.json", format = ["sdist", "wheel"] },
+    { path = "discslabel/augmentations/*.json", format = ["sdist", "wheel"] },
 ]
 
 [tool.poetry.dependencies]

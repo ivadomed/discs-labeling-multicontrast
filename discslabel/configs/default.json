@@ -40,7 +40,7 @@
     "loss_name": "focalLoss",
     "peak_threshold": 0.3,
 
-    "aug_config": null,
+    "aug_config": "transform_params_one-sequence-to-segment-them-all.json",
 
     "inference_split": "test",
     "inference_save_images": true

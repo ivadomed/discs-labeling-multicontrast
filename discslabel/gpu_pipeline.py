@@ -26,6 +26,7 @@ batched (B, C, D, H, W) tensor.
 
 from __future__ import annotations
 
+import os
 from typing import Optional, Tuple
 
 import torch
@@ -33,6 +34,37 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from . import LANDMARK_CHANNEL_LABELS
+
+
+def _resolve_aug_config(name: str) -> str:
+    """Resolve ``name`` to an existing SmaugLab aug-config file.
+
+    Mirrors the ``data_json`` lookup used by the pipeline scripts:
+        1. if ``name`` already points to a real file, use it as-is;
+        2. otherwise look for its basename under the bundled
+           ``discslabel/augmentations/`` folder (with and without a ``.json``
+           suffix).
+    Raises ``FileNotFoundError`` with both tried paths when neither resolves.
+    """
+    if os.path.isfile(name):
+        return name
+
+    import discslabel as _pkg
+
+    pkg_dir = os.path.dirname(os.path.abspath(_pkg.__file__))
+    base = os.path.basename(name)
+    candidate = os.path.join(pkg_dir, "augmentations", base)
+    if os.path.isfile(candidate):
+        return candidate
+    if not candidate.endswith(".json"):
+        with_ext = candidate + ".json"
+        if os.path.isfile(with_ext):
+            return with_ext
+    raise FileNotFoundError(
+        f"Could not resolve aug_config '{name}'. Tried the literal path and "
+        f"{candidate}. Point it at an absolute path or drop the file under "
+        f"discslabel/augmentations/."
+    )
 
 
 _SAGITTAL_AXIS = 2  # (B, C, D, H, W) with D = R-L in RPI-oriented volumes
@@ -118,7 +150,7 @@ class GpuBatchProcessor(nn.Module):
         # takes paired (image, mask) tensors through the same spatial params.
         from smauglab.transforms.gpu.transforms import AugTransformsGPU
 
-        return AugTransformsGPU(self.aug_config)
+        return AugTransformsGPU(_resolve_aug_config(self.aug_config))
 
     def _ensure_aug(self) -> nn.Module:
         if self._aug is None:
