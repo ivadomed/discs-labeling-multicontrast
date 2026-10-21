@@ -58,9 +58,9 @@ ORIENTATION=$(jopt '.orientation'  '"RPI"')
 RESOLUTION=$(jopt  '.resolution'   '"1x1x1"')
 LABEL_SIGMA=$(jopt '.label_sigma'  '1.5')
 
-DO_DOWNLOAD=$(jopt '.steps.download'  'true')
-DO_PREPARE=$(jopt  '.steps.prepare'   'true')
-DO_TRAIN=$(jopt    '.steps.train'     'true')
+DO_DOWNLOAD=$(jopt '.steps.download'  'false')
+DO_PREPARE=$(jopt  '.steps.prepare'   'false')
+DO_TRAIN=$(jopt    '.steps.train'     'false')
 DO_INFERENCE=$(jopt '.steps.inference' 'false')
 
 INFERENCE_SPLIT=$(jopt       '.inference_split'       '"test"')
