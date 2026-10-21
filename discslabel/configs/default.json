@@ -1,0 +1,47 @@
+{
+    "data_json": "whole-spine",
+    "out_name": "whole-spine",
+    "run_name": "whole-spine_UNet_default",
+    "debug": false,
+
+    "steps": {
+        "download": true,
+        "prepare": true,
+        "train": false,
+        "inference": false
+    },
+
+    "orientation": "RPI",
+    "resolution": "1x1x1",
+    "label_sigma": 2.0,
+
+    "spine_disc_min_label": 60,
+
+    "model_name": "UNet",
+    "in_channels": 1,
+    "patch_size": [96, 320, 320],
+    "heatmap_sigma": 8.0,
+    "heatmap_radius": 20,
+
+    "batch_size": 2,
+    "batch_size_valid": 1,
+    "num_workers": 2,
+
+    "train_max_epoch": 400,
+    "epoch_patience": 10,
+    "save_model_step": 10,
+
+    "lr": 1e-4,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "scheduler_step_size": 10,
+    "scheduler_gamma": 0.9,
+
+    "loss_name": "focalLoss",
+    "peak_threshold": 0.3,
+
+    "aug_config": "transform_params_one-sequence-to-segment-them-all.json",
+
+    "inference_split": "test",
+    "inference_save_images": true
+}
