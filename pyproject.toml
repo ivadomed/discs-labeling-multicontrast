@@ -46,6 +46,8 @@ pandas = "*"
 scikit-image = "*"
 nibabel = "*"
 scipy = "*"
+# matplotlib backs the `--debug-dir` PNG in discslabel_resample_image.
+matplotlib = "*"
 tqdm = "*"
 torch = "*"
 torchvision = "*"

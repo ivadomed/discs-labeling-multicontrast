@@ -57,6 +57,7 @@ RUN_NAME=$(jopt  '.run_name' '"'$OUT_NAME'_UNet"')
 ORIENTATION=$(jopt '.orientation'  '"RPI"')
 RESOLUTION=$(jopt  '.resolution'   '"1x1x1"')
 LABEL_SIGMA=$(jopt '.label_sigma'  '1.5')
+LABEL_DEBUG_DIR=$(jopt '.label_debug_dir' 'empty')
 
 DO_DOWNLOAD=$(jopt '.steps.download'  'false')
 DO_PREPARE=$(jopt  '.steps.prepare'   'false')
@@ -126,7 +127,7 @@ if [ "$DO_PREPARE" = "true" ] || [ ! -f "$MANIFEST" ]; then
     else
         echo "==> prepare_datasets.sh"
     fi
-    "$SCRIPT_DIR/prepare_datasets.sh" "$DATA_JSON" "$OUT_NAME" "$ORIENTATION" "$RESOLUTION" "$LABEL_SIGMA"
+    "$SCRIPT_DIR/prepare_datasets.sh" "$DATA_JSON" "$OUT_NAME" "$ORIENTATION" "$RESOLUTION" "$LABEL_SIGMA" "$LABEL_DEBUG_DIR"
 else
     echo "==> skipping prepare ($MANIFEST already exists and steps.prepare=false)"
 fi

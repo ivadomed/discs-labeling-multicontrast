@@ -14,7 +14,8 @@
 #   $2   (optional) subfolder name under prepared/ — defaults to the JSON basename
 #   $3   (optional) orientation code, defaults to RPI
 #   $4   (optional) resolution, defaults to 1x1x1 mm
-#   $5   (optional) label_sigma for the 'label' resample mode, defaults to 1.5
+#   $5   (optional) label_sigma in MM for the 'label' resample mode, defaults to 1.5
+#   $6   (optional) label debug dir — if set, writes a per-file PNG checker there
 
 set -e
 trap "echo Caught Keyboard Interrupt within script. Exiting now.; exit" INT
@@ -40,6 +41,7 @@ out_name="${2:-$(basename "${data_json%.json}")}"
 ORIENTATION="${3:-RPI}"
 RESOLUTION="${4:-1x1x1}"
 LABEL_SIGMA="${5:-1.5}"
+LABEL_DEBUG_DIR="${6:-}"
 
 # CPU parallelism (same env-var contract as SmaugLab-benchmark).
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -82,7 +84,12 @@ for split in train valid test; do
         # linearly, then extract the sphere centre. This preserves the exact
         # disc identity across the resample without the aliasing you get from
         # plain nearest-neighbour on single-voxel landmarks.
-        discslabel_resample_image -i "$LABELS_DIR" -o "$LABELS_DIR" -res "$RESOLUTION" -int label --label-sigma "$LABEL_SIGMA" -r -w "$JOBS"
+        label_args=(-i "$LABELS_DIR" -o "$LABELS_DIR" -res "$RESOLUTION"
+                    -int label --label-sigma "$LABEL_SIGMA" -r -w "$JOBS")
+        if [ -n "$LABEL_DEBUG_DIR" ]; then
+            label_args+=(--debug-dir "$LABEL_DEBUG_DIR/$split")
+        fi
+        discslabel_resample_image "${label_args[@]}"
     fi
 done
 

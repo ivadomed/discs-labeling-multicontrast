@@ -203,7 +203,7 @@ Common knobs:
 
 - `patch_size` — 3D volume shape fed to the GPU augmentations. Volumes smaller than the patch are zero-padded; larger ones are center-cropped.
 - `heatmap_sigma`, `heatmap_radius` — Gaussian spread and kernel radius for the on-GPU heatmap synthesis.
-- `label_sigma` — Gaussian spread of the sphere used to carry point labels through the resample step.
+- `label_sigma` — Gaussian spread **in millimetres** of the sphere used to carry point labels through the resample step. The sigma is converted to per-axis voxel sigmas via the input image zooms, so the sphere stays isotropic in physical space even on thick-slice MRI (anisotropic voxels). Set `label_debug_dir` in the config (or pass `--debug-dir` to `discslabel_resample_image`) to write a mid-sagittal 4-panel PNG per processed file — use it to confirm the sphere is big enough that its peak survives the resample.
 - `aug_config` — path to a SmaugLab GPU augmentation JSON (same format as the ones used by SmaugLab-benchmark). Set to `null` to disable augmentation.
 
 The config is archived next to the trained weights (`$DISCSLABEL_DATA/weights/<run_name>/config.json`), together with the resolved `data.json` and a `pip freeze` snapshot, so each checkpoint carries the exact context used to produce it.
