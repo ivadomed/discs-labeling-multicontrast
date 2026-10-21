@@ -57,7 +57,7 @@ RUN_NAME=$(jopt  '.run_name' '"'$OUT_NAME'_UNet"')
 ORIENTATION=$(jopt '.orientation'  '"RPI"')
 RESOLUTION=$(jopt  '.resolution'   '"1x1x1"')
 LABEL_SIGMA=$(jopt '.label_sigma'  '1.5')
-LABEL_DEBUG_DIR=$(jopt '.label_debug_dir' 'empty')
+DO_DEBUG=$(jopt '.debug' 'false')
 
 DO_DOWNLOAD=$(jopt '.steps.download'  'false')
 DO_PREPARE=$(jopt  '.steps.prepare'   'false')
@@ -83,6 +83,11 @@ BIDS_ROOT="$DISCSLABEL_DATA/bids"
 PREP_ROOT="$DISCSLABEL_DATA/prepared/$OUT_NAME"
 MANIFEST="$PREP_ROOT/manifest.json"
 WEIGHTS_DIR="$DISCSLABEL_DATA/weights/$RUN_NAME"
+if [ "$DO_DEBUG" = "true" ]; then
+    DEBUG_DIR="$DISCSLABEL_DATA/debug/$OUT_NAME"
+else
+    DEBUG_DIR=""
+fi
 
 # Does `bids/` already hold every repo referenced by data_json?
 _bids_complete() {
@@ -127,7 +132,7 @@ if [ "$DO_PREPARE" = "true" ] || [ ! -f "$MANIFEST" ]; then
     else
         echo "==> prepare_datasets.sh"
     fi
-    "$SCRIPT_DIR/prepare_datasets.sh" "$DATA_JSON" "$OUT_NAME" "$ORIENTATION" "$RESOLUTION" "$LABEL_SIGMA" "$LABEL_DEBUG_DIR"
+    "$SCRIPT_DIR/prepare_datasets.sh" "$DATA_JSON" "$OUT_NAME" "$ORIENTATION" "$RESOLUTION" "$LABEL_SIGMA" "$DEBUG_DIR"
 else
     echo "==> skipping prepare ($MANIFEST already exists and steps.prepare=false)"
 fi

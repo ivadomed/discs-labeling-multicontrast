@@ -41,7 +41,7 @@ out_name="${2:-$(basename "${data_json%.json}")}"
 ORIENTATION="${3:-RPI}"
 RESOLUTION="${4:-1x1x1}"
 LABEL_SIGMA="${5:-1.5}"
-LABEL_DEBUG_DIR="${6:-}"
+DEBUG_DIR="${6:-}"
 
 # CPU parallelism (same env-var contract as SmaugLab-benchmark).
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -86,8 +86,8 @@ for split in train valid test; do
         # plain nearest-neighbour on single-voxel landmarks.
         label_args=(-i "$LABELS_DIR" -o "$LABELS_DIR" -res "$RESOLUTION"
                     -int label --label-sigma "$LABEL_SIGMA" -r -w "$JOBS")
-        if [ -n "$LABEL_DEBUG_DIR" ]; then
-            label_args+=(--debug-dir "$LABEL_DEBUG_DIR/$split")
+        if [ -n "$DEBUG_DIR" ]; then
+            label_args+=(--debug-dir "$DEBUG_DIR/$split")
         fi
         discslabel_resample_image "${label_args[@]}"
     fi

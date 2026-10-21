@@ -2,6 +2,7 @@
     "data_json": "whole-spine",
     "out_name": "whole-spine",
     "run_name": "whole-spine_UNet_default",
+    "debug": true,
 
     "steps": {
         "download": true,
