@@ -1,7 +1,7 @@
 {
-    "data_json": "whole-spine",
-    "out_name": "whole-spine",
-    "run_name": "whole-spine_UNet_default",
+    "data_json": "data_t1w_t2w",
+    "out_name": "data_t1w_t2w",
+    "run_name": "data_t1w_t2w_UNet_default",
     "debug": false,
 
     "steps": {
