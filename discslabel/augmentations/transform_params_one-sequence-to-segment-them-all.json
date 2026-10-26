@@ -6,7 +6,7 @@
             ],
             "same_on_batch": false,
             "keepdim": true,
-            "p": 0.5
+            "p": 0
         },
         "RandomAffineGPU": {
             "degrees": 5,
@@ -209,22 +209,6 @@
         },
         "ZscoreNormalizationGPU": {
             "p": 0.0
-        }
-    },
-    "CPU": {
-        "SpatialTransform": {
-            "patch_center_dist_from_border": 80,
-            "random_crop": false,
-            "p_elastic_deform": 0.0,
-            "p_rotation": 0.2,
-            "p_scaling": 0.2,
-            "scaling": [
-                0.7,
-                1.4
-            ],
-            "p_synchronize_scaling_across_axes": 1,
-            "bg_style_seg_sampling": false,
-            "mode_seg": "nearest"
         }
     }
 }
