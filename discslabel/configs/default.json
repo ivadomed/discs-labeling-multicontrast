@@ -5,9 +5,9 @@
     "debug": false,
 
     "steps": {
-        "download": true,
-        "prepare": true,
-        "train": false,
+        "download": false,
+        "prepare": false,
+        "train": true,
         "inference": false
     },
 
