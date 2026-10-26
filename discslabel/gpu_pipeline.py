@@ -178,7 +178,7 @@ class GpuBatchProcessor(nn.Module):
             sigma=tuple(cfg.get("sigma", (32.0, 32.0))),
             alpha=tuple(cfg.get("alpha", (1.0, 1.0))),
             align_corners=cfg.get("align_corners", False),
-            mode=cfg.get("mode", "bilinear"),
+            resample=cfg.get("resample", 1),
             padding_mode=cfg.get("padding_mode", "zeros"),
             same_on_batch=cfg.get("same_on_batch", False),
             p=cfg.get("p", 0.5),
