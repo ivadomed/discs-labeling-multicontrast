@@ -1,4 +1,7 @@
-"""UNet backbone for 2D heatmap regression on mid-sagittal MRI slices."""
+"""UNet backbone for 2D heatmap regression on mid-sagittal MRI slices.
+
+Originally based on https://github.com/haoyuuuuu/CL-Detection2024-Baseline-UNet
+"""
 
 import torch
 import torch.nn as nn

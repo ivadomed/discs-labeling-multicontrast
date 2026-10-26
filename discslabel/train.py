@@ -1,5 +1,7 @@
 """Train the UNet heatmap-regression model with GPU-side 3D augmentation.
 
+Originally based on https://github.com/haoyuuuuu/CL-Detection2024-Baseline-UNet
+
 The training loop pulls 3D volumes from the dataset, moves the batch to the
 GPU, and lets ``GpuBatchProcessor`` do:
 
