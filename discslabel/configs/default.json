@@ -42,6 +42,14 @@
 
     "aug_config": "transform_params_one-sequence-to-segment-them-all.json",
 
+    "elastic_config": {
+        "kernel_size": [63, 63],
+        "sigma": [32.0, 32.0],
+        "alpha": [1.0, 1.0],
+        "padding_mode": "zeros",
+        "p": 0.5
+    },
+
     "inference_split": "test",
     "inference_save_images": true
 }

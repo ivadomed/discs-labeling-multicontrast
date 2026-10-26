@@ -163,6 +163,7 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
         aug_config=cfg.get("aug_config"),
         heatmap_sigma=cfg["heatmap_sigma"],
         heatmap_radius=cfg["heatmap_radius"],
+        elastic_config=cfg.get("elastic_config"),
     ).to(device)
 
     out_dir = os.path.join(save_model_dir, "dry_run")
@@ -253,6 +254,7 @@ def train(
         aug_config=cfg.get("aug_config"),
         heatmap_sigma=cfg["heatmap_sigma"],
         heatmap_radius=cfg["heatmap_radius"],
+        elastic_config=cfg.get("elastic_config"),
     ).to(device)
 
     model = load_model(cfg["model_name"], in_channels=cfg["in_channels"]).to(device)

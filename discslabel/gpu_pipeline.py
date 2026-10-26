@@ -3,7 +3,9 @@
 Takes a batch of 3D ``(image, label, seg)`` volumes, optionally runs the
 SmaugLab 3D GPU augmentations, extracts the mid-sagittal slice, projects the
 3D point-wise disc label onto the mid-sagittal plane, and builds the
-5-channel Gaussian heatmap target.
+5-channel Gaussian heatmap target. When ``elastic_config`` is set, a 2D
+kornia random elastic transform is then applied jointly to the image and
+heatmap to simulate spine curvature.
 
 All operations run on the GPU with no CPU round-trips.
 
@@ -136,12 +138,15 @@ class GpuBatchProcessor(nn.Module):
         aug_config: Optional[str] = None,
         heatmap_sigma: float = 8.0,
         heatmap_radius: int = 20,
+        elastic_config: Optional[dict] = None,
     ):
         super().__init__()
         self.aug_config = aug_config
         self.heatmap_sigma = float(heatmap_sigma)
         self.heatmap_radius = int(heatmap_radius)
+        self.elastic_config = elastic_config
         self._aug: Optional[nn.Module] = None
+        self._elastic: Optional[nn.Module] = None
 
     def _build_aug(self) -> nn.Module:
         if self.aug_config is None:
@@ -156,6 +161,52 @@ class GpuBatchProcessor(nn.Module):
         if self._aug is None:
             self._aug = self._build_aug()
         return self._aug
+
+    def _build_elastic(self) -> Optional[nn.Module]:
+        """Build the 2D random elastic transform used to simulate spine curvature.
+
+        Kornia is only pulled in when ``elastic_config`` is set, keeping it off
+        the inference import path.
+        """
+        if not self.elastic_config:
+            return None
+        import kornia.augmentation as K
+
+        cfg = self.elastic_config
+        return K.RandomElasticTransform(
+            kernel_size=tuple(cfg.get("kernel_size", (63, 63))),
+            sigma=tuple(cfg.get("sigma", (32.0, 32.0))),
+            alpha=tuple(cfg.get("alpha", (1.0, 1.0))),
+            align_corners=cfg.get("align_corners", False),
+            mode=cfg.get("mode", "bilinear"),
+            padding_mode=cfg.get("padding_mode", "zeros"),
+            same_on_batch=cfg.get("same_on_batch", False),
+            p=cfg.get("p", 0.5),
+        )
+
+    def _ensure_elastic(self) -> Optional[nn.Module]:
+        if self._elastic is None:
+            self._elastic = self._build_elastic()
+        return self._elastic
+
+    def _apply_elastic_2d(
+        self, image_2d: torch.Tensor, heatmap_2d: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Warp image and heatmap with the same random displacement field.
+
+        Concatenating along the channel axis guarantees kornia samples one
+        displacement field per batch item and applies it to both tensors in a
+        single call — no replay plumbing needed.
+        """
+        elastic = self._ensure_elastic()
+        if elastic is None:
+            return image_2d, heatmap_2d
+
+        n_img = image_2d.size(1)
+        n_hm = heatmap_2d.size(1)
+        stacked = torch.cat([image_2d, heatmap_2d], dim=1)
+        deformed = elastic(stacked)
+        return deformed[:, :n_img], deformed[:, n_img : n_img + n_hm]
 
     def _augment_3d(
         self, image: torch.Tensor, seg: torch.Tensor
@@ -209,4 +260,8 @@ class GpuBatchProcessor(nn.Module):
             sigma=self.heatmap_sigma,
             radius=self.heatmap_radius,
         )
+
+        if apply_augmentation:
+            image_2d, heatmap_2d = self._apply_elastic_2d(image_2d, heatmap_2d)
+
         return image_2d, heatmap_2d, label_2d, seg_2d
