@@ -51,6 +51,13 @@
         "p": 0.5
     },
 
+    "wandb": {
+        "project": "discs-labeling-multicontrast",
+        "entity": null,
+        "run_name": null,
+        "log_images_every": 1
+    },
+
     "inference_split": "test",
     "inference_save_images": true
 }

@@ -57,10 +57,13 @@ smauglab = { version = "*", optional = true }
 # slice extraction to simulate spine curvature. Training-only; inference does
 # not import it.
 kornia = { version = "*", optional = true }
+# wandb logs training metrics and per-epoch GT-vs-prediction overlays.
+# Training-only; inference does not import it.
+wandb = { version = "*", optional = true }
 
 [tool.poetry.extras]
 # `pip install discslabel[training]` pulls the GPU augmentation stack.
-training = ["smauglab", "kornia"]
+training = ["smauglab", "kornia", "wandb"]
 
 [tool.poetry.scripts]
 discslabel_reorient_image = "discslabel.utils.reorient_image:main"

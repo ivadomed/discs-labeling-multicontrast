@@ -8,8 +8,17 @@ GPU, and lets ``GpuBatchProcessor`` do:
     1. optional SmaugLab 3D augmentations on the paired (image, seg)
     2. mid-sagittal slice extraction (axis R-L)
     3. point-wise label projection + Gaussian heatmap synthesis
+    4. optional 2D kornia random elastic transform on (image, heatmap)
 
 The 2D model then sees ``(image_2d, heatmap_2d)`` for the loss.
+
+Weights & Biases
+----------------
+When the config carries a ``wandb`` block, each epoch logs train/valid loss,
+the current learning rate, and a per-epoch overlay figure that shows the
+mid-sagittal input, the GT heatmap channels, and the predicted heatmap
+channels for one validation sample — the same layout as the dry-run PNGs
+with an extra row for the model output.
 
 Debug / dry-run mode
 --------------------
@@ -55,11 +64,19 @@ def _one_epoch(
     optimizer: torch.optim.Optimizer | None,
     device: torch.device,
     desc: str,
-) -> float:
-    """Run one pass over ``loader``. When ``optimizer`` is None, operates in eval mode."""
+    capture_first_batch: bool = False,
+) -> tuple[float, dict | None]:
+    """Run one pass over ``loader``. When ``optimizer`` is None, operates in eval mode.
+
+    When ``capture_first_batch`` is set, the second return value holds a dict
+    with the first batch's ``image_2d``, ``heatmap_2d`` (ground truth) and
+    ``pred`` (model output) on CPU — handy for logging a per-epoch sample
+    without a separate forward pass.
+    """
     train = optimizer is not None
     model.train(train)
     losses = []
+    first_sample: dict | None = None
     with torch.set_grad_enabled(train):
         for batch in tqdm.tqdm(loader, desc=desc):
             image_3d = batch["image"].to(device, non_blocking=True).float()
@@ -81,7 +98,18 @@ def _one_epoch(
                 loss.backward()
                 optimizer.step()
             losses.append(loss.item())
-    return float(np.mean(losses)) if losses else float("inf")
+
+            if capture_first_batch and first_sample is None:
+                name = batch.get("name")
+                if isinstance(name, (list, tuple)) and name:
+                    name = name[0]
+                first_sample = {
+                    "image": image_2d.detach().cpu().numpy(),
+                    "heatmap_gt": heatmap_2d.detach().cpu().numpy(),
+                    "heatmap_pred": pred.detach().cpu().numpy(),
+                    "name": str(name) if name is not None else "sample",
+                }
+    return float(np.mean(losses)) if losses else float("inf"), first_sample
 
 
 def _display_slice(slice_2d: np.ndarray) -> np.ndarray:
@@ -89,8 +117,33 @@ def _display_slice(slice_2d: np.ndarray) -> np.ndarray:
     return np.ascontiguousarray(slice_2d.T[::-1, :])
 
 
-def _save_dry_run_png(path: str, image_2d: np.ndarray, heatmap_2d: np.ndarray, title: str) -> None:
-    """Render one sample: the image fed to the network + each heatmap overlaid."""
+def _intensity_window(img: np.ndarray) -> tuple[float, float]:
+    """Robust 1st..99th-percentile window for the gray background."""
+    vmin, vmax = float(np.percentile(img, 1.0)), float(np.percentile(img, 99.0))
+    if vmax <= vmin:
+        vmin, vmax = float(img.min()), float(img.max() + 1e-6)
+    return vmin, vmax
+
+
+def _draw_heatmap_row(axes, img, heatmap_2d, vmin, vmax, row_label):
+    """Fill a row of axes with [input, image+ch0 overlay, image+ch1 overlay, ...]."""
+    axes[0].imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
+    axes[0].set_title(f"image ({row_label})")
+    axes[0].set_xticks([])
+    axes[0].set_yticks([])
+    for i, ch_name in enumerate(HEATMAP_CHANNELS):
+        hm = _display_slice(heatmap_2d[i])
+        ax = axes[i + 1]
+        ax.imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
+        hm_masked = np.ma.masked_where(hm < 0.05, hm)
+        ax.imshow(hm_masked, cmap="hot", alpha=0.65, vmin=0.0, vmax=1.0)
+        ax.set_title(f"{row_label} ch{i}: {ch_name}")
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+
+def _build_overlay_figure(image_2d: np.ndarray, heatmap_2d: np.ndarray, title: str):
+    """One-row figure: input + each heatmap channel overlaid. Returns a Figure."""
     import matplotlib
 
     matplotlib.use("Agg")
@@ -99,31 +152,41 @@ def _save_dry_run_png(path: str, image_2d: np.ndarray, heatmap_2d: np.ndarray, t
     img = _display_slice(image_2d)
     n_cols = len(HEATMAP_CHANNELS) + 1
     fig, axes = plt.subplots(1, n_cols, figsize=(3.2 * n_cols, 3.6))
-
-    # Robust intensity window for the gray background.
-    vmin, vmax = float(np.percentile(img, 1.0)), float(np.percentile(img, 99.0))
-    if vmax <= vmin:
-        vmin, vmax = float(img.min()), float(img.max() + 1e-6)
-
-    axes[0].imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
-    axes[0].set_title("image → network")
-    axes[0].set_xticks([])
-    axes[0].set_yticks([])
-
-    for i, ch_name in enumerate(HEATMAP_CHANNELS):
-        hm = _display_slice(heatmap_2d[i])
-        ax = axes[i + 1]
-        ax.imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
-        # Only draw heatmap pixels where there is signal, so the gray behind
-        # stays visible everywhere else.
-        hm_masked = np.ma.masked_where(hm < 0.05, hm)
-        ax.imshow(hm_masked, cmap="hot", alpha=0.65, vmin=0.0, vmax=1.0)
-        ax.set_title(f"ch{i}: {ch_name}")
-        ax.set_xticks([])
-        ax.set_yticks([])
-
+    vmin, vmax = _intensity_window(img)
+    _draw_heatmap_row(axes, img, heatmap_2d, vmin, vmax, row_label="target")
     fig.suptitle(title, fontsize=10)
     fig.tight_layout()
+    return fig
+
+
+def _build_gt_pred_figure(
+    image_2d: np.ndarray,
+    heatmap_gt: np.ndarray,
+    heatmap_pred: np.ndarray,
+    title: str,
+):
+    """Two-row figure: GT row on top, Pred row below. Returns a Figure."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    img = _display_slice(image_2d)
+    n_cols = len(HEATMAP_CHANNELS) + 1
+    fig, axes = plt.subplots(2, n_cols, figsize=(3.2 * n_cols, 7.2))
+    vmin, vmax = _intensity_window(img)
+    _draw_heatmap_row(axes[0], img, heatmap_gt, vmin, vmax, row_label="GT")
+    _draw_heatmap_row(axes[1], img, heatmap_pred, vmin, vmax, row_label="Pred")
+    fig.suptitle(title, fontsize=10)
+    fig.tight_layout()
+    return fig
+
+
+def _save_dry_run_png(path: str, image_2d: np.ndarray, heatmap_2d: np.ndarray, title: str) -> None:
+    """Render one dry-run sample to disk."""
+    import matplotlib.pyplot as plt
+
+    fig = _build_overlay_figure(image_2d, heatmap_2d, title)
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     fig.savefig(path, dpi=110, bbox_inches="tight")
     plt.close(fig)
@@ -212,6 +275,29 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
     print(f"[dry-run] done. {collected} PNGs in {out_dir}")
 
 
+def _init_wandb(cfg: dict, save_model_dir: str):
+    """Initialize a Weights & Biases run from the ``wandb`` config block.
+
+    Returns ``(run, wandb_module, log_images_every)``. All three are ``None``
+    / ``0`` when logging is disabled (``cfg["wandb"]`` missing/falsy) or when
+    the ``wandb`` package is not installed — training then runs with no
+    external logging.
+    """
+    wandb_cfg = cfg.get("wandb")
+    if not wandb_cfg:
+        return None, None, 0
+    
+    import wandb
+    run = wandb.init(
+        project=wandb_cfg.get("project"),
+        entity=wandb_cfg.get("entity"),
+        name=wandb_cfg.get("run_name"),
+        dir=save_model_dir,
+        config=cfg,
+    )
+    return run, wandb, int(wandb_cfg.get("log_images_every", 1))
+
+
 def train(
     cfg: dict,
     manifest_path: str,
@@ -266,11 +352,13 @@ def train(
 
     check_and_make_dir(save_model_dir)
 
+    wandb_run, wandb_mod, log_images_every = _init_wandb(cfg, save_model_dir)
+
     best_loss = float("inf")
     num_epoch_no_improvement = 0
 
     for epoch in range(cfg["train_max_epoch"]):
-        train_loss = _one_epoch(
+        train_loss, _ = _one_epoch(
             model, train_loader, processor, loss_fn, optimizer, device, desc=f"epoch {epoch + 1} train"
         )
         scheduler.step()
@@ -281,10 +369,38 @@ def train(
             torch.save(model.state_dict(), ckpt)
             print("Saving checkpoint model:", ckpt)
 
-        valid_loss = _one_epoch(
-            model, valid_loader, processor, loss_fn, None, device, desc=f"epoch {epoch + 1} valid"
+        capture = wandb_run is not None and log_images_every > 0 and (epoch % log_images_every == 0)
+        valid_loss, sample = _one_epoch(
+            model,
+            valid_loader,
+            processor,
+            loss_fn,
+            None,
+            device,
+            desc=f"epoch {epoch + 1} valid",
+            capture_first_batch=capture,
         )
         print(f"Validation loss: {valid_loss:.6f}")
+
+        if wandb_run is not None:
+            log = {
+                "epoch": epoch,
+                "train/loss": train_loss,
+                "valid/loss": valid_loss,
+                "lr": optimizer.param_groups[0]["lr"],
+            }
+            if sample is not None:
+                fig = _build_gt_pred_figure(
+                    sample["image"][0, 0],
+                    sample["heatmap_gt"][0],
+                    sample["heatmap_pred"][0],
+                    title=f"epoch {epoch + 1} valid — {sample['name']}",
+                )
+                log["valid/sample"] = wandb_mod.Image(fig)
+                import matplotlib.pyplot as plt
+
+                plt.close(fig)
+            wandb_run.log(log, step=epoch)
 
         if valid_loss < best_loss:
             print(f"Validation loss decreases from {best_loss:.6f} to {valid_loss:.6f}")
@@ -302,6 +418,8 @@ def train(
         if num_epoch_no_improvement >= cfg["epoch_patience"]:
             print("Early stopping triggered.")
             break
+    if wandb_run is not None:
+        wandb_run.finish()
 
 
 def main() -> None:
