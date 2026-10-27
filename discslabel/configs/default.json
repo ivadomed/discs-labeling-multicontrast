@@ -45,7 +45,7 @@
     "elastic_config": {
         "kernel_size": [63, 63],
         "sigma": [32.0, 32.0],
-        "alpha": [1.0, 1.0],
+        "alpha": [2.0, 2.0],
         "resample": 1,
         "padding_mode": "zeros",
         "p": 0.5
