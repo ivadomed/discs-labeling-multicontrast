@@ -142,6 +142,12 @@ def _draw_heatmap_row(axes, img, heatmap_2d, vmin, vmax, row_label):
         ax.set_yticks([])
 
 
+def _apply_suptitle(fig, title: str) -> None:
+    """Draw a readable centered title and leave room for it above the axes."""
+    fig.suptitle(title, fontsize=14, fontweight="bold", y=0.995)
+    fig.tight_layout(rect=(0, 0, 1, 0.95))
+
+
 def _build_overlay_figure(image_2d: np.ndarray, heatmap_2d: np.ndarray, title: str):
     """One-row figure: input + each heatmap channel overlaid. Returns a Figure."""
     import matplotlib
@@ -154,8 +160,7 @@ def _build_overlay_figure(image_2d: np.ndarray, heatmap_2d: np.ndarray, title: s
     fig, axes = plt.subplots(1, n_cols, figsize=(3.2 * n_cols, 3.6))
     vmin, vmax = _intensity_window(img)
     _draw_heatmap_row(axes, img, heatmap_2d, vmin, vmax, row_label="target")
-    fig.suptitle(title, fontsize=10)
-    fig.tight_layout()
+    _apply_suptitle(fig, title)
     return fig
 
 
@@ -177,8 +182,7 @@ def _build_gt_pred_figure(
     vmin, vmax = _intensity_window(img)
     _draw_heatmap_row(axes[0], img, heatmap_gt, vmin, vmax, row_label="GT")
     _draw_heatmap_row(axes[1], img, heatmap_pred, vmin, vmax, row_label="Pred")
-    fig.suptitle(title, fontsize=10)
-    fig.tight_layout()
+    _apply_suptitle(fig, title)
     return fig
 
 
@@ -390,13 +394,16 @@ def train(
                 "lr": optimizer.param_groups[0]["lr"],
             }
             if sample is not None:
+                epoch_label = f"Epoch {epoch + 1}"
                 fig = _build_gt_pred_figure(
                     sample["image"][0, 0],
                     sample["heatmap_gt"][0],
                     sample["heatmap_pred"][0],
-                    title=f"epoch {epoch + 1} valid — {sample['name']}",
+                    title=f"{epoch_label} — validation sample: {sample['name']}",
                 )
-                log["valid/sample"] = wandb_mod.Image(fig)
+                log["valid/sample"] = wandb_mod.Image(
+                    fig, caption=f"{epoch_label} — {sample['name']}"
+                )
                 import matplotlib.pyplot as plt
 
                 plt.close(fig)
