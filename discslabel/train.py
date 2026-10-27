@@ -65,8 +65,14 @@ def _one_epoch(
     device: torch.device,
     desc: str,
     capture_first_batch: bool = False,
+    scaler: "torch.cuda.amp.GradScaler | None" = None,
 ) -> tuple[float, dict | None]:
     """Run one pass over ``loader``. When ``optimizer`` is None, operates in eval mode.
+
+    When ``scaler`` is provided (training only), the forward + loss run under
+    ``torch.autocast`` and gradients go through the GradScaler. In eval mode,
+    autocast still wraps the forward if ``scaler`` is not ``None`` so train
+    and valid losses stay comparable.
 
     When ``capture_first_batch`` is set, the second return value holds a dict
     with the first batch's ``image_2d``, ``heatmap_2d`` (ground truth) and
@@ -77,6 +83,7 @@ def _one_epoch(
     model.train(train)
     losses = []
     first_sample: dict | None = None
+    use_amp = scaler is not None
     with torch.set_grad_enabled(train):
         for batch in tqdm.tqdm(loader, desc=desc):
             image_3d = batch["image"].to(device, non_blocking=True).float()
@@ -90,13 +97,21 @@ def _one_epoch(
             image_2d, heatmap_2d, _label_2d, _seg_2d = processor(
                 image_3d, label_3d, seg_3d=seg_3d, apply_augmentation=train
             )
-            pred = model(image_2d)
-            loss = loss_fn(pred, heatmap_2d)
 
             if train:
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
+            with torch.autocast(device_type=device.type, enabled=use_amp):
+                pred = model(image_2d)
+                loss = loss_fn(pred, heatmap_2d)
+
+            if train:
+                if use_amp:
+                    scaler.scale(loss).backward()
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    loss.backward()
+                    optimizer.step()
             losses.append(loss.item())
 
             if capture_first_batch and first_sample is None:
@@ -104,9 +119,9 @@ def _one_epoch(
                 if isinstance(name, (list, tuple)) and name:
                     name = name[0]
                 first_sample = {
-                    "image": image_2d.detach().cpu().numpy(),
-                    "heatmap_gt": heatmap_2d.detach().cpu().numpy(),
-                    "heatmap_pred": pred.detach().cpu().numpy(),
+                    "image": image_2d.detach().float().cpu().numpy(),
+                    "heatmap_gt": heatmap_2d.detach().float().cpu().numpy(),
+                    "heatmap_pred": pred.detach().float().cpu().numpy(),
                     "name": str(name) if name is not None else "sample",
                 }
     return float(np.mean(losses)) if losses else float("inf"), first_sample
@@ -279,6 +294,28 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
     print(f"[dry-run] done. {collected} PNGs in {out_dir}")
 
 
+def _resolve_num_workers(value) -> int:
+    """``"auto"`` / missing → ``min(cpu_count, 8)``; else honour the explicit int."""
+    if isinstance(value, int) and value >= 0:
+        return value
+    cpu = os.cpu_count() or 1
+    return min(cpu, 8)
+
+
+def _resolve_batch_size(value, device: torch.device, minimum: int = 1) -> int:
+    """Auto-size the batch to the GPU: roughly one sample per 8 GB of VRAM.
+
+    An explicit positive int in the config always wins. On CPU the batch is
+    forced to ``minimum`` since there is no GPU budget to spend.
+    """
+    if isinstance(value, int) and value > 0:
+        return value
+    if device.type != "cuda":
+        return minimum
+    total_gb = torch.cuda.get_device_properties(device).total_memory / (1024**3)
+    return max(minimum, int(total_gb // 8))
+
+
 def _init_wandb(cfg: dict, save_model_dir: str):
     """Initialize a Weights & Biases run from the ``wandb`` config block.
 
@@ -308,6 +345,21 @@ def train(
     save_model_dir: str,
 ) -> None:
     device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
+    # cuDNN picks the fastest kernel per input shape; worth it since patch_size
+    # is fixed per run so shapes don't vary from batch to batch.
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True
+
+    num_workers = _resolve_num_workers(cfg.get("num_workers"))
+    batch_size = _resolve_batch_size(cfg.get("batch_size"), device)
+    batch_size_valid = _resolve_batch_size(cfg.get("batch_size_valid"), device)
+    use_amp = bool(cfg.get("use_amp", True)) and device.type == "cuda"
+    prefetch_factor = int(cfg.get("prefetch_factor", 4)) if num_workers > 0 else None
+    print(
+        f"[train] device={device} num_workers={num_workers} "
+        f"batch_size={batch_size} batch_size_valid={batch_size_valid} "
+        f"amp={use_amp} prefetch_factor={prefetch_factor}"
+    )
 
     spine_disc_min = int(cfg.get("spine_disc_min_label", 60))
     train_ds = DiscVolumeDataset(
@@ -325,19 +377,20 @@ def train(
         random_crop=False,
     )
 
+    loader_kwargs = {
+        "pin_memory": device.type == "cuda",
+        "num_workers": num_workers,
+    }
+    # persistent_workers and prefetch_factor only make sense with workers > 0.
+    if num_workers > 0:
+        loader_kwargs["persistent_workers"] = True
+        loader_kwargs["prefetch_factor"] = prefetch_factor
+
     train_loader = DataLoader(
-        train_ds,
-        batch_size=cfg["batch_size"],
-        shuffle=True,
-        num_workers=cfg["num_workers"],
-        pin_memory=device.type == "cuda",
+        train_ds, batch_size=batch_size, shuffle=True, **loader_kwargs
     )
     valid_loader = DataLoader(
-        valid_ds,
-        batch_size=cfg["batch_size_valid"],
-        shuffle=False,
-        num_workers=cfg["num_workers"],
-        pin_memory=device.type == "cuda",
+        valid_ds, batch_size=batch_size_valid, shuffle=False, **loader_kwargs
     )
 
     processor = GpuBatchProcessor(
@@ -356,6 +409,7 @@ def train(
 
     check_and_make_dir(save_model_dir)
 
+    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
     wandb_run, wandb_mod, log_images_every = _init_wandb(cfg, save_model_dir)
 
     best_loss = float("inf")
@@ -363,7 +417,14 @@ def train(
 
     for epoch in range(cfg["train_max_epoch"]):
         train_loss, _ = _one_epoch(
-            model, train_loader, processor, loss_fn, optimizer, device, desc=f"epoch {epoch + 1} train"
+            model,
+            train_loader,
+            processor,
+            loss_fn,
+            optimizer,
+            device,
+            desc=f"epoch {epoch + 1} train",
+            scaler=scaler if use_amp else None,
         )
         scheduler.step()
         print(f"Train epoch [{epoch + 1:<4d}/{cfg['train_max_epoch']:<4d}] Loss: {train_loss:.6f}")
@@ -383,6 +444,7 @@ def train(
             device,
             desc=f"epoch {epoch + 1} valid",
             capture_first_batch=capture,
+            scaler=scaler if use_amp else None,
         )
         print(f"Validation loss: {valid_loss:.6f}")
 
