@@ -23,9 +23,11 @@
     "heatmap_sigma": 3.0,
     "heatmap_radius": 6,
 
-    "batch_size": 2,
-    "batch_size_valid": 1,
-    "num_workers": 2,
+    "batch_size": "auto",
+    "batch_size_valid": "auto",
+    "num_workers": "auto",
+    "prefetch_factor": 4,
+    "use_amp": true,
 
     "train_max_epoch": 400,
     "epoch_patience": 10,
