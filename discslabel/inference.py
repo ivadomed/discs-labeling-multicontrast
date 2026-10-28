@@ -414,18 +414,15 @@ def _infer_one_image(
     chosen = _choose_anchor(anchors_by_name)
 
     if chosen is None:
-        print(
+        # tqdm.write prints above the active bar instead of smearing it.
+        tqdm.tqdm.write(
             f"[warn] no anchor detected for {os.path.basename(image_path)} "
             f"(found {len(merged_discs)} disc peaks); writing empty NIfTI."
         )
         labeled_discs: List[Tuple[int, float, float]] = []
     else:
-        ch_name, anchor_label, ax, ay = chosen
+        _ch_name, anchor_label, ax, ay = chosen
         labeled_discs = _assign_labels(merged_discs, anchor_label, ax, ay)
-        print(
-            f"  {os.path.basename(image_path)}: anchor={ch_name}({anchor_label}) "
-            f"@ ({ax:.1f}, {ay:.1f}); {len(labeled_discs)}/{len(merged_discs)} discs labeled"
-        )
 
     stem = _stem(image_path)
     nifti_out = os.path.join(out_dir, f"{stem}_discs.nii.gz")
