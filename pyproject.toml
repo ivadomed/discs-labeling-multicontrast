@@ -36,7 +36,8 @@ packages = [{ include = "discslabel" }]
 # The config JSONs are package data, not code, so they need listing explicitly.
 include = [
     { path = "discslabel/datasets/*.json", format = ["sdist", "wheel"] },
-    { path = "discslabel/configs/*.json", format = ["sdist", "wheel"] },
+    { path = "discslabel/pipeline_2d/configs/*.json", format = ["sdist", "wheel"] },
+    { path = "discslabel/pipeline_3d/configs/*.json", format = ["sdist", "wheel"] },
     { path = "discslabel/augmentations/*.json", format = ["sdist", "wheel"] },
 ]
 
@@ -69,8 +70,10 @@ training = ["smauglab", "kornia", "wandb"]
 discslabel_reorient_image = "discslabel.utils.reorient_image:main"
 discslabel_resample_image = "discslabel.utils.resample_image:main"
 discslabel_prepare = "discslabel.prepare:main"
-discslabel_train = "discslabel.train:main"
-discslabel_inference = "discslabel.inference:main"
+discslabel_train = "discslabel.pipeline_2d.train:main"
+discslabel_inference = "discslabel.pipeline_2d.inference:main"
+discslabel_train_3d = "discslabel.pipeline_3d.train:main"
+discslabel_inference_3d = "discslabel.pipeline_3d.inference:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
