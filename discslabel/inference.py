@@ -28,6 +28,7 @@ No label or seg files are required. No augmentation is applied.
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -35,6 +36,8 @@ import nibabel as nib
 import numpy as np
 import torch
 import tqdm
+
+logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 
 from . import HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS
 from .dataset import _z_score_normalize
