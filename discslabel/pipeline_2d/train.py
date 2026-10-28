@@ -42,12 +42,12 @@ import torch
 import tqdm
 from torch.utils.data import DataLoader
 
-from . import HEATMAP_CHANNELS
-from .dataset import DiscVolumeDataset
+from .. import HEATMAP_CHANNELS
+from ..dataset import DiscVolumeDataset
 from .gpu_pipeline import GpuBatchProcessor
-from .losses import load_loss
+from ..losses import load_loss
 from .model import load_model
-from .utils.io import check_and_make_dir
+from ..utils.io import check_and_make_dir
 
 
 def _load_config(path: str | None) -> dict:

@@ -6,7 +6,7 @@ Originally based on https://github.com/haoyuuuuu/CL-Detection2024-Baseline-UNet
 import torch
 import torch.nn as nn
 
-from . import NUM_CLASSES
+from .. import NUM_CLASSES
 
 
 class LUConv(nn.Module):

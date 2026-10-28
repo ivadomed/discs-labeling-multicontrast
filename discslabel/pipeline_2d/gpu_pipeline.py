@@ -35,7 +35,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from . import LANDMARK_CHANNEL_LABELS
+from .. import LANDMARK_CHANNEL_LABELS
 
 
 def _resolve_aug_config(name: str) -> str:

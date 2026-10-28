@@ -43,8 +43,8 @@ import tqdm
 
 logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 
-from . import HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS
-from .dataset import _z_score_normalize
+from .. import HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS
+from ..dataset import _z_score_normalize
 from .model import load_model
 from .train import (
     _display_slice,
@@ -52,9 +52,9 @@ from .train import (
     _load_config,
     _resolve_batch_size,
 )
-from .utils.image import Image, resample_nib
-from .utils.io import check_and_make_dir
-from .utils.metrics import decode_predictions
+from ..utils.image import Image, resample_nib
+from ..utils.io import check_and_make_dir
+from ..utils.metrics import decode_predictions
 
 
 NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")
