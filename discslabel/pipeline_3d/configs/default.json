@@ -22,7 +22,7 @@
     "patch_size": [64, 128, 128],
     "heatmap_sigma": 2.0,
     "heatmap_radius": 4,
-    "foreground_prob": 0.7,
+    "foreground_prob": 0.8,
 
     "batch_size": 4,
     "batch_size_valid": "auto",
