@@ -61,5 +61,7 @@
     },
 
     "inference_split": "test",
-    "inference_save_images": true
+    "inference_save_images": true,
+    "inference_overlap": 0.5,
+    "inference_min_peak_distance": 10.0
 }

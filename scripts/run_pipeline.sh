@@ -156,17 +156,12 @@ fi
 # -------- 5. Inference --------
 if [ "$DO_INFERENCE" = "true" ]; then
     echo "==> discslabel_inference"
-    inf_args=(
-        --weights "$WEIGHTS_DIR/best_model.pt"
-        --manifest "$MANIFEST"
-        --split "$INFERENCE_SPLIT"
-        --out-csv "$WEIGHTS_DIR/predictions_${INFERENCE_SPLIT}.csv"
+    discslabel_inference \
+        --weights "$WEIGHTS_DIR/best_model.pt" \
+        --manifest "$MANIFEST" \
+        --split "$INFERENCE_SPLIT" \
+        --out-dir "$WEIGHTS_DIR/predictions_${INFERENCE_SPLIT}" \
         --config "$config_json"
-    )
-    if [ "$INFERENCE_SAVE_IMAGES" = "true" ]; then
-        inf_args+=(--save-image-dir "$WEIGHTS_DIR/visualize_${INFERENCE_SPLIT}")
-    fi
-    discslabel_inference "${inf_args[@]}"
 fi
 
 echo ""
