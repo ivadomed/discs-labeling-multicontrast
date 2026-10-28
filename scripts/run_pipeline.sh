@@ -158,8 +158,7 @@ if [ "$DO_INFERENCE" = "true" ]; then
     echo "==> discslabel_inference"
     discslabel_inference \
         --weights "$WEIGHTS_DIR/best_model.pt" \
-        --manifest "$MANIFEST" \
-        --split "$INFERENCE_SPLIT" \
+        --input "$PREP_ROOT/$INFERENCE_SPLIT/images" \
         --out-dir "$WEIGHTS_DIR/predictions_${INFERENCE_SPLIT}" \
         --config "$config_json"
 fi

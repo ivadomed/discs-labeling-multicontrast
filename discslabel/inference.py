@@ -1,12 +1,15 @@
 """Image-only sliding-window inference for the disc-landmark UNet.
 
-For each image we:
+Input is either a single ``.nii`` / ``.nii.gz`` file or a flat folder of
+them. For each image we:
 
     1. z-score normalise the full 3D volume
     2. extract the mid-sagittal slice (axis R-L, center)
     3. slide ``(patch_H, patch_W)`` windows over the 2D slice, from superior
        to inferior along the I-S axis
-    4. forward each window through the model → 5-channel heatmap
+    4. forward the windows through the model in batches → 5-channel heatmap
+       (per-image batching: all windows of one image are stacked and
+       chunked by ``inference_batch_size``)
     5. collect disc peaks from channel 0 and anchor peaks from channels 1..4
        in GLOBAL slice coordinates, with duplicates merged across windows
     6. pick the highest-priority detected anchor
@@ -22,7 +25,6 @@ No label or seg files are required. No augmentation is applied.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -34,9 +36,45 @@ import tqdm
 from . import HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS
 from .dataset import _load_nifti, _z_score_normalize
 from .model import load_model
-from .train import _display_slice, _intensity_window, _load_config
+from .train import (
+    _display_slice,
+    _intensity_window,
+    _load_config,
+    _resolve_batch_size,
+)
 from .utils.io import check_and_make_dir
 from .utils.metrics import decode_predictions
+
+
+NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")
+
+
+def _is_nifti(name: str) -> bool:
+    return any(name.endswith(ext) for ext in NIFTI_EXTS)
+
+
+def _discover_inputs(path: str) -> List[str]:
+    """Return the list of NIfTI files for ``path``.
+
+    * A file ending in ``.nii`` / ``.nii.gz`` → ``[path]``.
+    * A directory → every ``*.nii`` / ``*.nii.gz`` directly inside it (sorted,
+      flat, no recursion). Hidden files are skipped.
+    * Anything else → ``FileNotFoundError``.
+    """
+    if os.path.isfile(path):
+        if not _is_nifti(path):
+            raise ValueError(f"--input file is not a NIfTI: {path}")
+        return [path]
+    if os.path.isdir(path):
+        files = sorted(
+            os.path.join(path, name)
+            for name in os.listdir(path)
+            if _is_nifti(name) and not name.startswith(".")
+        )
+        if not files:
+            raise FileNotFoundError(f"No .nii / .nii.gz files found in {path}")
+        return files
+    raise FileNotFoundError(f"--input must be a .nii/.nii.gz file or a folder: {path}")
 
 
 # User-requested priority: C2C3 (3) > L5S1 (25) > C7T1 (8) > T12L1 (20).
@@ -254,6 +292,37 @@ def _stem(path: str) -> str:
     return os.path.splitext(base)[0]
 
 
+def _forward_windows(
+    padded_slice: np.ndarray,
+    origins: List[Tuple[int, int]],
+    patch_hw: Tuple[int, int],
+    model: torch.nn.Module,
+    device: torch.device,
+    batch_size: int,
+) -> np.ndarray:
+    """Model-forward every window of one image, chunked by ``batch_size``.
+
+    Returns ``(N, NUM_CLASSES, pH, pW)`` heatmaps on CPU float32 in the same
+    order as ``origins``.
+    """
+    pH, pW = patch_hw
+    patches = np.stack(
+        [padded_slice[h0 : h0 + pH, w0 : w0 + pW] for (h0, w0) in origins]
+    )  # (N, pH, pW)
+    patches_t = torch.from_numpy(patches).float().unsqueeze(1).to(device)  # (N, 1, pH, pW)
+
+    chunks: List[np.ndarray] = []
+    with torch.no_grad():
+        for i in range(0, patches_t.size(0), batch_size):
+            chunk = patches_t[i : i + batch_size]
+            with torch.autocast(
+                device_type=device.type, enabled=device.type == "cuda"
+            ):
+                hm = model(chunk)
+            chunks.append(hm.float().cpu().numpy())
+    return np.concatenate(chunks, axis=0)
+
+
 def _infer_one_image(
     image_path: str,
     model: torch.nn.Module,
@@ -262,6 +331,7 @@ def _infer_one_image(
     overlap: float,
     peak_threshold: float,
     min_peak_distance: float,
+    batch_size: int,
     out_dir: str,
 ) -> None:
     """Run the full sliding-window pipeline on one 3D image."""
@@ -273,38 +343,28 @@ def _infer_one_image(
     slice_2d = image_norm[d_mid]  # (H, W)
 
     padded_slice, (pad_h_before, pad_w_before) = _pad_slice_to_patch(slice_2d, patch_hw)
-    pH, pW = patch_hw
     origins = _sliding_window_origins(padded_slice.shape, patch_hw, overlap=overlap)
+    heatmaps = _forward_windows(
+        padded_slice, origins, patch_hw, model, device, batch_size
+    )
 
     all_discs: List[Tuple[float, float, float]] = []
     anchors_by_name: Dict[str, List[Tuple[float, float, float]]] = {}
-
-    with torch.no_grad():
-        for h0, w0 in origins:
-            patch = padded_slice[h0 : h0 + pH, w0 : w0 + pW]
-            patch_t = (
-                torch.from_numpy(patch).float().unsqueeze(0).unsqueeze(0).to(device)
-            )
-            with torch.autocast(
-                device_type=device.type, enabled=device.type == "cuda"
-            ):
-                heatmaps = model(patch_t)
-            heatmaps_np = heatmaps[0].float().cpu().numpy()
-            decoded = decode_predictions(heatmaps_np, peak_threshold=peak_threshold)
-
-            # Translate window coords → padded-slice coords → original-slice coords.
-            for xp, yp, pp in decoded[HEATMAP_CHANNELS[0]]["peaks"]:
-                gx = w0 + xp - pad_w_before
-                gy = h0 + yp - pad_h_before
-                all_discs.append((gx, gy, pp))
-            for ch_name in HEATMAP_CHANNELS[1:]:
-                pred = decoded[ch_name]
-                if pred["present"]:
-                    gx = w0 + pred["x"] - pad_w_before
-                    gy = h0 + pred["y"] - pad_h_before
-                    anchors_by_name.setdefault(ch_name, []).append(
-                        (gx, gy, pred["peak"])
-                    )
+    for i, (h0, w0) in enumerate(origins):
+        decoded = decode_predictions(heatmaps[i], peak_threshold=peak_threshold)
+        # Translate window coords → padded-slice coords → original-slice coords.
+        for xp, yp, pp in decoded[HEATMAP_CHANNELS[0]]["peaks"]:
+            gx = w0 + xp - pad_w_before
+            gy = h0 + yp - pad_h_before
+            all_discs.append((gx, gy, pp))
+        for ch_name in HEATMAP_CHANNELS[1:]:
+            pred = decoded[ch_name]
+            if pred["present"]:
+                gx = w0 + pred["x"] - pad_w_before
+                gy = h0 + pred["y"] - pad_h_before
+                anchors_by_name.setdefault(ch_name, []).append(
+                    (gx, gy, pred["peak"])
+                )
 
     merged_discs = _merge_peaks(all_discs, min_distance=min_peak_distance)
     chosen = _choose_anchor(anchors_by_name)
@@ -338,17 +398,12 @@ def _infer_one_image(
 def predict(
     cfg: dict,
     weights_path: str,
-    manifest_path: str,
-    split: str,
+    input_path: str,
     out_dir: str,
 ) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    with open(manifest_path, "r") as f:
-        manifest = json.load(f)
-    if split not in manifest:
-        raise KeyError(f"Split '{split}' not in manifest {manifest_path}")
-    entries = list(manifest[split])
+    image_paths = _discover_inputs(input_path)
 
     model = load_model(cfg["model_name"], in_channels=cfg["in_channels"]).to(device)
     model.load_state_dict(torch.load(weights_path, map_location=device))
@@ -359,17 +414,23 @@ def predict(
     overlap = float(cfg.get("inference_overlap", 0.5))
     peak_thr = float(cfg.get("peak_threshold", 0.3))
     min_peak_distance = float(cfg.get("inference_min_peak_distance", 10.0))
+    batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
+    print(
+        f"[inference] device={device} inputs={len(image_paths)} "
+        f"patch_hw={patch_hw} overlap={overlap} batch_size={batch_size}"
+    )
 
     check_and_make_dir(out_dir)
-    for entry in tqdm.tqdm(entries, desc=f"inference/{split}"):
+    for image_path in tqdm.tqdm(image_paths, desc="inference"):
         _infer_one_image(
-            entry["image"],
+            image_path,
             model=model,
             device=device,
             patch_hw=patch_hw,
             overlap=overlap,
             peak_threshold=peak_thr,
             min_peak_distance=min_peak_distance,
+            batch_size=batch_size,
             out_dir=out_dir,
         )
     print(f"Wrote per-image NIfTI + PNG into {out_dir}")
@@ -380,9 +441,10 @@ def main() -> None:
         description="Image-only sliding-window inference with a trained disc-landmark UNet."
     )
     parser.add_argument("--weights", required=True, help="Path to best_model.pt.")
-    parser.add_argument("--manifest", required=True, help="Path to manifest.json.")
     parser.add_argument(
-        "--split", default="test", help="Split name inside the manifest (default: test)."
+        "--input",
+        required=True,
+        help="Path to a .nii/.nii.gz file or a flat folder of them.",
     )
     parser.add_argument(
         "--out-dir",
@@ -396,8 +458,7 @@ def main() -> None:
     predict(
         cfg,
         weights_path=args.weights,
-        manifest_path=args.manifest,
-        split=args.split,
+        input_path=args.input,
         out_dir=args.out_dir,
     )
 
