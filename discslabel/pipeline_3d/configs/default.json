@@ -20,8 +20,8 @@
     "model_name": "UNet3D",
     "in_channels": 1,
     "patch_size": [64, 128, 128],
-    "heatmap_sigma": 3.0,
-    "heatmap_radius": 6,
+    "heatmap_sigma": 2.0,
+    "heatmap_radius": 4,
     "foreground_prob": 0.7,
 
     "batch_size": 4,
