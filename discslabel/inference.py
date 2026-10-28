@@ -238,17 +238,18 @@ def _build_preview_png(
             disp_col,
             disp_row,
             "o",
-            color="yellow",
-            markersize=5,
+            color="red",
+            markersize=10,
             markeredgecolor="black",
-            markeredgewidth=0.6,
+            markeredgewidth=0.8,
         )
         ax.text(
-            disp_col + 4,
+            disp_col + 8,
             disp_row,
             str(int(label)),
-            color="yellow",
-            fontsize=8,
+            color="red",
+            fontsize=14,
+            fontweight="bold",
             va="center",
         )
     ax.set_title(title, fontsize=12)
