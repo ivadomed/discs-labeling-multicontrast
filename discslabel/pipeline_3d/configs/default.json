@@ -24,9 +24,9 @@
     "heatmap_radius": 4,
     "foreground_prob": 0.7,
 
-    "batch_size": 4,
+    "batch_size": 6,
     "batch_size_valid": "auto",
-    "num_workers": "auto",
+    "num_workers": 32,
     "prefetch_factor": 4,
     "use_amp": true,
 
