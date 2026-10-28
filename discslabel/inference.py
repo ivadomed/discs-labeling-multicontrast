@@ -3,6 +3,9 @@
 Input is either a single ``.nii`` / ``.nii.gz`` file or a flat folder of
 them. For each image we:
 
+    0. reorient to ``cfg["orientation"]`` and resample to
+       ``cfg["resolution"]`` (same preprocessing as training inputs — the
+       model only ever saw volumes on that grid)
     1. z-score normalise the full 3D volume
     2. extract the mid-sagittal slice (axis R-L, center)
     3. slide ``(patch_H, patch_W)`` windows over the 2D slice, from superior
@@ -34,7 +37,7 @@ import torch
 import tqdm
 
 from . import HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS
-from .dataset import _load_nifti, _z_score_normalize
+from .dataset import _z_score_normalize
 from .model import load_model
 from .train import (
     _display_slice,
@@ -42,6 +45,7 @@ from .train import (
     _load_config,
     _resolve_batch_size,
 )
+from .utils.image import Image, resample_nib
 from .utils.io import check_and_make_dir
 from .utils.metrics import decode_predictions
 
@@ -259,18 +263,18 @@ def _build_preview_png(
 def _write_disc_nifti(
     out_path: str,
     labeled_discs: List[Tuple[int, float, float]],
-    reference_nifti_path: str,
+    shape: Tuple[int, int, int],
+    affine: np.ndarray,
     d_mid: int,
 ) -> None:
     """Write a 3D NIfTI with one voxel per labeled disc on the mid-sag plane.
 
-    Shape and affine are copied from the input image, so the output stays
-    aligned with it in physical space.
+    ``shape`` and ``affine`` are those of the preprocessed (reoriented +
+    resampled) image, so the output stays aligned with the frame the model
+    actually operated on.
     """
-    ref = nib.load(reference_nifti_path)
-    ref_shape = tuple(int(s) for s in ref.shape[:3])
-    out = np.zeros(ref_shape, dtype=np.int16)
-    D, H, W = ref_shape
+    out = np.zeros(shape, dtype=np.int16)
+    D, H, W = shape
     for label, x, y in labeled_discs:
         h = int(round(y))
         w = int(round(x))
@@ -278,7 +282,7 @@ def _write_disc_nifti(
             out[d_mid, h, w] = int(label)
     # Fresh header so the output dtype matches the int16 we write, instead of
     # inheriting the (likely float32) dtype from the input image header.
-    img_out = nib.Nifti1Image(out, affine=ref.affine)
+    img_out = nib.Nifti1Image(out, affine=affine)
     img_out.set_data_dtype(np.int16)
     nib.save(img_out, out_path)
 
@@ -323,10 +327,49 @@ def _forward_windows(
     return np.concatenate(chunks, axis=0)
 
 
+def _parse_resolution(resolution: str) -> Tuple[float, float, float]:
+    """``"1x1x1"`` → ``(1.0, 1.0, 1.0)``. Raises if the string is malformed."""
+    parts = resolution.lower().split("x")
+    if len(parts) != 3:
+        raise ValueError(
+            f"resolution must be formatted as 'AxBxC' in mm, got {resolution!r}"
+        )
+    return tuple(float(p) for p in parts)  # type: ignore[return-value]
+
+
+def _preprocess_image(
+    image_path: str, orientation: str, resolution_mm: Tuple[float, float, float]
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Load, reorient, and resample a NIfTI to match the training preprocessing.
+
+    Returns ``(data, affine)`` for the preprocessed volume. ``data`` is 3D
+    float32; ``affine`` is the 4x4 of the oriented+resampled grid.
+    """
+    image = Image(image_path)
+    image.change_orientation(orientation)
+    image = resample_nib(
+        image,
+        new_size=list(resolution_mm),
+        new_size_type="mm",
+        interpolation="linear",
+        verbose=False,
+    )
+    data = np.asarray(image.data, dtype=np.float32)
+    data = np.squeeze(data)
+    if data.ndim != 3:
+        raise ValueError(
+            f"Expected 3D volume after preprocessing, got shape {data.shape} for {image_path}"
+        )
+    affine = np.asarray(image.hdr.get_best_affine())
+    return data, affine
+
+
 def _infer_one_image(
     image_path: str,
     model: torch.nn.Module,
     device: torch.device,
+    orientation: str,
+    resolution_mm: Tuple[float, float, float],
     patch_hw: Tuple[int, int],
     overlap: float,
     peak_threshold: float,
@@ -335,10 +378,11 @@ def _infer_one_image(
     out_dir: str,
 ) -> None:
     """Run the full sliding-window pipeline on one 3D image."""
-    image_raw = _load_nifti(image_path)
+    image_raw, affine = _preprocess_image(image_path, orientation, resolution_mm)
     image_norm = _z_score_normalize(image_raw)
 
-    D, _H, _W = image_raw.shape
+    shape = tuple(int(s) for s in image_raw.shape)
+    D, _H, _W = shape
     d_mid = D // 2
     slice_2d = image_norm[d_mid]  # (H, W)
 
@@ -386,7 +430,7 @@ def _infer_one_image(
     stem = _stem(image_path)
     nifti_out = os.path.join(out_dir, f"{stem}_discs.nii.gz")
     png_out = os.path.join(out_dir, f"{stem}_discs.png")
-    _write_disc_nifti(nifti_out, labeled_discs, image_path, d_mid)
+    _write_disc_nifti(nifti_out, labeled_discs, shape, affine, d_mid)
     _build_preview_png(
         slice_2d,
         labeled_discs,
@@ -415,8 +459,11 @@ def predict(
     peak_thr = float(cfg.get("peak_threshold", 0.3))
     min_peak_distance = float(cfg.get("inference_min_peak_distance", 10.0))
     batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
+    orientation = str(cfg.get("orientation", "RPI"))
+    resolution_mm = _parse_resolution(str(cfg.get("resolution", "1x1x1")))
     print(
         f"[inference] device={device} inputs={len(image_paths)} "
+        f"orientation={orientation} resolution={resolution_mm} "
         f"patch_hw={patch_hw} overlap={overlap} batch_size={batch_size}"
     )
 
@@ -426,6 +473,8 @@ def predict(
             image_path,
             model=model,
             device=device,
+            orientation=orientation,
+            resolution_mm=resolution_mm,
             patch_hw=patch_hw,
             overlap=overlap,
             peak_threshold=peak_thr,
