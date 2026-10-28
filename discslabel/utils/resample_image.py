@@ -227,7 +227,7 @@ def _strip_nii_ext(name: str) -> str:
     return name
 
 
-def _resample_label_pointwise(image, new_size, new_size_type, sigma_mm=1.5, debug_path=None):
+def _resample_label_pointwise(image, new_size=None, new_size_type=None, sigma_mm=1.5, debug_path=None, image_dest=None):
     """Resample a point-wise label volume by Gaussian-sphere smoothing then peak picking.
 
     Point-wise labels are a few isolated voxels (values 1..N, one voxel per
@@ -274,6 +274,7 @@ def _resample_label_pointwise(image, new_size, new_size_type, sigma_mm=1.5, debu
         probe,
         new_size=new_size,
         new_size_type=new_size_type,
+        image_dest=image_dest,
         interpolation='linear',
         verbose=False,
     )
@@ -295,6 +296,7 @@ def _resample_label_pointwise(image, new_size, new_size_type, sigma_mm=1.5, debu
             smoothed_img,
             new_size=new_size,
             new_size_type=new_size_type,
+            image_dest=image_dest,
             interpolation='linear',
             verbose=False,
         )

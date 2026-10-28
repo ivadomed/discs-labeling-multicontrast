@@ -18,8 +18,12 @@ them. For each image we:
     6. pick the highest-priority detected anchor
        (``C2C3`` > ``L5S1`` > ``C7T1`` > ``T12L1``) and label every disc
        in superior → inferior order relative to that anchor
-    7. write a 3D NIfTI with single-voxel discs on the mid-sagittal plane
-       (shape and affine match the input) plus a PNG preview rendered with
+    7. project the labeled discs back onto the input image's native grid
+       (orientation + resolution) via a Gaussian-sphere peak-pick per label,
+       so single-voxel points survive the resample
+    8. write a 3D NIfTI with single-voxel discs on the mid-sagittal plane
+       (shape and affine match the ORIGINAL input, not the preprocessed
+       volume) plus a PNG preview of the preprocessed slice rendered with
        the same ``p1..p99`` contrast window used by the training previews.
 
 No label or seg files are required. No augmentation is applied.
@@ -51,6 +55,7 @@ from .train import (
 from .utils.image import Image, resample_nib
 from .utils.io import check_and_make_dir
 from .utils.metrics import decode_predictions
+from .utils.resample_image import _resample_label_pointwise
 
 
 NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")
@@ -264,29 +269,53 @@ def _build_preview_png(
     plt.close(fig)
 
 
-def _write_disc_nifti(
-    out_path: str,
+def _resample_discs_to_native(
     labeled_discs: List[Tuple[int, float, float]],
-    shape: Tuple[int, int, int],
-    affine: np.ndarray,
+    preproc_shape: Tuple[int, int, int],
+    preproc_affine: np.ndarray,
     d_mid: int,
-) -> None:
-    """Write a 3D NIfTI with one voxel per labeled disc on the mid-sag plane.
+    original_nib: nib.Nifti1Image,
+    sigma_mm: float,
+) -> np.ndarray:
+    """Project disc labels from the preprocessed grid back to the native grid.
 
-    ``shape`` and ``affine`` are those of the preprocessed (reoriented +
-    resampled) image, so the output stays aligned with the frame the model
-    actually operated on.
+    Builds a single-voxel label volume on the preprocessed grid, then hands
+    it off to ``_resample_label_pointwise`` from ``utils/resample_image.py``
+    with ``image_dest=original_nib``. That helper's Gaussian-sphere /
+    peak-pick path is the ``interpolation="label"`` mode of the resample
+    utility — the right tool for resampling point-wise landmarks across
+    grids without shifting or dropping them.
     """
-    out = np.zeros(shape, dtype=np.int16)
-    D, H, W = shape
+    preproc_vol = np.zeros(preproc_shape, dtype=np.int16)
+    D, H, W = preproc_shape
     for label, x, y in labeled_discs:
         h = int(round(y))
         w = int(round(x))
         if 0 <= d_mid < D and 0 <= h < H and 0 <= w < W:
-            out[d_mid, h, w] = int(label)
-    # Fresh header so the output dtype matches the int16 we write, instead of
-    # inheriting the (likely float32) dtype from the input image header.
-    img_out = nib.Nifti1Image(out, affine=affine)
+            preproc_vol[d_mid, h, w] = int(label)
+
+    # Wrap the preprocessed volume as an SCT Image so _resample_label_pointwise
+    # has the shape, affine and zooms it needs via header.
+    preproc_hdr = nib.Nifti1Image(preproc_vol, affine=preproc_affine).header
+    preproc_image = Image(preproc_vol, hdr=preproc_hdr)
+
+    native_image = _resample_label_pointwise(
+        preproc_image,
+        sigma_mm=sigma_mm,
+        image_dest=original_nib,
+    )
+    return np.asarray(native_image.data, dtype=np.int16)
+
+
+def _write_disc_nifti(
+    out_path: str, label_volume: np.ndarray, affine: np.ndarray
+) -> None:
+    """Save ``label_volume`` as an int16 NIfTI with the given affine.
+
+    Fresh header so the output dtype stays ``int16`` instead of inheriting
+    the likely-float dtype of the input image header.
+    """
+    img_out = nib.Nifti1Image(label_volume.astype(np.int16), affine=affine)
     img_out.set_data_dtype(np.int16)
     nib.save(img_out, out_path)
 
@@ -343,12 +372,15 @@ def _parse_resolution(resolution: str) -> Tuple[float, float, float]:
 
 def _preprocess_image(
     image_path: str, orientation: str, resolution_mm: Tuple[float, float, float]
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, nib.Nifti1Image]:
     """Load, reorient, and resample a NIfTI to match the training preprocessing.
 
-    Returns ``(data, affine)`` for the preprocessed volume. ``data`` is 3D
-    float32; ``affine`` is the 4x4 of the oriented+resampled grid.
+    Returns ``(data, affine, original_nib)``: the preprocessed 3D float32 data
+    on the ``(orientation, resolution_mm)`` grid along with its affine, plus
+    the untouched nibabel image on the user's original grid — used at the end
+    to project the output disc map back onto that same native frame.
     """
+    original_nib = nib.load(image_path)
     image = Image(image_path)
     image.change_orientation(orientation)
     image = resample_nib(
@@ -365,7 +397,7 @@ def _preprocess_image(
             f"Expected 3D volume after preprocessing, got shape {data.shape} for {image_path}"
         )
     affine = np.asarray(image.hdr.get_best_affine())
-    return data, affine
+    return data, affine, original_nib
 
 
 def _infer_one_image(
@@ -379,10 +411,13 @@ def _infer_one_image(
     peak_threshold: float,
     min_peak_distance: float,
     batch_size: int,
+    label_sigma_mm: float,
     out_dir: str,
 ) -> None:
     """Run the full sliding-window pipeline on one 3D image."""
-    image_raw, affine = _preprocess_image(image_path, orientation, resolution_mm)
+    image_raw, affine, original_nib = _preprocess_image(
+        image_path, orientation, resolution_mm
+    )
     image_norm = _z_score_normalize(image_raw)
 
     shape = tuple(int(s) for s in image_raw.shape)
@@ -431,13 +466,27 @@ def _infer_one_image(
     stem = _stem(image_path)
     nifti_out = os.path.join(out_dir, f"{stem}_discs.nii.gz")
     png_out = os.path.join(out_dir, f"{stem}_discs.png")
-    _write_disc_nifti(nifti_out, labeled_discs, shape, affine, d_mid)
+
+    # Preview first — it shows what the model actually saw, so it is kept
+    # in the preprocessed frame regardless of what the output NIfTI is in.
     _build_preview_png(
         slice_2d,
         labeled_discs,
         title=f"{stem} — {len(labeled_discs)} discs",
         save_path=png_out,
     )
+
+    # Project the preprocessed-frame labels back onto the user's native grid
+    # so the output NIfTI overlays cleanly on their input image.
+    native_label_volume = _resample_discs_to_native(
+        labeled_discs,
+        preproc_shape=shape,
+        preproc_affine=affine,
+        d_mid=d_mid,
+        original_nib=original_nib,
+        sigma_mm=label_sigma_mm,
+    )
+    _write_disc_nifti(nifti_out, native_label_volume, original_nib.affine)
 
 
 def predict(
@@ -462,10 +511,12 @@ def predict(
     batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
     orientation = str(cfg.get("orientation", "RPI"))
     resolution_mm = _parse_resolution(str(cfg.get("resolution", "1x1x1")))
+    label_sigma_mm = float(cfg.get("label_sigma", 2.0))
     print(
         f"[inference] device={device} inputs={len(image_paths)} "
         f"orientation={orientation} resolution={resolution_mm} "
-        f"patch_hw={patch_hw} overlap={overlap} batch_size={batch_size}"
+        f"patch_hw={patch_hw} overlap={overlap} batch_size={batch_size} "
+        f"label_sigma_mm={label_sigma_mm}"
     )
 
     check_and_make_dir(out_dir)
@@ -481,6 +532,7 @@ def predict(
             peak_threshold=peak_thr,
             min_peak_distance=min_peak_distance,
             batch_size=batch_size,
+            label_sigma_mm=label_sigma_mm,
             out_dir=out_dir,
         )
     print(f"Wrote per-image NIfTI + PNG into {out_dir}")
