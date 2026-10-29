@@ -97,23 +97,43 @@ MIN_DISC_LABEL = 1
 MAX_DISC_LABEL = 25
 
 
-def _pad_slice_to_patch(
-    slice_2d: np.ndarray, patch_hw: Tuple[int, int]
+def _extract_slice_stack(
+    volume: np.ndarray, d_mid: int, n_slices: int
+) -> np.ndarray:
+    """Pull ``n_slices`` adjacent R-L slices centered on ``d_mid`` from a 3D volume.
+
+    Returns a ``(n_slices, H, W)`` array. Indices are clamped to ``[0, D-1]``
+    so a volume with fewer slices than requested degrades gracefully by
+    replicating the boundary slice.
+    """
+    D = volume.shape[0]
+    half = n_slices // 2
+    offsets = range(-half, -half + n_slices)
+    indices = [max(0, min(D - 1, d_mid + o)) for o in offsets]
+    return volume[indices]
+
+
+def _pad_slice_stack_to_patch(
+    stack: np.ndarray, patch_hw: Tuple[int, int]
 ) -> Tuple[np.ndarray, Tuple[int, int]]:
-    """Zero-pad ``slice_2d`` to at least ``patch_hw`` on each axis.
+    """Zero-pad every (H, W) slice of a ``(C, H, W)`` stack to ``patch_hw``.
 
     Returns ``(padded, (pad_h_before, pad_w_before))`` so callers can translate
     coordinates back to the original slice frame.
     """
-    H, W = slice_2d.shape
+    C, H, W = stack.shape
     pH, pW = patch_hw
     pad_h = max(0, pH - H)
     pad_w = max(0, pW - W)
     pad_h_before = pad_h // 2
     pad_w_before = pad_w // 2
     padded = np.pad(
-        slice_2d,
-        ((pad_h_before, pad_h - pad_h_before), (pad_w_before, pad_w - pad_w_before)),
+        stack,
+        (
+            (0, 0),
+            (pad_h_before, pad_h - pad_h_before),
+            (pad_w_before, pad_w - pad_w_before),
+        ),
         mode="constant",
     )
     return padded, (pad_h_before, pad_w_before)
@@ -338,7 +358,7 @@ def _stem(path: str) -> str:
 
 
 def _forward_windows(
-    padded_slice: np.ndarray,
+    padded_stack: np.ndarray,
     origins: List[Tuple[int, int]],
     patch_hw: Tuple[int, int],
     model: torch.nn.Module,
@@ -347,14 +367,15 @@ def _forward_windows(
 ) -> np.ndarray:
     """Model-forward every window of one image, chunked by ``batch_size``.
 
-    Returns ``(N, NUM_CLASSES, pH, pW)`` heatmaps on CPU float32 in the same
-    order as ``origins``.
+    ``padded_stack`` is ``(C, Hp, Wp)``: one or more adjacent R-L slices
+    stacked along the channel axis. Returns ``(N, NUM_CLASSES, pH, pW)``
+    heatmaps on CPU float32 in the same order as ``origins``.
     """
     pH, pW = patch_hw
     patches = np.stack(
-        [padded_slice[h0 : h0 + pH, w0 : w0 + pW] for (h0, w0) in origins]
-    )  # (N, pH, pW)
-    patches_t = torch.from_numpy(patches).float().unsqueeze(1).to(device)  # (N, 1, pH, pW)
+        [padded_stack[:, h0 : h0 + pH, w0 : w0 + pW] for (h0, w0) in origins]
+    )  # (N, C, pH, pW)
+    patches_t = torch.from_numpy(patches).float().to(device)  # (N, C, pH, pW)
 
     chunks: List[np.ndarray] = []
     with torch.no_grad():
@@ -419,6 +440,7 @@ def _infer_one_image(
     peak_threshold: float,
     min_peak_distance: float,
     batch_size: int,
+    n_mid_slices: int,
     out_dir: str,
 ) -> None:
     """Run the full sliding-window pipeline on one 3D image."""
@@ -430,12 +452,17 @@ def _infer_one_image(
     shape = tuple(int(s) for s in image_raw.shape)
     D, _H, _W = shape
     d_mid = D // 2
-    slice_2d = image_norm[d_mid]  # (H, W)
+    slice_stack = _extract_slice_stack(image_norm, d_mid, n_mid_slices)  # (C, H, W)
+    # Center slice is what the training preview rendered too — use it as the
+    # display background. For n=1 this is the only slice.
+    slice_2d = slice_stack[n_mid_slices // 2]
 
-    padded_slice, (pad_h_before, pad_w_before) = _pad_slice_to_patch(slice_2d, patch_hw)
-    origins = _sliding_window_origins(padded_slice.shape, patch_hw, overlap=overlap)
+    padded_stack, (pad_h_before, pad_w_before) = _pad_slice_stack_to_patch(
+        slice_stack, patch_hw
+    )
+    origins = _sliding_window_origins(padded_stack.shape[1:], patch_hw, overlap=overlap)
     heatmaps = _forward_windows(
-        padded_slice, origins, patch_hw, model, device, batch_size
+        padded_stack, origins, patch_hw, model, device, batch_size
     )
 
     all_discs: List[Tuple[float, float, float]] = []
@@ -516,10 +543,12 @@ def predict(
     batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
     orientation = str(cfg.get("orientation", "RPI"))
     resolution_mm = _parse_resolution(str(cfg.get("resolution", "1x1x1")))
+    n_mid_slices = int(cfg["in_channels"])
     print(
         f"[inference] device={device} inputs={len(image_paths)} "
         f"orientation={orientation} resolution={resolution_mm} "
-        f"patch_hw={patch_hw} overlap={overlap} batch_size={batch_size}"
+        f"patch_hw={patch_hw} overlap={overlap} batch_size={batch_size} "
+        f"n_mid_slices={n_mid_slices}"
     )
 
     check_and_make_dir(out_dir)
@@ -535,6 +564,7 @@ def predict(
             peak_threshold=peak_thr,
             min_peak_distance=min_peak_distance,
             batch_size=batch_size,
+            n_mid_slices=n_mid_slices,
             out_dir=out_dir,
         )
     print(f"Wrote per-image NIfTI + PNG into {out_dir}")

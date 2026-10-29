@@ -139,12 +139,20 @@ class GpuBatchProcessor(nn.Module):
         heatmap_sigma: float = 8.0,
         heatmap_radius: int = 20,
         elastic_config: Optional[dict] = None,
+        n_mid_slices: int = 1,
     ):
         super().__init__()
+        if n_mid_slices < 1:
+            raise ValueError(f"n_mid_slices must be >= 1, got {n_mid_slices}")
         self.aug_config = aug_config
         self.heatmap_sigma = float(heatmap_sigma)
         self.heatmap_radius = int(heatmap_radius)
         self.elastic_config = elastic_config
+        # Number of R-L slices stacked as model input channels. For 1 we grab
+        # just the mid-sagittal slice (classic behavior); for 3 we grab the
+        # midline and its two immediate neighbors, so the model sees local
+        # context on either side of the sagittal plane.
+        self.n_mid_slices = int(n_mid_slices)
         self._aug: Optional[nn.Module] = None
         self._elastic: Optional[nn.Module] = None
 
@@ -243,8 +251,16 @@ class GpuBatchProcessor(nn.Module):
         if apply_augmentation and seg_3d is not None:
             image_3d, seg_3d = self._augment_3d(image_3d, seg_3d)
 
-        mid = image_3d.size(_SAGITTAL_AXIS) // 2
-        image_2d = image_3d.narrow(_SAGITTAL_AXIS, mid, 1).squeeze(_SAGITTAL_AXIS)  # (B, 1, H, W)
+        D = image_3d.size(_SAGITTAL_AXIS)
+        mid = D // 2
+        n = self.n_mid_slices
+        half = n // 2
+        # Clamp to [0, D-1] so volumes with fewer slices than ``n`` degrade
+        # gracefully by replicating the boundary (no OOB, no padding).
+        offsets = torch.arange(-half, -half + n, device=image_3d.device)
+        slice_indices = torch.clamp(mid + offsets, 0, D - 1)
+        # (B, 1, D, H, W) → (B, 1, n, H, W) → squeeze singleton channel → (B, n, H, W)
+        image_2d = image_3d.index_select(_SAGITTAL_AXIS, slice_indices).squeeze(1)
         seg_2d = (
             seg_3d.narrow(_SAGITTAL_AXIS, mid, 1).squeeze(_SAGITTAL_AXIS)
             if seg_3d is not None

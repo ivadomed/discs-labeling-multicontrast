@@ -246,6 +246,7 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
         heatmap_sigma=cfg["heatmap_sigma"],
         heatmap_radius=cfg["heatmap_radius"],
         elastic_config=cfg.get("elastic_config"),
+        n_mid_slices=int(cfg["in_channels"]),
     ).to(device)
 
     out_dir = os.path.join(save_model_dir, "dry_run")
@@ -278,10 +279,14 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
                 break
 
         png_path = os.path.join(out_dir, f"sample_{collected:02d}_{name_stem}.png")
+        # When the model takes >1 input channels (adjacent slice stack), the
+        # center channel is the mid-sagittal — the one closest to what the
+        # training preview was showing before the stack was introduced.
+        center_ch = image_2d.size(1) // 2
         try:
             _save_dry_run_png(
                 png_path,
-                image_2d[0, 0].detach().cpu().numpy(),
+                image_2d[0, center_ch].detach().cpu().numpy(),
                 heatmap_2d[0].detach().cpu().numpy(),
                 title=f"[dry-run #{collected}] {name_stem}",
             )
@@ -398,6 +403,7 @@ def train(
         heatmap_sigma=cfg["heatmap_sigma"],
         heatmap_radius=cfg["heatmap_radius"],
         elastic_config=cfg.get("elastic_config"),
+        n_mid_slices=int(cfg["in_channels"]),
     ).to(device)
 
     model = load_model(cfg["model_name"], in_channels=cfg["in_channels"]).to(device)
@@ -457,8 +463,10 @@ def train(
             }
             if sample is not None:
                 epoch_label = f"Epoch {epoch + 1}"
+                # Multi-channel inputs: show the mid-sagittal (center) slice.
+                center_ch = sample["image"].shape[1] // 2
                 fig = _build_gt_pred_figure(
-                    sample["image"][0, 0],
+                    sample["image"][0, center_ch],
                     sample["heatmap_gt"][0],
                     sample["heatmap_pred"][0],
                     title=f"{epoch_label} — validation sample: {sample['name']}",
