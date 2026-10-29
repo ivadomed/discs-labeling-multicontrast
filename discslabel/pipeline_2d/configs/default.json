@@ -8,7 +8,8 @@
         "download": false,
         "prepare": false,
         "train": true,
-        "inference": false
+        "inference": false,
+        "evaluate": false
     },
 
     "orientation": "RPI",

@@ -59,10 +59,11 @@ RESOLUTION=$(jopt  '.resolution'   '"1x1x1"')
 LABEL_SIGMA=$(jopt '.label_sigma'  '1.5')
 DO_DEBUG=$(jopt '.debug' 'false')
 
-DO_DOWNLOAD=$(jopt '.steps.download'  'false')
-DO_PREPARE=$(jopt  '.steps.prepare'   'false')
-DO_TRAIN=$(jopt    '.steps.train'     'false')
+DO_DOWNLOAD=$(jopt  '.steps.download'  'false')
+DO_PREPARE=$(jopt   '.steps.prepare'   'false')
+DO_TRAIN=$(jopt     '.steps.train'     'false')
 DO_INFERENCE=$(jopt '.steps.inference' 'false')
+DO_EVALUATE=$(jopt  '.steps.evaluate'  'false')
 
 INFERENCE_SPLIT=$(jopt       '.inference_split'       '"test"')
 INFERENCE_SAVE_IMAGES=$(jopt '.inference_save_images' 'false')
@@ -83,6 +84,10 @@ BIDS_ROOT="$DISCSLABEL_DATA/bids"
 PREP_ROOT="$DISCSLABEL_DATA/prepared/$OUT_NAME"
 MANIFEST="$PREP_ROOT/manifest.json"
 WEIGHTS_DIR="$DISCSLABEL_DATA/weights/$RUN_NAME"
+EVAL_JSON="$PROJECT_ROOT/discslabel/datasets/evaluation.json"
+EVAL_ROOT="$DISCSLABEL_DATA/evaluation"
+EVAL_PRED_DIR="$WEIGHTS_DIR/evaluation/predictions"
+EVAL_METRICS_DIR="$WEIGHTS_DIR/evaluation"
 if [ "$DO_DEBUG" = "true" ]; then
     DEBUG_DIR="$DISCSLABEL_DATA/debug/$OUT_NAME"
 else
@@ -106,7 +111,7 @@ _bids_complete() {
 }
 
 echo ""
-echo "Pipeline steps (config): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN inference=$DO_INFERENCE"
+echo "Pipeline steps (config): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
 echo "Config:   $config_json"
 echo "Data:     $DATA_JSON"
 echo "Prepared: $PREP_ROOT"
@@ -121,6 +126,12 @@ if [ "$DO_DOWNLOAD" = "true" ] || ! _bids_complete; then
         echo "==> download_datasets.sh"
     fi
     "$SCRIPT_DIR/download_datasets.sh" "$DATA_JSON"
+    # Evaluation BIDS repos travel with the training download so a one-shot
+    # ``steps.download=true`` run brings down everything needed for both.
+    if [ -f "$EVAL_JSON" ]; then
+        echo "==> download_datasets.sh (evaluation)"
+        "$SCRIPT_DIR/download_datasets.sh" "$EVAL_JSON"
+    fi
 else
     echo "==> skipping download (BIDS data already present and steps.download=false)"
 fi
@@ -161,6 +172,33 @@ if [ "$DO_INFERENCE" = "true" ]; then
         --input "$PREP_ROOT/$INFERENCE_SPLIT/images" \
         --out-dir "$WEIGHTS_DIR/predictions_${INFERENCE_SPLIT}" \
         --config "$config_json"
+fi
+
+# -------- 6. Evaluate --------
+if [ "$DO_EVALUATE" = "true" ]; then
+    if [ ! -f "$EVAL_JSON" ]; then
+        echo "Error: evaluate step enabled but $EVAL_JSON not found"
+        exit 1
+    fi
+    if [ ! -f "$WEIGHTS_DIR/best_model.pt" ]; then
+        echo "Error: evaluate step enabled but $WEIGHTS_DIR/best_model.pt not found"
+        exit 1
+    fi
+    echo "==> prepare_evaluation.sh"
+    "$SCRIPT_DIR/prepare_evaluation.sh" "$EVAL_JSON"
+
+    echo "==> discslabel_inference (evaluation)"
+    discslabel_inference \
+        --weights "$WEIGHTS_DIR/best_model.pt" \
+        --input "$EVAL_ROOT/images" \
+        --out-dir "$EVAL_PRED_DIR" \
+        --config "$config_json"
+
+    echo "==> discslabel_evaluate"
+    discslabel_evaluate \
+        --gt-dir "$EVAL_ROOT/labels" \
+        --pred-dir "$EVAL_PRED_DIR" \
+        --out-dir "$EVAL_METRICS_DIR"
 fi
 
 echo ""
