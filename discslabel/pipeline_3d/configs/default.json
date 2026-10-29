@@ -9,7 +9,7 @@
         "prepare": false,
         "train": true,
         "inference": false,
-        "evaluate": false
+        "evaluate": true
     },
 
     "orientation": "RPI",

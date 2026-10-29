@@ -5,11 +5,11 @@
     "debug": false,
 
     "steps": {
-        "download": false,
+        "download": true,
         "prepare": false,
         "train": true,
         "inference": false,
-        "evaluate": false
+        "evaluate": true
     },
 
     "orientation": "RPI",
