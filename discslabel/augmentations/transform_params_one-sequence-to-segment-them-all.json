@@ -185,7 +185,7 @@
         },
         "RandomLowResTransformGPU": {
             "scale": [
-                0.5,
+                0.4,
                 1.0
             ],
             "same_on_batch": false,
@@ -193,11 +193,11 @@
         },
         "RandomAcqTransformGPU": {
             "scale": [
-                0.6,
+                0.01,
                 1.0
             ],
             "same_on_batch": false,
-            "p": 0.0
+            "p": 1.0
         },
         "RandomBiasFieldGPU": {
             "retain_stats": true,
