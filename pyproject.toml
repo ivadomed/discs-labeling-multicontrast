@@ -75,6 +75,7 @@ discslabel_inference = "discslabel.pipeline_2d.inference:main"
 discslabel_train_3d = "discslabel.pipeline_3d.train:main"
 discslabel_inference_3d = "discslabel.pipeline_3d.inference:main"
 discslabel_evaluate = "discslabel.evaluate:main"
+discslabel_aggregate_evaluation = "discslabel.evaluate:aggregate_main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]

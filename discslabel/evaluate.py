@@ -12,15 +12,13 @@ Euclidean distance. Labels only in GT are false negatives (missed); labels
 only in prediction are false positives (hallucinated or mislabeled).
 
 Writes to ``<out_dir>``:
-  * ``metrics.json`` — summary + per-image breakdown
+  * ``metrics.json`` — summary + per-subject / per-contrast / per-image breakdown
   * ``metrics.csv``  — one row per (image, label) for easy pandas slicing
 
-With ``--summary-dir``, also appends rows (tagged with ``--run-name`` and a
-timestamp) to three cumulative CSVs, so successive evaluations of different
-runs accumulate in the same files for comparison:
-  * ``metrics.csv``              — one row per run (all images)
-  * ``metrics_per_subject.csv``  — one row per (run, subject)
-  * ``metrics_per_contrast.csv`` — one row per (run, contrast)
+Each run writes to its own ``--out-dir`` (``<eval>/metrics_<run_name>``), so
+several evaluations can run concurrently. ``discslabel_aggregate_evaluation``
+then gathers every ``metrics_*/metrics.json`` into ``evaluation.json`` plus
+comparison CSVs (overall, per subject, per contrast).
 
 Image stems follow ``<dataset>__sub-XXX[_ses-YY..]_<CONTRAST>`` (see
 ``prepare_evaluation.sh``): the subject is ``<dataset>__sub-XXX`` and the
@@ -290,49 +288,29 @@ def _metric_row(overall: dict) -> dict:
     }
 
 
-def _append_rows(csv_path: str, fieldnames: List[str], rows: List[dict]) -> None:
-    """Append ``rows`` to ``csv_path``, writing the header on first write."""
-    os.makedirs(os.path.dirname(os.path.abspath(csv_path)), exist_ok=True)
-    write_header = not os.path.isfile(csv_path) or os.path.getsize(csv_path) == 0
-    with open(csv_path, "a", newline="") as f:
+def _group_metrics(per_image: List[dict], group_fn) -> Dict[str, dict]:
+    """``{group_name: _aggregate(images in group)}`` with groups from ``group_fn(stem)``."""
+    groups: Dict[str, List[dict]] = {}
+    for p in per_image:
+        groups.setdefault(group_fn(p["image"]), []).append(p)
+    return {name: _aggregate(groups[name]) for name in sorted(groups)}
+
+
+def _write_json_atomic(path: str, obj: dict) -> None:
+    """Write via a temp file + rename so concurrent readers never see a partial file."""
+    tmp = f"{path}.tmp.{os.getpid()}"
+    with open(tmp, "w") as f:
+        json.dump(obj, f, indent=2)
+    os.replace(tmp, path)
+
+
+def _write_csv_atomic(path: str, fieldnames: List[str], rows: List[dict]) -> None:
+    tmp = f"{path}.tmp.{os.getpid()}"
+    with open(tmp, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
-        if write_header:
-            w.writeheader()
+        w.writeheader()
         w.writerows(rows)
-
-
-def _append_summaries(summary_dir: str, run_name: str, pred_dir: str, per_image: List[dict]) -> None:
-    """Append overall / per-subject / per-contrast rows for this run."""
-    tag = {
-        "timestamp": datetime.now().isoformat(timespec="seconds"),
-        "run_name": run_name,
-    }
-    metrics = list(METRIC_FIELDS)
-
-    _append_rows(
-        os.path.join(summary_dir, SUMMARY_FILES["overall"]),
-        ["timestamp", "run_name", "pred_dir"] + metrics,
-        [{**tag, "pred_dir": os.path.abspath(pred_dir), **_metric_row(_aggregate(per_image))}],
-    )
-
-    for key, group_fn in (("subject", _subject_of), ("contrast", _contrast_of)):
-        groups: Dict[str, List[dict]] = {}
-        for p in per_image:
-            groups.setdefault(group_fn(p["image"]), []).append(p)
-        rows = [
-            {**tag, key: name, **_metric_row(_aggregate(groups[name]))}
-            for name in sorted(groups)
-        ]
-        _append_rows(
-            os.path.join(summary_dir, SUMMARY_FILES[key]),
-            ["timestamp", "run_name", key] + metrics,
-            rows,
-        )
-
-    print(
-        f"[eval] appended '{run_name}' to "
-        + ", ".join(os.path.join(summary_dir, f) for f in SUMMARY_FILES.values())
-    )
+    os.replace(tmp, path)
 
 
 def evaluate(
@@ -340,10 +318,10 @@ def evaluate(
     pred_dir: str,
     out_dir: str,
     run_name: str = "",
-    summary_dir: str = "",
 ) -> None:
     """Compare every GT/pred pair under the two directories, write metrics."""
     os.makedirs(out_dir, exist_ok=True)
+    run_name = run_name or os.path.basename(os.path.normpath(pred_dir))
     pairs = _discover_pairs(gt_dir, pred_dir)
     print(f"[eval] {len(pairs)} GT/pred pairs")
 
@@ -355,14 +333,22 @@ def evaluate(
         all_rows.extend(rows)
 
     overall = _aggregate(per_image)
-    out = {"summary": overall, "per_image": per_image}
+    out = {
+        "run_name": run_name,
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "pred_dir": os.path.abspath(pred_dir),
+        "summary": overall,
+        "per_subject": _group_metrics(per_image, _subject_of),
+        "per_contrast": _group_metrics(per_image, _contrast_of),
+        "per_image": per_image,
+    }
 
-    with open(os.path.join(out_dir, "metrics.json"), "w") as f:
-        json.dump(out, f, indent=2)
-    with open(os.path.join(out_dir, "metrics.csv"), "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["image", "label", "status", "distance_mm"])
-        w.writeheader()
-        w.writerows(all_rows)
+    _write_json_atomic(os.path.join(out_dir, "metrics.json"), out)
+    _write_csv_atomic(
+        os.path.join(out_dir, "metrics.csv"),
+        ["image", "label", "status", "distance_mm"],
+        all_rows,
+    )
 
     print(
         f"[eval] n_images={overall['n_images']}  "
@@ -380,9 +366,68 @@ def evaluate(
         )
     print(f"[eval] wrote {out_dir}/metrics.json + metrics.csv")
 
-    if summary_dir:
-        run_name = run_name or os.path.basename(os.path.normpath(pred_dir))
-        _append_summaries(summary_dir, run_name, pred_dir, per_image)
+
+def aggregate_runs(eval_dir: str, out_dir: str = "") -> None:
+    """Collect every ``<eval_dir>/metrics_*/metrics.json`` into one comparison.
+
+    Writes to ``out_dir`` (defaults to ``eval_dir``):
+      * ``evaluation.json``          — ``{run_name: {summary, per_subject, per_contrast, ...}}``
+      * ``metrics.csv``              — one row per run
+      * ``metrics_per_subject.csv``  — one row per (run, subject)
+      * ``metrics_per_contrast.csv`` — one row per (run, contrast)
+
+    Everything is rebuilt from the per-run folders on each call, so it is safe
+    to re-run while (or after) several evaluations write their own folders.
+    """
+    out_dir = out_dir or eval_dir
+    os.makedirs(out_dir, exist_ok=True)
+
+    runs: Dict[str, dict] = {}
+    for name in sorted(os.listdir(eval_dir)):
+        metrics_path = os.path.join(eval_dir, name, "metrics.json")
+        if not name.startswith("metrics_") or not os.path.isfile(metrics_path):
+            continue
+        with open(metrics_path) as f:
+            run = json.load(f)
+        run_name = run.get("run_name") or name[len("metrics_"):]
+        runs[run_name] = {
+            "timestamp": run.get("timestamp"),
+            "pred_dir": run.get("pred_dir"),
+            "metrics_dir": os.path.abspath(os.path.join(eval_dir, name)),
+            "summary": run["summary"],
+            "per_subject": run.get("per_subject", {}),
+            "per_contrast": run.get("per_contrast", {}),
+        }
+    print(f"[aggregate] {len(runs)} runs found in {eval_dir}")
+
+    _write_json_atomic(os.path.join(out_dir, "evaluation.json"), runs)
+
+    metrics = list(METRIC_FIELDS)
+    _write_csv_atomic(
+        os.path.join(out_dir, SUMMARY_FILES["overall"]),
+        ["run_name", "timestamp"] + metrics,
+        [
+            {"run_name": rn, "timestamp": r["timestamp"], **_metric_row(r["summary"])}
+            for rn, r in runs.items()
+        ],
+    )
+    for key in ("subject", "contrast"):
+        _write_csv_atomic(
+            os.path.join(out_dir, SUMMARY_FILES[key]),
+            [key, "run_name"] + metrics,
+            sorted(
+                (
+                    {key: group, "run_name": rn, **_metric_row(agg)}
+                    for rn, r in runs.items()
+                    for group, agg in r[f"per_{key}"].items()
+                ),
+                key=lambda row: (row[key], row["run_name"]),
+            ),
+        )
+    print(
+        f"[aggregate] wrote {os.path.join(out_dir, 'evaluation.json')} + "
+        + ", ".join(SUMMARY_FILES.values())
+    )
 
 
 def main() -> None:
@@ -402,20 +447,12 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         required=True,
-        help="Directory for metrics.json + metrics.csv.",
+        help="Directory for metrics.json + metrics.csv (typically <eval>/metrics_<run_name>).",
     )
     parser.add_argument(
         "--run-name",
         default="",
-        help="Run identifier written in the summary CSV (defaults to the pred-dir name).",
-    )
-    parser.add_argument(
-        "--summary-dir",
-        default="",
-        help=(
-            "Directory holding the cumulative metrics.csv, metrics_per_subject.csv "
-            "and metrics_per_contrast.csv to append this run's rows to."
-        ),
+        help="Run identifier stored in metrics.json (defaults to the pred-dir name).",
     )
     args = parser.parse_args()
     evaluate(
@@ -423,8 +460,25 @@ def main() -> None:
         pred_dir=args.pred_dir,
         out_dir=args.out_dir,
         run_name=args.run_name,
-        summary_dir=args.summary_dir,
     )
+
+
+def aggregate_main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Aggregate every metrics_*/metrics.json into one evaluation.json + comparison CSVs."
+    )
+    parser.add_argument(
+        "--eval-dir",
+        default=os.path.join(os.environ.get("DISCSLABEL_DATA", "."), "evaluation"),
+        help="Folder holding the metrics_<run_name>/ folders (default: $DISCSLABEL_DATA/evaluation).",
+    )
+    parser.add_argument(
+        "--out-dir",
+        default="",
+        help="Where to write evaluation.json + CSVs (default: --eval-dir).",
+    )
+    args = parser.parse_args()
+    aggregate_runs(eval_dir=args.eval_dir, out_dir=args.out_dir)
 
 
 if __name__ == "__main__":

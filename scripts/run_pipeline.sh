@@ -87,7 +87,7 @@ WEIGHTS_DIR="$DISCSLABEL_DATA/weights/$RUN_NAME"
 EVAL_JSON="$PROJECT_ROOT/discslabel/datasets/evaluation.json"
 EVAL_ROOT="$DISCSLABEL_DATA/evaluation"
 EVAL_PRED_DIR="$EVAL_ROOT/prediction_$RUN_NAME"
-EVAL_METRICS_DIR="$EVAL_PRED_DIR/metrics"
+EVAL_METRICS_DIR="$EVAL_ROOT/metrics_$RUN_NAME"
 if [ "$DO_DEBUG" = "true" ]; then
     DEBUG_DIR="$DISCSLABEL_DATA/debug/$OUT_NAME"
 else
@@ -199,8 +199,9 @@ if [ "$DO_EVALUATE" = "true" ]; then
         --gt-dir "$EVAL_ROOT/labels" \
         --pred-dir "$EVAL_PRED_DIR" \
         --out-dir "$EVAL_METRICS_DIR" \
-        --run-name "$RUN_NAME" \
-        --summary-dir "$EVAL_ROOT"
+        --run-name "$RUN_NAME"
+    echo "Metrics for $RUN_NAME in $EVAL_METRICS_DIR"
+    echo "Run 'discslabel_aggregate_evaluation' to compare all runs in $EVAL_ROOT/evaluation.json"
 fi
 
 echo ""
