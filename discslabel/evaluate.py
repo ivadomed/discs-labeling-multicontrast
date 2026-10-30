@@ -15,6 +15,17 @@ Writes to ``<out_dir>``:
   * ``metrics.json`` — summary + per-image breakdown
   * ``metrics.csv``  — one row per (image, label) for easy pandas slicing
 
+With ``--summary-dir``, also appends rows (tagged with ``--run-name`` and a
+timestamp) to three cumulative CSVs, so successive evaluations of different
+runs accumulate in the same files for comparison:
+  * ``metrics.csv``              — one row per run (all images)
+  * ``metrics_per_subject.csv``  — one row per (run, subject)
+  * ``metrics_per_contrast.csv`` — one row per (run, contrast)
+
+Image stems follow ``<dataset>__sub-XXX[_ses-YY..]_<CONTRAST>`` (see
+``prepare_evaluation.sh``): the subject is ``<dataset>__sub-XXX`` and the
+contrast is the last ``_``-separated token of the stem (e.g. T2w, PSIR).
+
 Both GT and prediction live in the input image's NATIVE space. Distances are
 affine-invariant, so differing voxel grids between GT and prediction (e.g.
 if a dataset keeps labels in a slightly different frame from the image) do
@@ -27,6 +38,7 @@ import argparse
 import csv
 import json
 import os
+from datetime import datetime
 from typing import Dict, List, Tuple
 
 import nibabel as nib
@@ -35,6 +47,27 @@ import numpy as np
 
 NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")
 PRED_SUFFIX = "_discs"
+
+SUMMARY_FILES: Dict[str, str] = {
+    "overall": "metrics.csv",
+    "subject": "metrics_per_subject.csv",
+    "contrast": "metrics_per_contrast.csv",
+}
+
+METRIC_FIELDS: Tuple[str, ...] = (
+    "n_images",
+    "n_gt_discs",
+    "n_pred_discs",
+    "n_matched",
+    "n_false_negative",
+    "n_false_positive",
+    "recall",
+    "precision",
+    "distance_mm_mean",
+    "distance_mm_median",
+    "distance_mm_p95",
+    "distance_mm_max",
+)
 
 
 def _is_nifti(name: str) -> bool:
@@ -214,7 +247,101 @@ def _aggregate(per_image: List[dict]) -> dict:
     }
 
 
-def evaluate(gt_dir: str, pred_dir: str, out_dir: str) -> None:
+def _fmt(value) -> str:
+    return "" if value is None else f"{value:.4f}"
+
+
+def _split_stem(stem: str) -> Tuple[str, str]:
+    """Return ``(dataset_prefix, bids_name)``; prefix is ``""`` when absent."""
+    if "__" in stem:
+        prefix, name = stem.split("__", 1)
+        return prefix + "__", name
+    return "", stem
+
+
+def _subject_of(stem: str) -> str:
+    """``<dataset>__sub-XXX_ses-YY_T2w`` -> ``<dataset>__sub-XXX``."""
+    prefix, name = _split_stem(stem)
+    return prefix + name.split("_", 1)[0]
+
+
+def _contrast_of(stem: str) -> str:
+    """``<dataset>__sub-XXX_ses-YY_T2w`` -> ``T2w``."""
+    _, name = _split_stem(stem)
+    return name.rsplit("_", 1)[-1] if "_" in name else "unknown"
+
+
+def _metric_row(overall: dict) -> dict:
+    """Flatten an ``_aggregate`` result into the ``METRIC_FIELDS`` columns."""
+    d = overall["distance_mm"]
+    return {
+        "n_images": overall["n_images"],
+        "n_gt_discs": overall["n_gt_discs"],
+        "n_pred_discs": overall["n_pred_discs"],
+        "n_matched": overall["n_matched"],
+        "n_false_negative": overall["n_false_negative"],
+        "n_false_positive": overall["n_false_positive"],
+        "recall": _fmt(overall["recall"]),
+        "precision": _fmt(overall["precision"]),
+        "distance_mm_mean": _fmt(d["mean"]),
+        "distance_mm_median": _fmt(d["median"]),
+        "distance_mm_p95": _fmt(d["p95"]),
+        "distance_mm_max": _fmt(d["max"]),
+    }
+
+
+def _append_rows(csv_path: str, fieldnames: List[str], rows: List[dict]) -> None:
+    """Append ``rows`` to ``csv_path``, writing the header on first write."""
+    os.makedirs(os.path.dirname(os.path.abspath(csv_path)), exist_ok=True)
+    write_header = not os.path.isfile(csv_path) or os.path.getsize(csv_path) == 0
+    with open(csv_path, "a", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        if write_header:
+            w.writeheader()
+        w.writerows(rows)
+
+
+def _append_summaries(summary_dir: str, run_name: str, pred_dir: str, per_image: List[dict]) -> None:
+    """Append overall / per-subject / per-contrast rows for this run."""
+    tag = {
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "run_name": run_name,
+    }
+    metrics = list(METRIC_FIELDS)
+
+    _append_rows(
+        os.path.join(summary_dir, SUMMARY_FILES["overall"]),
+        ["timestamp", "run_name", "pred_dir"] + metrics,
+        [{**tag, "pred_dir": os.path.abspath(pred_dir), **_metric_row(_aggregate(per_image))}],
+    )
+
+    for key, group_fn in (("subject", _subject_of), ("contrast", _contrast_of)):
+        groups: Dict[str, List[dict]] = {}
+        for p in per_image:
+            groups.setdefault(group_fn(p["image"]), []).append(p)
+        rows = [
+            {**tag, key: name, **_metric_row(_aggregate(groups[name]))}
+            for name in sorted(groups)
+        ]
+        _append_rows(
+            os.path.join(summary_dir, SUMMARY_FILES[key]),
+            ["timestamp", "run_name", key] + metrics,
+            rows,
+        )
+
+    print(
+        f"[eval] appended '{run_name}' to "
+        + ", ".join(os.path.join(summary_dir, f) for f in SUMMARY_FILES.values())
+    )
+
+
+def evaluate(
+    gt_dir: str,
+    pred_dir: str,
+    out_dir: str,
+    run_name: str = "",
+    summary_dir: str = "",
+) -> None:
     """Compare every GT/pred pair under the two directories, write metrics."""
     os.makedirs(out_dir, exist_ok=True)
     pairs = _discover_pairs(gt_dir, pred_dir)
@@ -253,6 +380,10 @@ def evaluate(gt_dir: str, pred_dir: str, out_dir: str) -> None:
         )
     print(f"[eval] wrote {out_dir}/metrics.json + metrics.csv")
 
+    if summary_dir:
+        run_name = run_name or os.path.basename(os.path.normpath(pred_dir))
+        _append_summaries(summary_dir, run_name, pred_dir, per_image)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -273,8 +404,27 @@ def main() -> None:
         required=True,
         help="Directory for metrics.json + metrics.csv.",
     )
+    parser.add_argument(
+        "--run-name",
+        default="",
+        help="Run identifier written in the summary CSV (defaults to the pred-dir name).",
+    )
+    parser.add_argument(
+        "--summary-dir",
+        default="",
+        help=(
+            "Directory holding the cumulative metrics.csv, metrics_per_subject.csv "
+            "and metrics_per_contrast.csv to append this run's rows to."
+        ),
+    )
     args = parser.parse_args()
-    evaluate(gt_dir=args.gt_dir, pred_dir=args.pred_dir, out_dir=args.out_dir)
+    evaluate(
+        gt_dir=args.gt_dir,
+        pred_dir=args.pred_dir,
+        out_dir=args.out_dir,
+        run_name=args.run_name,
+        summary_dir=args.summary_dir,
+    )
 
 
 if __name__ == "__main__":

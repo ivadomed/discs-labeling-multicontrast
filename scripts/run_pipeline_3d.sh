@@ -73,8 +73,8 @@ MANIFEST="$PREP_ROOT/manifest.json"
 WEIGHTS_DIR="$DISCSLABEL_DATA/weights/$RUN_NAME"
 EVAL_JSON="$PROJECT_ROOT/discslabel/datasets/evaluation.json"
 EVAL_ROOT="$DISCSLABEL_DATA/evaluation"
-EVAL_PRED_DIR="$WEIGHTS_DIR/evaluation/predictions"
-EVAL_METRICS_DIR="$WEIGHTS_DIR/evaluation"
+EVAL_PRED_DIR="$EVAL_ROOT/prediction_$RUN_NAME"
+EVAL_METRICS_DIR="$EVAL_PRED_DIR/metrics"
 if [ "$DO_DEBUG" = "true" ]; then
     DEBUG_DIR="$DISCSLABEL_DATA/debug/$OUT_NAME"
 else
@@ -176,7 +176,9 @@ if [ "$DO_EVALUATE" = "true" ]; then
     discslabel_evaluate \
         --gt-dir "$EVAL_ROOT/labels" \
         --pred-dir "$EVAL_PRED_DIR" \
-        --out-dir "$EVAL_METRICS_DIR"
+        --out-dir "$EVAL_METRICS_DIR" \
+        --run-name "$RUN_NAME" \
+        --summary-dir "$EVAL_ROOT"
 fi
 
 echo ""
