@@ -1,0 +1,2419 @@
+{
+    "TYPE": "LABEL",
+    "CONTRASTS": "PSIR_STIR_T1w_T2w",
+    "SOURCE": [
+        "git@data.neuro.polymtl.ca:datasets/canproco.git",
+        "git@data.neuro.polymtl.ca:datasets/dcm-zurich.git",
+        "git@data.neuro.polymtl.ca:datasets/philadelphia-pediatric.git"
+
+    ],
+    "COMMIT": [
+        "bc599885c9e2ce25a2eab8d390063cb5413d0748",
+        "4d17c19ed5f0dbe0667b73bd4cae8c967034cf69",
+        "b01f63e70272dfcb0d20974529ee3a2d634f1689"
+    ],
+    "TRAINING": [],
+    "VALIDATION": [],
+    "TESTING": [
+        {
+            "IMAGE": "canproco/sub-van216/ses-M12/anat/sub-van216_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van216/ses-M12/anat/sub-van216_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor095/ses-M12/anat/sub-tor095_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor095/ses-M12/anat/sub-tor095_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal173/ses-M0/anat/sub-cal173_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal173/ses-M0/anat/sub-cal173_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van198/ses-M12/anat/sub-van198_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van198/ses-M12/anat/sub-van198_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor123/ses-M0/anat/sub-tor123_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor123/ses-M0/anat/sub-tor123_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor059/ses-M0/anat/sub-tor059_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor059/ses-M0/anat/sub-tor059_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon173/ses-M12/anat/sub-mon173_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon173/ses-M12/anat/sub-mon173_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon080/ses-M12/anat/sub-mon080_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon080/ses-M12/anat/sub-mon080_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon036/ses-M0/anat/sub-mon036_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon036/ses-M0/anat/sub-mon036_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor037/ses-M0/anat/sub-tor037_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor037/ses-M0/anat/sub-tor037_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van216/ses-M0/anat/sub-van216_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van216/ses-M0/anat/sub-van216_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor109/ses-M0/anat/sub-tor109_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor109/ses-M0/anat/sub-tor109_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon141/ses-M12/anat/sub-mon141_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon141/ses-M12/anat/sub-mon141_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal202/ses-M0/anat/sub-cal202_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal202/ses-M0/anat/sub-cal202_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van161/ses-M0/anat/sub-van161_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van161/ses-M0/anat/sub-van161_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal157/ses-M0/anat/sub-cal157_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal157/ses-M0/anat/sub-cal157_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor144/ses-M12/anat/sub-tor144_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor144/ses-M12/anat/sub-tor144_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal072/ses-M12/anat/sub-cal072_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal072/ses-M12/anat/sub-cal072_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van144/ses-M0/anat/sub-van144_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van144/ses-M0/anat/sub-van144_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon157/ses-M12/anat/sub-mon157_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon157/ses-M12/anat/sub-mon157_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon162/ses-M12/anat/sub-mon162_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon162/ses-M12/anat/sub-mon162_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor017/ses-M12/anat/sub-tor017_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor017/ses-M12/anat/sub-tor017_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm076/ses-M12/anat/sub-edm076_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm076/ses-M12/anat/sub-edm076_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor064/ses-M12/anat/sub-tor064_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor064/ses-M12/anat/sub-tor064_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm078/ses-M12/anat/sub-edm078_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm078/ses-M12/anat/sub-edm078_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal109/ses-M12/anat/sub-cal109_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal109/ses-M12/anat/sub-cal109_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon084/ses-M0/anat/sub-mon084_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon084/ses-M0/anat/sub-mon084_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm029/ses-M0/anat/sub-edm029_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm029/ses-M0/anat/sub-edm029_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor097/ses-M12/anat/sub-tor097_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor097/ses-M12/anat/sub-tor097_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm175/ses-M12/anat/sub-edm175_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm175/ses-M12/anat/sub-edm175_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm070/ses-M0/anat/sub-edm070_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm070/ses-M0/anat/sub-edm070_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van141/ses-M12/anat/sub-van141_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van141/ses-M12/anat/sub-van141_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal175/ses-M0/anat/sub-cal175_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal175/ses-M0/anat/sub-cal175_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor070/ses-M12/anat/sub-tor070_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor070/ses-M12/anat/sub-tor070_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon197/ses-M12/anat/sub-mon197_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon197/ses-M12/anat/sub-mon197_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm053/ses-M0/anat/sub-edm053_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm053/ses-M0/anat/sub-edm053_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm067/ses-M0/anat/sub-edm067_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm067/ses-M0/anat/sub-edm067_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van136/ses-M12/anat/sub-van136_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van136/ses-M12/anat/sub-van136_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor140/ses-M12/anat/sub-tor140_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor140/ses-M12/anat/sub-tor140_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van200/ses-M12/anat/sub-van200_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van200/ses-M12/anat/sub-van200_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor103/ses-M0/anat/sub-tor103_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor103/ses-M0/anat/sub-tor103_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal146/ses-M12/anat/sub-cal146_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal146/ses-M12/anat/sub-cal146_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm181/ses-M0/anat/sub-edm181_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm181/ses-M0/anat/sub-edm181_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon055/ses-M0/anat/sub-mon055_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon055/ses-M0/anat/sub-mon055_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van165/ses-M12/anat/sub-van165_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van165/ses-M12/anat/sub-van165_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon064/ses-M0/anat/sub-mon064_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon064/ses-M0/anat/sub-mon064_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor121/ses-M12/anat/sub-tor121_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor121/ses-M12/anat/sub-tor121_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van182/ses-M12/anat/sub-van182_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van182/ses-M12/anat/sub-van182_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm054/ses-M12/anat/sub-edm054_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm054/ses-M12/anat/sub-edm054_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal072/ses-M0/anat/sub-cal072_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal072/ses-M0/anat/sub-cal072_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon198/ses-M0/anat/sub-mon198_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon198/ses-M0/anat/sub-mon198_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon111/ses-M12/anat/sub-mon111_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon111/ses-M12/anat/sub-mon111_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm179/ses-M12/anat/sub-edm179_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm179/ses-M12/anat/sub-edm179_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor153/ses-M0/anat/sub-tor153_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor153/ses-M0/anat/sub-tor153_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon162/ses-M0/anat/sub-mon162_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon162/ses-M0/anat/sub-mon162_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon065/ses-M0/anat/sub-mon065_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon065/ses-M0/anat/sub-mon065_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm105/ses-M12/anat/sub-edm105_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm105/ses-M12/anat/sub-edm105_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van116/ses-M0/anat/sub-van116_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van116/ses-M0/anat/sub-van116_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon176/ses-M12/anat/sub-mon176_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon176/ses-M12/anat/sub-mon176_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm025/ses-M0/anat/sub-edm025_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm025/ses-M0/anat/sub-edm025_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van112/ses-M0/anat/sub-van112_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van112/ses-M0/anat/sub-van112_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal125/ses-M0/anat/sub-cal125_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal125/ses-M0/anat/sub-cal125_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon095/ses-M0/anat/sub-mon095_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon095/ses-M0/anat/sub-mon095_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon079/ses-M12/anat/sub-mon079_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon079/ses-M12/anat/sub-mon079_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal164/ses-M0/anat/sub-cal164_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal164/ses-M0/anat/sub-cal164_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal135/ses-M12/anat/sub-cal135_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal135/ses-M12/anat/sub-cal135_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon014/ses-M12/anat/sub-mon014_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon014/ses-M12/anat/sub-mon014_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van189/ses-M0/anat/sub-van189_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van189/ses-M0/anat/sub-van189_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon131/ses-M0/anat/sub-mon131_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon131/ses-M0/anat/sub-mon131_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon186/ses-M0/anat/sub-mon186_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon186/ses-M0/anat/sub-mon186_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor144/ses-M0/anat/sub-tor144_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor144/ses-M0/anat/sub-tor144_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor074/ses-M0/anat/sub-tor074_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor074/ses-M0/anat/sub-tor074_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon153/ses-M0/anat/sub-mon153_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon153/ses-M0/anat/sub-mon153_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm082/ses-M12/anat/sub-edm082_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm082/ses-M12/anat/sub-edm082_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal165/ses-M12/anat/sub-cal165_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal165/ses-M12/anat/sub-cal165_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal114/ses-M12/anat/sub-cal114_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal114/ses-M12/anat/sub-cal114_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon107/ses-M0/anat/sub-mon107_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon107/ses-M0/anat/sub-mon107_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal207/ses-M0/anat/sub-cal207_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal207/ses-M0/anat/sub-cal207_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon172/ses-M12/anat/sub-mon172_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon172/ses-M12/anat/sub-mon172_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor038/ses-M12/anat/sub-tor038_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor038/ses-M12/anat/sub-tor038_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal116/ses-M12/anat/sub-cal116_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal116/ses-M12/anat/sub-cal116_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon176/ses-M0/anat/sub-mon176_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon176/ses-M0/anat/sub-mon176_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm180/ses-M0/anat/sub-edm180_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm180/ses-M0/anat/sub-edm180_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van005/ses-M12/anat/sub-van005_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van005/ses-M12/anat/sub-van005_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor140/ses-M0/anat/sub-tor140_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor140/ses-M0/anat/sub-tor140_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal085/ses-M0/anat/sub-cal085_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal085/ses-M0/anat/sub-cal085_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm123/ses-M0/anat/sub-edm123_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm123/ses-M0/anat/sub-edm123_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor118/ses-M0/anat/sub-tor118_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor118/ses-M0/anat/sub-tor118_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal144/ses-M12/anat/sub-cal144_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal144/ses-M12/anat/sub-cal144_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal158/ses-M12/anat/sub-cal158_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal158/ses-M12/anat/sub-cal158_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal165/ses-M0/anat/sub-cal165_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal165/ses-M0/anat/sub-cal165_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal083/ses-M12/anat/sub-cal083_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal083/ses-M12/anat/sub-cal083_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm126/ses-M12/anat/sub-edm126_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm126/ses-M12/anat/sub-edm126_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon157/ses-M0/anat/sub-mon157_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon157/ses-M0/anat/sub-mon157_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon174/ses-M12/anat/sub-mon174_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon174/ses-M12/anat/sub-mon174_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor051/ses-M12/anat/sub-tor051_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor051/ses-M12/anat/sub-tor051_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor115/ses-M12/anat/sub-tor115_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor115/ses-M12/anat/sub-tor115_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van211/ses-M0/anat/sub-van211_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van211/ses-M0/anat/sub-van211_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm168/ses-M0/anat/sub-edm168_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm168/ses-M0/anat/sub-edm168_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal088/ses-M0/anat/sub-cal088_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal088/ses-M0/anat/sub-cal088_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van022/ses-M0/anat/sub-van022_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van022/ses-M0/anat/sub-van022_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon111/ses-M0/anat/sub-mon111_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon111/ses-M0/anat/sub-mon111_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal182/ses-M12/anat/sub-cal182_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal182/ses-M12/anat/sub-cal182_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal137/ses-M0/anat/sub-cal137_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal137/ses-M0/anat/sub-cal137_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon096/ses-M0/anat/sub-mon096_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon096/ses-M0/anat/sub-mon096_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor141/ses-M12/anat/sub-tor141_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor141/ses-M12/anat/sub-tor141_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm180/ses-M12/anat/sub-edm180_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm180/ses-M12/anat/sub-edm180_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon165/ses-M0/anat/sub-mon165_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon165/ses-M0/anat/sub-mon165_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon210/ses-M12/anat/sub-mon210_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon210/ses-M12/anat/sub-mon210_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm005/ses-M12/anat/sub-edm005_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm005/ses-M12/anat/sub-edm005_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon189/ses-M0/anat/sub-mon189_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon189/ses-M0/anat/sub-mon189_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon092/ses-M0/anat/sub-mon092_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon092/ses-M0/anat/sub-mon092_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal095/ses-M0/anat/sub-cal095_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal095/ses-M0/anat/sub-cal095_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon010/ses-M12/anat/sub-mon010_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon010/ses-M12/anat/sub-mon010_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van147/ses-M0/anat/sub-van147_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van147/ses-M0/anat/sub-van147_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon027/ses-M0/anat/sub-mon027_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon027/ses-M0/anat/sub-mon027_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon180/ses-M0/anat/sub-mon180_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon180/ses-M0/anat/sub-mon180_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon125/ses-M0/anat/sub-mon125_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon125/ses-M0/anat/sub-mon125_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon034/ses-M12/anat/sub-mon034_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon034/ses-M12/anat/sub-mon034_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor114/ses-M12/anat/sub-tor114_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor114/ses-M12/anat/sub-tor114_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm156/ses-M0/anat/sub-edm156_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm156/ses-M0/anat/sub-edm156_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal176/ses-M12/anat/sub-cal176_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal176/ses-M12/anat/sub-cal176_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor012/ses-M12/anat/sub-tor012_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor012/ses-M12/anat/sub-tor012_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van170/ses-M12/anat/sub-van170_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van170/ses-M12/anat/sub-van170_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van176/ses-M12/anat/sub-van176_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van176/ses-M12/anat/sub-van176_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor053/ses-M0/anat/sub-tor053_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor053/ses-M0/anat/sub-tor053_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm166/ses-M0/anat/sub-edm166_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm166/ses-M0/anat/sub-edm166_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon141/ses-M0/anat/sub-mon141_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon141/ses-M0/anat/sub-mon141_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal090/ses-M12/anat/sub-cal090_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal090/ses-M12/anat/sub-cal090_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor037/ses-M12/anat/sub-tor037_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor037/ses-M12/anat/sub-tor037_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon210/ses-M0/anat/sub-mon210_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon210/ses-M0/anat/sub-mon210_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal187/ses-M12/anat/sub-cal187_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal187/ses-M12/anat/sub-cal187_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor017/ses-M0/anat/sub-tor017_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor017/ses-M0/anat/sub-tor017_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon029/ses-M12/anat/sub-mon029_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon029/ses-M12/anat/sub-mon029_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van163/ses-M12/anat/sub-van163_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van163/ses-M12/anat/sub-van163_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor076/ses-M0/anat/sub-tor076_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor076/ses-M0/anat/sub-tor076_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon193/ses-M12/anat/sub-mon193_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon193/ses-M12/anat/sub-mon193_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon155/ses-M0/anat/sub-mon155_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon155/ses-M0/anat/sub-mon155_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van160/ses-M0/anat/sub-van160_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van160/ses-M0/anat/sub-van160_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon207/ses-M12/anat/sub-mon207_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon207/ses-M12/anat/sub-mon207_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon209/ses-M12/anat/sub-mon209_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon209/ses-M12/anat/sub-mon209_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van207/ses-M12/anat/sub-van207_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van207/ses-M12/anat/sub-van207_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm182/ses-M12/anat/sub-edm182_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm182/ses-M12/anat/sub-edm182_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van181/ses-M12/anat/sub-van181_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van181/ses-M12/anat/sub-van181_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm128/ses-M0/anat/sub-edm128_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm128/ses-M0/anat/sub-edm128_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon109/ses-M0/anat/sub-mon109_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon109/ses-M0/anat/sub-mon109_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van183/ses-M12/anat/sub-van183_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van183/ses-M12/anat/sub-van183_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon134/ses-M0/anat/sub-mon134_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon134/ses-M0/anat/sub-mon134_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal142/ses-M0/anat/sub-cal142_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal142/ses-M0/anat/sub-cal142_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm125/ses-M12/anat/sub-edm125_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm125/ses-M12/anat/sub-edm125_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm162/ses-M0/anat/sub-edm162_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm162/ses-M0/anat/sub-edm162_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal184/ses-M0/anat/sub-cal184_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal184/ses-M0/anat/sub-cal184_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor062/ses-M12/anat/sub-tor062_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor062/ses-M12/anat/sub-tor062_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon199/ses-M0/anat/sub-mon199_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon199/ses-M0/anat/sub-mon199_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal117/ses-M0/anat/sub-cal117_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal117/ses-M0/anat/sub-cal117_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van174/ses-M0/anat/sub-van174_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van174/ses-M0/anat/sub-van174_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal200/ses-M0/anat/sub-cal200_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal200/ses-M0/anat/sub-cal200_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm164/ses-M0/anat/sub-edm164_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm164/ses-M0/anat/sub-edm164_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van175/ses-M12/anat/sub-van175_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van175/ses-M12/anat/sub-van175_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon132/ses-M0/anat/sub-mon132_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon132/ses-M0/anat/sub-mon132_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor052/ses-M0/anat/sub-tor052_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor052/ses-M0/anat/sub-tor052_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm038/ses-M0/anat/sub-edm038_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm038/ses-M0/anat/sub-edm038_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van125/ses-M0/anat/sub-van125_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van125/ses-M0/anat/sub-van125_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van139/ses-M12/anat/sub-van139_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van139/ses-M12/anat/sub-van139_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor098/ses-M12/anat/sub-tor098_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor098/ses-M12/anat/sub-tor098_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon187/ses-M0/anat/sub-mon187_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon187/ses-M0/anat/sub-mon187_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon196/ses-M12/anat/sub-mon196_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon196/ses-M12/anat/sub-mon196_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van185/ses-M0/anat/sub-van185_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van185/ses-M0/anat/sub-van185_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal056/ses-M0/anat/sub-cal056_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal056/ses-M0/anat/sub-cal056_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon160/ses-M12/anat/sub-mon160_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon160/ses-M12/anat/sub-mon160_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van222/ses-M0/anat/sub-van222_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van222/ses-M0/anat/sub-van222_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor039/ses-M12/anat/sub-tor039_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor039/ses-M12/anat/sub-tor039_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal085/ses-M12/anat/sub-cal085_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal085/ses-M12/anat/sub-cal085_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal119/ses-M12/anat/sub-cal119_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal119/ses-M12/anat/sub-cal119_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon196/ses-M0/anat/sub-mon196_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon196/ses-M0/anat/sub-mon196_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor121/ses-M0/anat/sub-tor121_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor121/ses-M0/anat/sub-tor121_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van022/ses-M12/anat/sub-van022_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van022/ses-M12/anat/sub-van022_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor146/ses-M12/anat/sub-tor146_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor146/ses-M12/anat/sub-tor146_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van209/ses-M12/anat/sub-van209_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van209/ses-M12/anat/sub-van209_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm013/ses-M12/anat/sub-edm013_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm013/ses-M12/anat/sub-edm013_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van191/ses-M0/anat/sub-van191_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van191/ses-M0/anat/sub-van191_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor099/ses-M0/anat/sub-tor099_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor099/ses-M0/anat/sub-tor099_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal121/ses-M12/anat/sub-cal121_ses-M12_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal121/ses-M12/anat/sub-cal121_ses-M12_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van201/ses-M12/anat/sub-van201_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van201/ses-M12/anat/sub-van201_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon001/ses-M12/anat/sub-mon001_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon001/ses-M12/anat/sub-mon001_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-edm095/ses-M0/anat/sub-edm095_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-edm095/ses-M0/anat/sub-edm095_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van206/ses-M12/anat/sub-van206_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van206/ses-M12/anat/sub-van206_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal214/ses-M0/anat/sub-cal214_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal214/ses-M0/anat/sub-cal214_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon119/ses-M12/anat/sub-mon119_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon119/ses-M12/anat/sub-mon119_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal144/ses-M0/anat/sub-cal144_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal144/ses-M0/anat/sub-cal144_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van133/ses-M12/anat/sub-van133_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van133/ses-M12/anat/sub-van133_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van034/ses-M12/anat/sub-van034_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van034/ses-M12/anat/sub-van034_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van158/ses-M0/anat/sub-van158_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van158/ses-M0/anat/sub-van158_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor049/ses-M12/anat/sub-tor049_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor049/ses-M12/anat/sub-tor049_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal150/ses-M0/anat/sub-cal150_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal150/ses-M0/anat/sub-cal150_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-cal158/ses-M0/anat/sub-cal158_ses-M0_STIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-cal158/ses-M0/anat/sub-cal158_ses-M0_STIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon004/ses-M0/anat/sub-mon004_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon004/ses-M0/anat/sub-mon004_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-van131/ses-M0/anat/sub-van131_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-van131/ses-M0/anat/sub-van131_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-tor141/ses-M0/anat/sub-tor141_ses-M0_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-tor141/ses-M0/anat/sub-tor141_ses-M0_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "canproco/sub-mon133/ses-M12/anat/sub-mon133_ses-M12_PSIR.nii.gz",
+            "LABEL": "canproco/derivatives/labels/sub-mon133/ses-M12/anat/sub-mon133_ses-M12_PSIR_label-discs_dlabel.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-046/ses-M0/anat/sub-046_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-046/ses-M0/anat/sub-046_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-130/ses-M0/anat/sub-130_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-130/ses-M0/anat/sub-130_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-009/ses-M12/anat/sub-009_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-009/ses-M12/anat/sub-009_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-158/ses-M0/anat/sub-158_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-158/ses-M0/anat/sub-158_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-025/ses-M12/anat/sub-025_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-025/ses-M12/anat/sub-025_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-075/ses-M0/anat/sub-075_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-075/ses-M0/anat/sub-075_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-069/ses-M0/anat/sub-069_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-069/ses-M0/anat/sub-069_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-120/ses-M12/anat/sub-120_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-120/ses-M12/anat/sub-120_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-025/ses-M6/anat/sub-025_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-025/ses-M6/anat/sub-025_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-014/ses-M6/anat/sub-014_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-014/ses-M6/anat/sub-014_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-140/ses-M6/anat/sub-140_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-140/ses-M6/anat/sub-140_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-127/ses-M0/anat/sub-127_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-127/ses-M0/anat/sub-127_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-070/ses-M0/anat/sub-070_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-070/ses-M0/anat/sub-070_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-047/ses-M36/anat/sub-047_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-047/ses-M36/anat/sub-047_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-060/ses-M0/anat/sub-060_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-060/ses-M0/anat/sub-060_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-097/ses-M48/anat/sub-097_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-097/ses-M48/anat/sub-097_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-041/ses-M0/anat/sub-041_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-041/ses-M0/anat/sub-041_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-083/ses-M48/anat/sub-083_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-083/ses-M48/anat/sub-083_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-130/ses-M24/anat/sub-130_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-130/ses-M24/anat/sub-130_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-122/ses-M6/anat/sub-122_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-122/ses-M6/anat/sub-122_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-165/ses-M0/anat/sub-165_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-165/ses-M0/anat/sub-165_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-093/ses-M36/anat/sub-093_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-093/ses-M36/anat/sub-093_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-064/ses-M48/anat/sub-064_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-064/ses-M48/anat/sub-064_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-050/ses-M0/anat/sub-050_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-050/ses-M0/anat/sub-050_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-016/ses-M0/anat/sub-016_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-016/ses-M0/anat/sub-016_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-038/ses-M60/anat/sub-038_ses-M60_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-038/ses-M60/anat/sub-038_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-002/ses-M0/anat/sub-002_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-002/ses-M0/anat/sub-002_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-080/ses-M0/anat/sub-080_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-080/ses-M0/anat/sub-080_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-116/ses-M6/anat/sub-116_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-116/ses-M6/anat/sub-116_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-100/ses-M6/anat/sub-100_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-100/ses-M6/anat/sub-100_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-159/ses-M6/anat/sub-159_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-159/ses-M6/anat/sub-159_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-103/ses-M0/anat/sub-103_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-103/ses-M0/anat/sub-103_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-072/ses-M48/anat/sub-072_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-072/ses-M48/anat/sub-072_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-140/ses-M0/anat/sub-140_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-140/ses-M0/anat/sub-140_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-060/ses-M12/anat/sub-060_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-060/ses-M12/anat/sub-060_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-094/ses-M6/anat/sub-094_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-094/ses-M6/anat/sub-094_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-159/ses-M12/anat/sub-159_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-159/ses-M12/anat/sub-159_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-020/ses-M0/anat/sub-020_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-020/ses-M0/anat/sub-020_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-074/ses-M0/anat/sub-074_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-074/ses-M0/anat/sub-074_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-110/ses-M0/anat/sub-110_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-110/ses-M0/anat/sub-110_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-162/ses-M0/anat/sub-162_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-162/ses-M0/anat/sub-162_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-061/ses-M6/anat/sub-061_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-061/ses-M6/anat/sub-061_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-141/ses-M0/anat/sub-141_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-141/ses-M0/anat/sub-141_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-029/ses-M24/anat/sub-029_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-029/ses-M24/anat/sub-029_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-059/ses-M12/anat/sub-059_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-059/ses-M12/anat/sub-059_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-123/ses-M6/anat/sub-123_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-123/ses-M6/anat/sub-123_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-104/ses-M6/anat/sub-104_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-104/ses-M6/anat/sub-104_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-093/ses-M0/anat/sub-093_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-093/ses-M0/anat/sub-093_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-100/ses-M0/anat/sub-100_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-100/ses-M0/anat/sub-100_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-135/ses-M12/anat/sub-135_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-135/ses-M12/anat/sub-135_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-015/ses-M12/anat/sub-015_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-015/ses-M12/anat/sub-015_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-106/ses-M12/anat/sub-106_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-106/ses-M12/anat/sub-106_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-090/ses-M12/anat/sub-090_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-090/ses-M12/anat/sub-090_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-103/ses-M12/anat/sub-103_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-103/ses-M12/anat/sub-103_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-087/ses-M0/anat/sub-087_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-087/ses-M0/anat/sub-087_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-026/ses-M0/anat/sub-026_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-026/ses-M0/anat/sub-026_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-036/ses-M0/anat/sub-036_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-036/ses-M0/anat/sub-036_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-154/ses-M0/anat/sub-154_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-154/ses-M0/anat/sub-154_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-112/ses-M0/anat/sub-112_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-112/ses-M0/anat/sub-112_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-101/ses-M6/anat/sub-101_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-101/ses-M6/anat/sub-101_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-041/ses-M6/anat/sub-041_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-041/ses-M6/anat/sub-041_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-030/ses-M0/anat/sub-030_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-030/ses-M0/anat/sub-030_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-099/ses-M0/anat/sub-099_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-099/ses-M0/anat/sub-099_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-164/ses-M0/anat/sub-164_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-164/ses-M0/anat/sub-164_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-069/ses-M12/anat/sub-069_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-069/ses-M12/anat/sub-069_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-119/ses-M6/anat/sub-119_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-119/ses-M6/anat/sub-119_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-112/ses-M24/anat/sub-112_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-112/ses-M24/anat/sub-112_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-105/ses-M12/anat/sub-105_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-105/ses-M12/anat/sub-105_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-096/ses-M6/anat/sub-096_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-096/ses-M6/anat/sub-096_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-141/ses-M6/anat/sub-141_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-141/ses-M6/anat/sub-141_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-044/ses-M0/anat/sub-044_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-044/ses-M0/anat/sub-044_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-096/ses-M36/anat/sub-096_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-096/ses-M36/anat/sub-096_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-102/ses-M0/anat/sub-102_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-102/ses-M0/anat/sub-102_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-119/ses-M12/anat/sub-119_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-119/ses-M12/anat/sub-119_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-115/ses-M0/anat/sub-115_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-115/ses-M0/anat/sub-115_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-111/ses-M24/anat/sub-111_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-111/ses-M24/anat/sub-111_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-032/ses-M0/anat/sub-032_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-032/ses-M0/anat/sub-032_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-160/ses-M12/anat/sub-160_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-160/ses-M12/anat/sub-160_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-126/ses-M0/anat/sub-126_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-126/ses-M0/anat/sub-126_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-124/ses-M0/anat/sub-124_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-124/ses-M0/anat/sub-124_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-028/ses-M6/anat/sub-028_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-028/ses-M6/anat/sub-028_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-112/ses-M36/anat/sub-112_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-112/ses-M36/anat/sub-112_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-057/ses-M0/anat/sub-057_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-057/ses-M0/anat/sub-057_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-077/ses-M6/anat/sub-077_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-077/ses-M6/anat/sub-077_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-125/ses-M36/anat/sub-125_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-125/ses-M36/anat/sub-125_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-098/ses-M24/anat/sub-098_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-098/ses-M24/anat/sub-098_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-148/ses-M6/anat/sub-148_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-148/ses-M6/anat/sub-148_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-126/ses-M0/anat/sub-126_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-126/ses-M0/anat/sub-126_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-059/ses-M48/anat/sub-059_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-059/ses-M48/anat/sub-059_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-122/ses-M12/anat/sub-122_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-122/ses-M12/anat/sub-122_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-073/ses-M36/anat/sub-073_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-073/ses-M36/anat/sub-073_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-121/ses-M36/anat/sub-121_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-121/ses-M36/anat/sub-121_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-120/ses-M24/anat/sub-120_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-120/ses-M24/anat/sub-120_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-037/ses-M6/anat/sub-037_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-037/ses-M6/anat/sub-037_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-039/ses-M6/anat/sub-039_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-039/ses-M6/anat/sub-039_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-085/ses-M36/anat/sub-085_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-085/ses-M36/anat/sub-085_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-123/ses-M12/anat/sub-123_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-123/ses-M12/anat/sub-123_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-083/ses-M0/anat/sub-083_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-083/ses-M0/anat/sub-083_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-043/ses-M0/anat/sub-043_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-043/ses-M0/anat/sub-043_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-119/ses-M24/anat/sub-119_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-119/ses-M24/anat/sub-119_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-167/ses-M6/anat/sub-167_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-167/ses-M6/anat/sub-167_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-146/ses-M24/anat/sub-146_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-146/ses-M24/anat/sub-146_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-122/ses-M0/anat/sub-122_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-122/ses-M0/anat/sub-122_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-055/ses-M6/anat/sub-055_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-055/ses-M6/anat/sub-055_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-125/ses-M0/anat/sub-125_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-125/ses-M0/anat/sub-125_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-139/ses-M12/anat/sub-139_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-139/ses-M12/anat/sub-139_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-166/ses-M12/anat/sub-166_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-166/ses-M12/anat/sub-166_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-111/ses-M36/anat/sub-111_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-111/ses-M36/anat/sub-111_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-124/ses-M0/anat/sub-124_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-124/ses-M0/anat/sub-124_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-047/ses-M48/anat/sub-047_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-047/ses-M48/anat/sub-047_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-052/ses-M0/anat/sub-052_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-052/ses-M0/anat/sub-052_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-150/ses-M0/anat/sub-150_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-150/ses-M0/anat/sub-150_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-136/ses-M6/anat/sub-136_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-136/ses-M6/anat/sub-136_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-137/ses-M0/anat/sub-137_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-137/ses-M0/anat/sub-137_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-020/ses-M6/anat/sub-020_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-020/ses-M6/anat/sub-020_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-031/ses-M12/anat/sub-031_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-031/ses-M12/anat/sub-031_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-105/ses-M0/anat/sub-105_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-105/ses-M0/anat/sub-105_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-012/ses-M6/anat/sub-012_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-012/ses-M6/anat/sub-012_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-158/ses-M12/anat/sub-158_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-158/ses-M12/anat/sub-158_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-033/ses-M0/anat/sub-033_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-033/ses-M0/anat/sub-033_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-005/ses-M0/anat/sub-005_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-005/ses-M0/anat/sub-005_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-102/ses-M24/anat/sub-102_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-102/ses-M24/anat/sub-102_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-109/ses-M6/anat/sub-109_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-109/ses-M6/anat/sub-109_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-143/ses-M12/anat/sub-143_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-143/ses-M12/anat/sub-143_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-072/ses-M0/anat/sub-072_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-072/ses-M0/anat/sub-072_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-119/ses-M0/anat/sub-119_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-119/ses-M0/anat/sub-119_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-003/ses-M0/anat/sub-003_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-003/ses-M0/anat/sub-003_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-073/ses-M60/anat/sub-073_ses-M60_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-073/ses-M60/anat/sub-073_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-047/ses-M0/anat/sub-047_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-047/ses-M0/anat/sub-047_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-041/ses-M60/anat/sub-041_ses-M60_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-041/ses-M60/anat/sub-041_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-083/ses-M36/anat/sub-083_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-083/ses-M36/anat/sub-083_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-089/ses-M0/anat/sub-089_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-089/ses-M0/anat/sub-089_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-032/ses-M6/anat/sub-032_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-032/ses-M6/anat/sub-032_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-118/ses-M6/anat/sub-118_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-118/ses-M6/anat/sub-118_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-043/ses-M6/anat/sub-043_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-043/ses-M6/anat/sub-043_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-114/ses-M6/anat/sub-114_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-114/ses-M6/anat/sub-114_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-105/ses-M36/anat/sub-105_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-105/ses-M36/anat/sub-105_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-127/ses-M6/anat/sub-127_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-127/ses-M6/anat/sub-127_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-121/ses-M0/anat/sub-121_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-121/ses-M0/anat/sub-121_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-136/ses-M12/anat/sub-136_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-136/ses-M12/anat/sub-136_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-039/ses-M60/anat/sub-039_ses-M60_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-039/ses-M60/anat/sub-039_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-070/ses-M0/anat/sub-070_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-070/ses-M0/anat/sub-070_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-023/ses-M60/anat/sub-023_ses-M60_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-023/ses-M60/anat/sub-023_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-006/ses-M12/anat/sub-006_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-006/ses-M12/anat/sub-006_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-065/ses-M48/anat/sub-065_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-065/ses-M48/anat/sub-065_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-029/ses-M6/anat/sub-029_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-029/ses-M6/anat/sub-029_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-138/ses-M6/anat/sub-138_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-138/ses-M6/anat/sub-138_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-067/ses-M0/anat/sub-067_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-067/ses-M0/anat/sub-067_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-124/ses-M36/anat/sub-124_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-124/ses-M36/anat/sub-124_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-038/ses-M0/anat/sub-038_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-038/ses-M0/anat/sub-038_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-015/ses-M6/anat/sub-015_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-015/ses-M6/anat/sub-015_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-142/ses-M12/anat/sub-142_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-142/ses-M12/anat/sub-142_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-096/ses-M24/anat/sub-096_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-096/ses-M24/anat/sub-096_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-102/ses-M48/anat/sub-102_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-102/ses-M48/anat/sub-102_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-106/ses-M0/anat/sub-106_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-106/ses-M0/anat/sub-106_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-025/ses-M0/anat/sub-025_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-025/ses-M0/anat/sub-025_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-010/ses-M6/anat/sub-010_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-010/ses-M6/anat/sub-010_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-018/ses-M60/anat/sub-018_ses-M60_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-018/ses-M60/anat/sub-018_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-108/ses-M12/anat/sub-108_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-108/ses-M12/anat/sub-108_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-034/ses-M0/anat/sub-034_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-034/ses-M0/anat/sub-034_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-052/ses-M48/anat/sub-052_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-052/ses-M48/anat/sub-052_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-038/ses-M12/anat/sub-038_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-038/ses-M12/anat/sub-038_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-125/ses-M24/anat/sub-125_ses-M24_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-125/ses-M24/anat/sub-125_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-027/ses-M0/anat/sub-027_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-027/ses-M0/anat/sub-027_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-031/ses-M0/anat/sub-031_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-031/ses-M0/anat/sub-031_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-007/ses-M0/anat/sub-007_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-007/ses-M0/anat/sub-007_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-024/ses-M12/anat/sub-024_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-024/ses-M12/anat/sub-024_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-153/ses-M0/anat/sub-153_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-153/ses-M0/anat/sub-153_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-093/ses-M48/anat/sub-093_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-093/ses-M48/anat/sub-093_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-029/ses-M0/anat/sub-029_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-029/ses-M0/anat/sub-029_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-089/ses-M12/anat/sub-089_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-089/ses-M12/anat/sub-089_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-157/ses-M6/anat/sub-157_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-157/ses-M6/anat/sub-157_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-094/ses-M0/anat/sub-094_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-094/ses-M0/anat/sub-094_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-114/ses-M12/anat/sub-114_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-114/ses-M12/anat/sub-114_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-121/ses-M6/anat/sub-121_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-121/ses-M6/anat/sub-121_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-158/ses-M6/anat/sub-158_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-158/ses-M6/anat/sub-158_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-134/ses-M0/anat/sub-134_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-134/ses-M0/anat/sub-134_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-075/ses-M12/anat/sub-075_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-075/ses-M12/anat/sub-075_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-055/ses-M48/anat/sub-055_ses-M48_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-055/ses-M48/anat/sub-055_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-141/ses-M0/anat/sub-141_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-141/ses-M0/anat/sub-141_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-149/ses-M0/anat/sub-149_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-149/ses-M0/anat/sub-149_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-019/ses-M0/anat/sub-019_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-019/ses-M0/anat/sub-019_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-066/ses-M0/anat/sub-066_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-066/ses-M0/anat/sub-066_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-052/ses-M60/anat/sub-052_ses-M60_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-052/ses-M60/anat/sub-052_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-152/ses-M0/anat/sub-152_ses-M0_acq-sagittal_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-152/ses-M0/anat/sub-152_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-065/ses-M0/anat/sub-065_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-065/ses-M0/anat/sub-065_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-057/ses-M36/anat/sub-057_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-057/ses-M36/anat/sub-057_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-097/ses-M6/anat/sub-097_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-097/ses-M6/anat/sub-097_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-065/ses-M60/anat/sub-065_ses-M60_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-065/ses-M60/anat/sub-065_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-115/ses-M6/anat/sub-115_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-115/ses-M6/anat/sub-115_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-067/ses-M12/anat/sub-067_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-067/ses-M12/anat/sub-067_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-055/ses-M12/anat/sub-055_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-055/ses-M12/anat/sub-055_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-104/ses-M0/anat/sub-104_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-104/ses-M0/anat/sub-104_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-012/ses-M12/anat/sub-012_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-012/ses-M12/anat/sub-012_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-018/ses-M6/anat/sub-018_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-018/ses-M6/anat/sub-018_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-107/ses-M36/anat/sub-107_ses-M36_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-107/ses-M36/anat/sub-107_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-121/ses-M12/anat/sub-121_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-121/ses-M12/anat/sub-121_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-008/ses-M12/anat/sub-008_ses-M12_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-008/ses-M12/anat/sub-008_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-119/ses-M0/anat/sub-119_ses-M0_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-119/ses-M0/anat/sub-119_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "dcm-zurich/sub-076/ses-M6/anat/sub-076_ses-M6_acq-axial_T2w.nii.gz",
+            "LABEL": "dcm-zurich/derivatives/labels/sub-076/ses-M6/anat/sub-076_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-103/anat/sub-103_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-103/anat/sub-103_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-158/anat/sub-158_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-158/anat/sub-158_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-119/anat/sub-119_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-119/anat/sub-119_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-236/anat/sub-236_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-236/anat/sub-236_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-133/anat/sub-133_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-133/anat/sub-133_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-216/anat/sub-216_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-216/anat/sub-216_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-184/anat/sub-184_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-184/anat/sub-184_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-214/anat/sub-214_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-214/anat/sub-214_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-219/anat/sub-219_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-219/anat/sub-219_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-133/anat/sub-133_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-133/anat/sub-133_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-235/anat/sub-235_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-235/anat/sub-235_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-193/anat/sub-193_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-193/anat/sub-193_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-234/anat/sub-234_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-234/anat/sub-234_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-150/anat/sub-150_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-150/anat/sub-150_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-128/anat/sub-128_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-128/anat/sub-128_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-102/anat/sub-102_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-102/anat/sub-102_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-239/anat/sub-239_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-239/anat/sub-239_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-225/anat/sub-225_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-225/anat/sub-225_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-104/anat/sub-104_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-104/anat/sub-104_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-199/anat/sub-199_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-199/anat/sub-199_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-156/anat/sub-156_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-156/anat/sub-156_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-134/anat/sub-134_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-134/anat/sub-134_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-208/anat/sub-208_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-208/anat/sub-208_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-131/anat/sub-131_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-131/anat/sub-131_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-121/anat/sub-121_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-121/anat/sub-121_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-185/anat/sub-185_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-185/anat/sub-185_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-158/anat/sub-158_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-158/anat/sub-158_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-175/anat/sub-175_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-175/anat/sub-175_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-199/anat/sub-199_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-199/anat/sub-199_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-172/anat/sub-172_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-172/anat/sub-172_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-197/anat/sub-197_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-197/anat/sub-197_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-115/anat/sub-115_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-115/anat/sub-115_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-228/anat/sub-228_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-228/anat/sub-228_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-116/anat/sub-116_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-116/anat/sub-116_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-134/anat/sub-134_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-134/anat/sub-134_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-103/anat/sub-103_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-103/anat/sub-103_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-122/anat/sub-122_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-122/anat/sub-122_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-135/anat/sub-135_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-135/anat/sub-135_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-159/anat/sub-159_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-159/anat/sub-159_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-112/anat/sub-112_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-112/anat/sub-112_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-168/anat/sub-168_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-168/anat/sub-168_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-206/anat/sub-206_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-206/anat/sub-206_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-126/anat/sub-126_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-126/anat/sub-126_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-228/anat/sub-228_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-228/anat/sub-228_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-188/anat/sub-188_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-188/anat/sub-188_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-238/anat/sub-238_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-238/anat/sub-238_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-233/anat/sub-233_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-233/anat/sub-233_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-192/anat/sub-192_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-192/anat/sub-192_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-180/anat/sub-180_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-180/anat/sub-180_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-120/anat/sub-120_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-120/anat/sub-120_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-121/anat/sub-121_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-121/anat/sub-121_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-150/anat/sub-150_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-150/anat/sub-150_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-212/anat/sub-212_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-212/anat/sub-212_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-111/anat/sub-111_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-111/anat/sub-111_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-220/anat/sub-220_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-220/anat/sub-220_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-151/anat/sub-151_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-151/anat/sub-151_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-212/anat/sub-212_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-212/anat/sub-212_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-127/anat/sub-127_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-127/anat/sub-127_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-167/anat/sub-167_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-167/anat/sub-167_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-196/anat/sub-196_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-196/anat/sub-196_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-168/anat/sub-168_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-168/anat/sub-168_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-207/anat/sub-207_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-207/anat/sub-207_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-129/anat/sub-129_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-129/anat/sub-129_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-153/anat/sub-153_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-153/anat/sub-153_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-109/anat/sub-109_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-109/anat/sub-109_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-154/anat/sub-154_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-154/anat/sub-154_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-142/anat/sub-142_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-142/anat/sub-142_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-229/anat/sub-229_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-229/anat/sub-229_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-225/anat/sub-225_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-225/anat/sub-225_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-176/anat/sub-176_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-176/anat/sub-176_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-162/anat/sub-162_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-162/anat/sub-162_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-226/anat/sub-226_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-226/anat/sub-226_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-205/anat/sub-205_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-205/anat/sub-205_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-106/anat/sub-106_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-106/anat/sub-106_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-161/anat/sub-161_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-161/anat/sub-161_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-143/anat/sub-143_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-143/anat/sub-143_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-227/anat/sub-227_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-227/anat/sub-227_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-137/anat/sub-137_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-137/anat/sub-137_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-194/anat/sub-194_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-194/anat/sub-194_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-209/anat/sub-209_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-209/anat/sub-209_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-127/anat/sub-127_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-127/anat/sub-127_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-166/anat/sub-166_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-166/anat/sub-166_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-232/anat/sub-232_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-232/anat/sub-232_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-109/anat/sub-109_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-109/anat/sub-109_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-232/anat/sub-232_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-232/anat/sub-232_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-174/anat/sub-174_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-174/anat/sub-174_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-211/anat/sub-211_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-211/anat/sub-211_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-163/anat/sub-163_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-163/anat/sub-163_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-149/anat/sub-149_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-149/anat/sub-149_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-124/anat/sub-124_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-124/anat/sub-124_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-237/anat/sub-237_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-237/anat/sub-237_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-136/anat/sub-136_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-136/anat/sub-136_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-113/anat/sub-113_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-113/anat/sub-113_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-147/anat/sub-147_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-147/anat/sub-147_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-204/anat/sub-204_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-204/anat/sub-204_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-171/anat/sub-171_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-171/anat/sub-171_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-193/anat/sub-193_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-193/anat/sub-193_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-113/anat/sub-113_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-113/anat/sub-113_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-188/anat/sub-188_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-188/anat/sub-188_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-147/anat/sub-147_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-147/anat/sub-147_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-200/anat/sub-200_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-200/anat/sub-200_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-181/anat/sub-181_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-181/anat/sub-181_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-155/anat/sub-155_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-155/anat/sub-155_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-162/anat/sub-162_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-162/anat/sub-162_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-116/anat/sub-116_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-116/anat/sub-116_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-102/anat/sub-102_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-102/anat/sub-102_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-146/anat/sub-146_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-146/anat/sub-146_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-145/anat/sub-145_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-145/anat/sub-145_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-171/anat/sub-171_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-171/anat/sub-171_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-224/anat/sub-224_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-224/anat/sub-224_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-192/anat/sub-192_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-192/anat/sub-192_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-135/anat/sub-135_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-135/anat/sub-135_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-227/anat/sub-227_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-227/anat/sub-227_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-151/anat/sub-151_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-151/anat/sub-151_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-132/anat/sub-132_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-132/anat/sub-132_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-219/anat/sub-219_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-219/anat/sub-219_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-139/anat/sub-139_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-139/anat/sub-139_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-139/anat/sub-139_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-139/anat/sub-139_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-185/anat/sub-185_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-185/anat/sub-185_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-218/anat/sub-218_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-218/anat/sub-218_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-115/anat/sub-115_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-115/anat/sub-115_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-183/anat/sub-183_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-183/anat/sub-183_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-202/anat/sub-202_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-202/anat/sub-202_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-205/anat/sub-205_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-205/anat/sub-205_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-105/anat/sub-105_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-105/anat/sub-105_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-210/anat/sub-210_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-210/anat/sub-210_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-146/anat/sub-146_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-146/anat/sub-146_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-120/anat/sub-120_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-120/anat/sub-120_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-152/anat/sub-152_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-152/anat/sub-152_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-209/anat/sub-209_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-209/anat/sub-209_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-222/anat/sub-222_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-222/anat/sub-222_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-110/anat/sub-110_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-110/anat/sub-110_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-131/anat/sub-131_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-131/anat/sub-131_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-117/anat/sub-117_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-117/anat/sub-117_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-160/anat/sub-160_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-160/anat/sub-160_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-231/anat/sub-231_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-231/anat/sub-231_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-178/anat/sub-178_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-178/anat/sub-178_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-226/anat/sub-226_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-226/anat/sub-226_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-196/anat/sub-196_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-196/anat/sub-196_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-165/anat/sub-165_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-165/anat/sub-165_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-237/anat/sub-237_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-237/anat/sub-237_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-104/anat/sub-104_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-104/anat/sub-104_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-155/anat/sub-155_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-155/anat/sub-155_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-169/anat/sub-169_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-169/anat/sub-169_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-236/anat/sub-236_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-236/anat/sub-236_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-136/anat/sub-136_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-136/anat/sub-136_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-138/anat/sub-138_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-138/anat/sub-138_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-124/anat/sub-124_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-124/anat/sub-124_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-211/anat/sub-211_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-211/anat/sub-211_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-189/anat/sub-189_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-189/anat/sub-189_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-160/anat/sub-160_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-160/anat/sub-160_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-163/anat/sub-163_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-163/anat/sub-163_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-216/anat/sub-216_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-216/anat/sub-216_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-179/anat/sub-179_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-179/anat/sub-179_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-154/anat/sub-154_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-154/anat/sub-154_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-190/anat/sub-190_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-190/anat/sub-190_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-239/anat/sub-239_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-239/anat/sub-239_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-123/anat/sub-123_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-123/anat/sub-123_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-176/anat/sub-176_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-176/anat/sub-176_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-156/anat/sub-156_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-156/anat/sub-156_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-165/anat/sub-165_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-165/anat/sub-165_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-183/anat/sub-183_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-183/anat/sub-183_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-208/anat/sub-208_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-208/anat/sub-208_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-167/anat/sub-167_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-167/anat/sub-167_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-220/anat/sub-220_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-220/anat/sub-220_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-128/anat/sub-128_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-128/anat/sub-128_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-177/anat/sub-177_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-177/anat/sub-177_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-107/anat/sub-107_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-107/anat/sub-107_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-215/anat/sub-215_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-215/anat/sub-215_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-178/anat/sub-178_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-178/anat/sub-178_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-101/anat/sub-101_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-101/anat/sub-101_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-184/anat/sub-184_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-184/anat/sub-184_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-148/anat/sub-148_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-148/anat/sub-148_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-149/anat/sub-149_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-149/anat/sub-149_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-202/anat/sub-202_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-202/anat/sub-202_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-172/anat/sub-172_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-172/anat/sub-172_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        }
+    ]
+}

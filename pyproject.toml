@@ -1,0 +1,100 @@
+[tool.poetry]
+name = "discslabel"
+# Placeholder only. The real version is substituted at build time by
+# poetry-dynamic-versioning from the git tag. Do not bump this by hand.
+version = "0.0.0"
+description = "UNet heatmap regression for intervertebral disc landmark detection on mid-sagittal MRI slices."
+readme = "README.md"
+authors = [
+    "Nathan Molinier <nathan.molinier@polymtl.ca>",
+]
+maintainers = [
+    "Nathan Molinier",
+]
+homepage = "https://github.com/NathanMolinier/discs-labeling-multicontrast"
+repository = "https://github.com/NathanMolinier/discs-labeling-multicontrast"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+keywords = [
+    "deep learning",
+    "landmark detection",
+    "heatmap regression",
+    "intervertebral discs",
+    "spinal cord",
+    "magnetic resonance imaging",
+    "mri",
+    "UNet",
+]
+# discslabel has no __init__.py anywhere, so it is a PEP 420 namespace package.
+packages = [{ include = "discslabel" }]
+# The config JSONs are package data, not code, so they need listing explicitly.
+include = [
+    { path = "discslabel/datasets/*.json", format = ["sdist", "wheel"] },
+    { path = "discslabel/pipeline_2d/configs/*.json", format = ["sdist", "wheel"] },
+    { path = "discslabel/pipeline_3d/configs/*.json", format = ["sdist", "wheel"] },
+    { path = "discslabel/augmentations/*.json", format = ["sdist", "wheel"] },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+numpy = "*"
+pandas = "*"
+scikit-image = "*"
+nibabel = "*"
+scipy = "*"
+# matplotlib backs the `--debug-dir` PNG in discslabel_resample_image.
+matplotlib = "*"
+tqdm = "*"
+# SmaugLab provides the 3D GPU augmentation pipeline used before the mid-sagittal projection.
+# It is only needed at training time; inference does not import it.
+smauglab = { version = "*", optional = true }
+# kornia backs the 2D random elastic transform applied after mid-sagittal
+# slice extraction to simulate spine curvature. Training-only; inference does
+# not import it.
+kornia = { version = "*", optional = true }
+# wandb logs training metrics and per-epoch GT-vs-prediction overlays.
+# Training-only; inference does not import it.
+wandb = { version = "*", optional = true }
+
+[tool.poetry.extras]
+# `pip install discslabel[training]` pulls the GPU augmentation stack.
+training = ["smauglab", "kornia", "wandb"]
+
+[tool.poetry.scripts]
+discslabel_reorient_image = "discslabel.utils.reorient_image:main"
+discslabel_resample_image = "discslabel.utils.resample_image:main"
+discslabel_prepare = "discslabel.prepare:main"
+discslabel_train = "discslabel.pipeline_2d.train:main"
+discslabel_inference = "discslabel.pipeline_2d.inference:main"
+discslabel_train_3d = "discslabel.pipeline_3d.train:main"
+discslabel_inference_3d = "discslabel.pipeline_3d.inference:main"
+discslabel_evaluate = "discslabel.evaluate:main"
+discslabel_aggregate_evaluation = "discslabel.evaluate:aggregate_main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+# Strip an optional r/v/release- prefix; the rest becomes the version.
+pattern = "^(?:[rvV]|release[-_])?(?P<base>\\d+(\\.\\d+)*)(?:[-.]?(?P<stage>[a-zA-Z]+)\\.?(?P<revision>\\d+)?)?"
+# On a tag, the version is exactly the tag. Between tags, bump and mark .dev so
+# the build still sorts AFTER the release it follows -- a plain "{base}.devN"
+# would sort *before* it. No local version (+g<sha>), because PyPI rejects those.
+#
+# stage/revision must be carried through, or a pre-release tag like v1.0.0rc1
+# would build as plain "1.0.0" and collide with the real 1.0.0 release.
+format-jinja = """
+{%- if distance == 0 -%}
+{{ serialize_pep440(base, stage=stage, revision=revision) }}
+{%- else -%}
+{{ serialize_pep440(bump_version(base), stage=stage, revision=revision, dev=distance) }}
+{%- endif -%}
+"""
