@@ -379,7 +379,7 @@ def aggregate_runs(eval_dir: str, out_dir: str = "") -> None:
     Everything is rebuilt from the per-run folders on each call, so it is safe
     to re-run while (or after) several evaluations write their own folders.
     """
-    out_dir = out_dir or eval_dir
+    out_dir = out_dir or os.path.join(eval_dir, "comparisons")
     os.makedirs(out_dir, exist_ok=True)
 
     runs: Dict[str, dict] = {}
@@ -475,7 +475,7 @@ def aggregate_main() -> None:
     parser.add_argument(
         "--out-dir",
         default="",
-        help="Where to write evaluation.json + CSVs (default: --eval-dir).",
+        help="Where to write evaluation.json + CSVs (default: --eval-dir/comparisons).",
     )
     args = parser.parse_args()
     aggregate_runs(eval_dir=args.eval_dir, out_dir=args.out_dir)
