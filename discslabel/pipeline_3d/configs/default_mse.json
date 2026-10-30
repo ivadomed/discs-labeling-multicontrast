@@ -1,0 +1,61 @@
+{
+    "data_json": "data_t1w_t2w",
+    "out_name": "data_t1w_t2w",
+    "run_name": "data_t1w_t2w_UNet3D_default",
+    "debug": false,
+
+    "steps": {
+        "download": false,
+        "prepare": false,
+        "train": false,
+        "inference": false,
+        "evaluate": true
+    },
+
+    "orientation": "RPI",
+    "resolution": "1x1x1",
+    "label_sigma": 2.0,
+
+    "spine_disc_min_label": 60,
+
+    "model_name": "UNet3D",
+    "in_channels": 1,
+    "patch_size": [96, 256, 256],
+    "heatmap_sigma": 2.0,
+    "heatmap_radius": 4,
+    "foreground_prob": 0.8,
+
+    "batch_size": 2,
+    "batch_size_valid": "auto",
+    "num_workers": 16,
+    "prefetch_factor": 4,
+    "use_amp": true,
+
+    "train_max_epoch": 400,
+    "epoch_patience": 10,
+    "save_model_step": 10,
+
+    "lr": 1e-4,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "scheduler_step_size": 10,
+    "scheduler_gamma": 0.9,
+
+    "loss_name": "MSE",
+    "peak_threshold": 0.3,
+
+    "aug_config": "transform_params_one-sequence-to-segment-them-all.json",
+
+    "wandb": {
+        "project": "discs-labeling-multicontrast",
+        "entity": null,
+        "run_name": null,
+        "log_images_every": 1
+    },
+
+    "inference_split": "test",
+    "inference_save_images": true,
+    "inference_overlap": 0.5,
+    "inference_min_peak_distance": 10.0,
+    "inference_batch_size": "auto"
+}
