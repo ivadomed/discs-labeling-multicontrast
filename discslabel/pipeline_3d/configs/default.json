@@ -7,7 +7,7 @@
     "steps": {
         "download": false,
         "prepare": false,
-        "train": true,
+        "train": false,
         "inference": false,
         "evaluate": true
     },
