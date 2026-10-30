@@ -189,7 +189,7 @@
                 1.0
             ],
             "same_on_batch": false,
-            "p": 0.25
+            "p": 0.0
         },
         "RandomAcqTransformGPU": {
             "scale": [
@@ -197,7 +197,7 @@
                 1.0
             ],
             "same_on_batch": false,
-            "p": 1.0
+            "p": 0.0
         },
         "RandomBiasFieldGPU": {
             "retain_stats": true,
