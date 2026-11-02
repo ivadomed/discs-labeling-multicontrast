@@ -229,7 +229,8 @@ The mid-sagittal projection drops the R-L voxel coordinate from each labelled vo
     "patch_size": [96, 320, 320],   // 3D volume shape (R-L, P-A, I-S after RPI)
     "heatmap_sigma": 8.0,
     "heatmap_radius": 20,
-    "loss_name": "focalLoss",       // focalLoss | L1 | MSE
+    "loss_name": "focalLoss",       // focalLoss | L1 | MSE, or a weighted mix:
+                                    // {"focalLoss": 1.0, "MSE": 100.0} or "focalLoss+MSE"
     "aug_config": null,             // path to a SmaugLab GPU-augmentation JSON
 
     "inference_split": "test",

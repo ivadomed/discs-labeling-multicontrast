@@ -1,6 +1,6 @@
 """Heatmap regression losses."""
 
-from typing import List, Sequence
+from typing import Dict, List, Sequence, Union
 
 import torch
 import torch.nn as nn
@@ -35,7 +35,7 @@ def focal_loss(predict: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     return -(pos_loss + neg_loss) / num_pos
 
 
-def load_loss(loss_name: str):
+def _single_loss(loss_name: str):
     if loss_name == "L1":
         return nn.L1Loss()
     if loss_name == "MSE":
@@ -43,6 +43,37 @@ def load_loss(loss_name: str):
     if loss_name == "focalLoss":
         return focal_loss
     raise ValueError(f"Please input valid loss name, {loss_name} not in loss zoo.")
+
+
+class CombinedLoss(nn.Module):
+    """Weighted sum of several heatmap losses: ``sum_i w_i * loss_i(pred, target)``."""
+
+    def __init__(self, weights: Dict[str, float]):
+        super().__init__()
+        if not weights:
+            raise ValueError("Combined loss needs at least one term.")
+        self.weights = {name: float(w) for name, w in weights.items()}
+        self.terms = {name: _single_loss(name) for name in self.weights}
+
+    def forward(self, predict: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        total = predict.new_zeros((), dtype=torch.float32)
+        for name, w in self.weights.items():
+            total = total + w * self.terms[name](predict, target)
+        return total
+
+
+def load_loss(loss_name: Union[str, Dict[str, float]]):
+    """Build the training loss from the config ``loss_name``.
+
+    * ``"focalLoss"`` — a single loss (focalLoss | L1 | MSE);
+    * ``{"focalLoss": 1.0, "MSE": 100.0}`` — weighted sum of losses;
+    * ``"focalLoss+MSE"`` — sum with every weight equal to 1.
+    """
+    if isinstance(loss_name, dict):
+        return CombinedLoss(loss_name)
+    if "+" in loss_name:
+        return CombinedLoss({name.strip(): 1.0 for name in loss_name.split("+")})
+    return _single_loss(loss_name)
 
 
 def _downsample_target(target: torch.Tensor) -> torch.Tensor:
