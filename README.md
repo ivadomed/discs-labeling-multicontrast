@@ -74,8 +74,10 @@ export DISCSLABEL_DATA=/path/to/scratch/discslabel
 `run_pipeline.sh` reads the config and runs:
 
 ```
-download_datasets.sh  →  prepare_datasets.sh  →  discslabel_train  →  discslabel_inference
+download_datasets.sh  →  prepare_datasets.sh  →  discslabel_train  →  discslabel_tune  →  discslabel_inference  →  discslabel_evaluate
 ```
+
+(`run_pipeline_3d.sh` runs the same chain with the `_3d` entry points.)
 
 Each step runs when either `steps.<name>` is `true` **or** its output is missing from disk — so a fresh checkout always catches up, and setting a step to `false` only skips when the previous output is already present.
 
@@ -214,7 +216,9 @@ The mid-sagittal projection drops the R-L voxel coordinate from each labelled vo
         "download":  true,
         "prepare":   true,
         "train":     true,
-        "inference": false
+        "tune":      true,     // grid-search decoding params on the valid split
+        "inference": false,
+        "evaluate":  false
     },
 
     "orientation": "RPI",   // preprocessing axes
@@ -242,6 +246,18 @@ Common knobs:
 - `heatmap_sigma`, `heatmap_radius` — Gaussian spread and kernel radius for the on-GPU heatmap synthesis.
 - `label_sigma` — Gaussian spread **in millimetres** of the sphere used to carry point labels through the resample step. The sigma is converted to per-axis voxel sigmas via the input image zooms, so the sphere stays isotropic in physical space even on thick-slice MRI (anisotropic voxels). Set `label_debug_dir` in the config (or pass `--debug-dir` to `discslabel_resample_image`) to write a mid-sagittal 4-panel PNG per processed file — use it to confirm the sphere is big enough that its peak survives the resample.
 - `aug_config` — path to a SmaugLab GPU augmentation JSON (same format as the ones used by SmaugLab-benchmark). Set to `null` to disable augmentation.
+
+### Training schedule (nnU-Net style)
+
+- `num_epochs` × `num_iterations_per_epoch` — fixed training length; batches are drawn with replacement and there is **no early stopping**. The learning rate follows nnU-Net's polynomial decay `lr * (1 - epoch / num_epochs) ** 0.9`.
+- `optimizer` — `AdamW` (default), `Adam` or `SGD` (Nesterov, `momentum`); `weight_decay` applies to all three. Gradients are clipped at norm 12.
+- `oversample_foreground_percent` — fraction of every batch whose crop is centred on a voxel of a uniformly drawn disc (nnU-Net uses 0.33); the rest are uniformly random crops. The 2D pipeline always keeps the R-L centre on a disc-bearing slice.
+- `deep_supervision` — extra heatmap losses on the 1/2 and 1/4 decoder outputs (targets max-pooled so peaks stay at 1).
+- `val_every`, `val_max_images`, `val_tolerance_mm`, `val_ema_alpha` — every `val_every` epochs the model runs the full inference decoding on the validation images and is scored with the label-aware F1 (`f1_at_tolerance`: label right **and** within `val_tolerance_mm`). `best_model.pt` is saved when the exponential moving average of that score reaches a new best (details in `best_model.json`); `final_model.pt` is the last epoch.
+
+### Inference and post-processing
+
+Inference stitches every sliding-window prediction into one heatmap with a Gaussian importance map, then decodes peaks once. `discslabel_tune` / `discslabel_tune_3d` grid-search `peak_threshold` × `min_peak_distance` (`tune_peak_thresholds`, `tune_min_peak_distances`) on the validation split and write `postprocessing.json` + `postprocessing_grid.csv` next to the weights; inference uses `postprocessing.json` automatically when present, otherwise the config's `peak_threshold` / `inference_min_peak_distance`.
 
 The config is archived next to the trained weights (`$DISCSLABEL_DATA/weights/<run_name>/config.json`), together with the resolved `data.json` and a `pip freeze` snapshot, so each checkpoint carries the exact context used to produce it.
 

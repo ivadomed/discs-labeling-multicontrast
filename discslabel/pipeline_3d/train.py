@@ -9,10 +9,24 @@ Pipeline per batch:
     2. 3D Gaussian heatmap synthesis from the point-wise disc label
     3. the 3D model sees ``(image_3d, heatmap_3d)`` for the loss
 
+Training schedule (nnU-Net style)
+---------------------------------
+* an epoch is ``num_iterations_per_epoch`` batches drawn with replacement by
+  ``ForegroundBatchSampler`` (``oversample_foreground_percent`` of each batch
+  is centred on a disc); there is no early stopping, training always runs
+  ``num_epochs`` epochs with a polynomial learning-rate decay;
+* ``deep_supervision`` adds losses on the 1/2 and 1/4 decoder outputs;
+* every ``val_every`` epochs the model runs the full inference decoding on
+  the validation images and is scored with ``f1_at_tolerance`` (label right
+  AND within ``val_tolerance_mm``). ``best_model.pt`` is saved whenever the
+  exponential moving average of that score reaches a new best;
+  ``final_model.pt`` is the last epoch.
+
 Weights & Biases
 ----------------
 When the config carries a ``wandb`` block, each epoch logs train/valid loss,
-the current learning rate, and a per-epoch overlay figure. Since we cannot
+the validation metrics, the current learning rate, and a per-epoch overlay
+figure. Since we cannot
 show a volume inline, previews display the mid-sagittal slice of the input
 alongside max-intensity projections along R-L of each heatmap channel.
 
@@ -37,9 +51,20 @@ from torch.utils.data import DataLoader
 from .. import HEATMAP_CHANNELS
 from ..dataset import DiscVolumeDataset
 from .gpu_pipeline import GpuBatchProcessor
-from ..losses import load_loss
+from ..losses import DeepSupervisionLoss, load_loss
 from .model import load_model
+from ..postprocessing import DEFAULT_TOLERANCE_MM, collect_cases, score_cases
+from .predictor import labeled_to_voxels, predict_candidates
+from ..training import (
+    EmaTracker,
+    ForegroundBatchSampler,
+    PolyLRScheduler,
+    build_optimizer,
+)
 from ..utils.io import check_and_make_dir
+
+
+GRAD_CLIP_NORM = 12.0
 
 
 def _load_config(path: str | None) -> dict:
@@ -58,8 +83,12 @@ def _one_epoch(
     desc: str,
     capture_first_batch: bool = False,
     scaler: "torch.cuda.amp.GradScaler | None" = None,
+    max_batches: int | None = None,
 ) -> tuple[float, dict | None]:
     """One pass over ``loader``. Mirrors the 2D version, but every tensor is 5D.
+
+    Training clips the gradient norm at ``GRAD_CLIP_NORM`` (nnU-Net). The pass
+    stops after ``max_batches`` batches when set.
 
     When ``capture_first_batch`` is set, the second return value holds a dict
     with the first batch's ``image_3d``, ``heatmap_gt`` (ground truth) and
@@ -71,7 +100,11 @@ def _one_epoch(
     first_sample: dict | None = None
     use_amp = scaler is not None
     with torch.set_grad_enabled(train):
-        for batch in tqdm.tqdm(loader, desc=desc):
+        for i_batch, batch in enumerate(
+            tqdm.tqdm(loader, desc=desc, total=min(len(loader), max_batches or len(loader)))
+        ):
+            if max_batches is not None and i_batch >= max_batches:
+                break
             image_3d = batch["image"].to(device, non_blocking=True).float()
             label_3d = batch["label"].to(device, non_blocking=True).float()
             seg_3d = batch.get("seg")
@@ -91,14 +124,19 @@ def _one_epoch(
             if train:
                 if use_amp:
                     scaler.scale(loss).backward()
+                    scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP_NORM)
                     scaler.step(optimizer)
                     scaler.update()
                 else:
                     loss.backward()
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP_NORM)
                     optimizer.step()
             losses.append(loss.item())
 
             if capture_first_batch and first_sample is None:
+                if isinstance(pred, (list, tuple)):
+                    pred = pred[0]
                 name = batch.get("name")
                 if isinstance(name, (list, tuple)) and name:
                     name = name[0]
@@ -215,14 +253,13 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
     print(f"[dry-run 3D] device: {device}, pulling {n_samples} samples")
 
     spine_disc_min = int(cfg.get("spine_disc_min_label", 60))
-    foreground_prob = float(cfg.get("foreground_prob", 0.7))
     dataset = DiscVolumeDataset(
         manifest_path,
         split="train",
         patch_size=tuple(cfg["patch_size"]),
         spine_disc_min_label=spine_disc_min,
         random_crop=True,
-        foreground_prob=foreground_prob,
+        oversample_foreground_percent=float(cfg.get("oversample_foreground_percent", 0.33)),
     )
     if len(dataset) == 0:
         raise RuntimeError("Train split is empty — nothing to dry-run against.")
@@ -320,6 +357,35 @@ def _init_wandb(cfg: dict, save_model_dir: str):
     return run, wandb, int(wandb_cfg.get("log_images_every", 1))
 
 
+def _validate_full_images(
+    model: torch.nn.Module,
+    cfg: dict,
+    manifest_path: str,
+    device: torch.device,
+) -> dict:
+    """Score the model on whole validation volumes with the inference decoding."""
+    model.eval()
+    patch_dhw = tuple(int(s) for s in cfg["patch_size"])
+    overlap = float(cfg.get("inference_overlap", 0.5))
+    batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
+    peak_thr = float(cfg.get("peak_threshold", 0.3))
+    min_dist = float(cfg.get("inference_min_peak_distance", 10.0))
+    cases = collect_cases(
+        manifest_path,
+        "valid",
+        lambda v: predict_candidates(v, model, device, patch_dhw, overlap, batch_size, peak_thr),
+        max_images=cfg.get("val_max_images"),
+        desc="validation (full images)",
+    )
+    return score_cases(
+        cases,
+        labeled_to_voxels,
+        peak_thr,
+        min_dist,
+        float(cfg.get("val_tolerance_mm", DEFAULT_TOLERANCE_MM)),
+    )
+
+
 def train(
     cfg: dict,
     manifest_path: str,
@@ -334,22 +400,31 @@ def train(
     batch_size_valid = _resolve_batch_size(cfg.get("batch_size_valid"), device)
     use_amp = bool(cfg.get("use_amp", True)) and device.type == "cuda"
     prefetch_factor = int(cfg.get("prefetch_factor", 4)) if num_workers > 0 else None
+    num_epochs = int(cfg.get("num_epochs", 1000))
+    num_iterations = int(cfg.get("num_iterations_per_epoch", 250))
+    num_val_iterations = int(cfg.get("num_val_iterations_per_epoch", 50))
+    val_every = max(1, int(cfg.get("val_every", 1)))
+    oversample_fg = float(cfg.get("oversample_foreground_percent", 0.33))
+    deep_supervision = bool(cfg.get("deep_supervision", True))
     print(
         f"[train 3D] device={device} num_workers={num_workers} "
         f"batch_size={batch_size} batch_size_valid={batch_size_valid} "
         f"amp={use_amp} prefetch_factor={prefetch_factor}"
     )
+    print(
+        f"[train 3D] epochs={num_epochs} iterations/epoch={num_iterations} "
+        f"oversample_foreground_percent={oversample_fg} "
+        f"deep_supervision={deep_supervision} val_every={val_every}"
+    )
 
     spine_disc_min = int(cfg.get("spine_disc_min_label", 60))
-    foreground_prob = float(cfg.get("foreground_prob", 0.7))
-    print(f"[train 3D] foreground_prob={foreground_prob}")
     train_ds = DiscVolumeDataset(
         manifest_path,
         split="train",
         patch_size=tuple(cfg["patch_size"]),
         spine_disc_min_label=spine_disc_min,
         random_crop=True,
-        foreground_prob=foreground_prob,
+        oversample_foreground_percent=oversample_fg,
     )
     valid_ds = DiscVolumeDataset(
         manifest_path,
@@ -368,7 +443,11 @@ def train(
         loader_kwargs["prefetch_factor"] = prefetch_factor
 
     train_loader = DataLoader(
-        train_ds, batch_size=batch_size, shuffle=True, **loader_kwargs
+        train_ds,
+        batch_sampler=ForegroundBatchSampler(
+            len(train_ds), batch_size, num_iterations, oversample_fg
+        ),
+        **loader_kwargs,
     )
     valid_loader = DataLoader(
         valid_ds, batch_size=batch_size_valid, shuffle=False, **loader_kwargs
@@ -380,22 +459,22 @@ def train(
         heatmap_radius=cfg["heatmap_radius"],
     ).to(device)
 
-    model = load_model(cfg["model_name"], in_channels=cfg["in_channels"]).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=cfg["lr"], betas=(cfg["beta1"], cfg["beta2"]))
-    scheduler = torch.optim.lr_scheduler.StepLR(
-        optimizer, step_size=cfg["scheduler_step_size"], gamma=cfg["scheduler_gamma"]
-    )
-    loss_fn = load_loss(cfg["loss_name"])
+    model = load_model(
+        cfg["model_name"], in_channels=cfg["in_channels"], deep_supervision=deep_supervision
+    ).to(device)
+    optimizer = build_optimizer(cfg, model.parameters())
+    scheduler = PolyLRScheduler(optimizer, float(cfg["lr"]), num_epochs)
+    loss_fn = DeepSupervisionLoss(load_loss(cfg["loss_name"]))
 
     check_and_make_dir(save_model_dir)
 
     scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
     wandb_run, wandb_mod, log_images_every = _init_wandb(cfg, save_model_dir)
 
-    best_loss = float("inf")
-    num_epoch_no_improvement = 0
+    ema = EmaTracker(alpha=float(cfg.get("val_ema_alpha", 0.9)))
 
-    for epoch in range(cfg["train_max_epoch"]):
+    for epoch in range(num_epochs):
+        lr = optimizer.param_groups[0]["lr"]
         train_loss, _ = _one_epoch(
             model,
             train_loader,
@@ -407,7 +486,7 @@ def train(
             scaler=scaler if use_amp else None,
         )
         scheduler.step()
-        print(f"Train epoch [{epoch + 1:<4d}/{cfg['train_max_epoch']:<4d}] Loss: {train_loss:.6f}")
+        print(f"Train epoch [{epoch + 1:<4d}/{num_epochs:<4d}] Loss: {train_loss:.6f} lr: {lr:.2e}")
 
         if cfg["save_model_step"] > 0 and epoch % cfg["save_model_step"] == 0:
             ckpt = os.path.join(save_model_dir, f"checkpoint_epoch_{epoch}.pt")
@@ -425,16 +504,45 @@ def train(
             desc=f"epoch {epoch + 1} valid",
             capture_first_batch=capture,
             scaler=scaler if use_amp else None,
+            max_batches=num_val_iterations,
         )
         print(f"Validation loss: {valid_loss:.6f}")
+
+        metrics = None
+        if (epoch + 1) % val_every == 0 or epoch == num_epochs - 1:
+            metrics = _validate_full_images(model, cfg, manifest_path, device)
+            is_best = ema.update(metrics["f1_at_tolerance"])
+            dist = metrics["distance_mm"]["mean"]
+            print(
+                f"Validation F1@{metrics['tolerance_mm']:g}mm={metrics['f1_at_tolerance']:.4f} "
+                f"(EMA {ema.value:.4f}, best {ema.best:.4f}) "
+                f"recall={metrics['recall'] or 0:.4f} precision={metrics['precision'] or 0:.4f} "
+                f"mean_dist={dist if dist is not None else float('nan'):.2f}mm"
+            )
+            if is_best:
+                best_path = os.path.join(save_model_dir, "best_model.pt")
+                torch.save(model.state_dict(), best_path)
+                with open(os.path.join(save_model_dir, "best_model.json"), "w") as f:
+                    json.dump({"epoch": epoch, "ema_f1": ema.value, "metrics": metrics}, f, indent=2)
+                print("Saving best model:", best_path)
 
         if wandb_run is not None:
             log = {
                 "epoch": epoch,
                 "train/loss": train_loss,
                 "valid/loss": valid_loss,
-                "lr": optimizer.param_groups[0]["lr"],
+                "lr": lr,
             }
+            if metrics is not None:
+                log.update(
+                    {
+                        "valid/f1_at_tolerance": metrics["f1_at_tolerance"],
+                        "valid/f1_ema": ema.value,
+                        "valid/recall": metrics["recall"],
+                        "valid/precision": metrics["precision"],
+                        "valid/distance_mm_mean": metrics["distance_mm"]["mean"],
+                    }
+                )
             if sample is not None:
                 epoch_label = f"Epoch {epoch + 1}"
                 fig = _build_gt_pred_figure(
@@ -451,22 +559,9 @@ def train(
                 plt.close(fig)
             wandb_run.log(log, step=epoch)
 
-        if valid_loss < best_loss:
-            print(f"Validation loss decreases from {best_loss:.6f} to {valid_loss:.6f}")
-            best_loss = valid_loss
-            num_epoch_no_improvement = 0
-            best_path = os.path.join(save_model_dir, "best_model.pt")
-            torch.save(model.state_dict(), best_path)
-            print("Saving best model:", best_path)
-        else:
-            num_epoch_no_improvement += 1
-            print(
-                f"Validation loss did not decrease from {best_loss:.6f} "
-                f"(no improvement for {num_epoch_no_improvement} epochs)"
-            )
-        if num_epoch_no_improvement >= cfg["epoch_patience"]:
-            print("Early stopping triggered.")
-            break
+    final_path = os.path.join(save_model_dir, "final_model.pt")
+    torch.save(model.state_dict(), final_path)
+    print("Saving final model:", final_path)
     if wandb_run is not None:
         wandb_run.finish()
 

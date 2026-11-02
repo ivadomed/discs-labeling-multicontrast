@@ -71,8 +71,15 @@ class OutputTransition(nn.Module):
 
 
 class UNet(nn.Module):
-    def __init__(self, in_channels=1, n_class=NUM_CLASSES):
+    """``deep_supervision=True`` adds sigmoid heads on the 1/2 and 1/4
+    resolution decoder stages; in training mode ``forward`` then returns
+    ``[full, half, quarter]`` (nnU-Net style). Eval mode always returns the
+    full-resolution heatmap only.
+    """
+
+    def __init__(self, in_channels=1, n_class=NUM_CLASSES, deep_supervision=False):
         super().__init__()
+        self.deep_supervision = bool(deep_supervision)
 
         self.down_tr64 = DownTransition(in_channels, 0)
         self.down_tr128 = DownTransition(64, 1)
@@ -83,6 +90,10 @@ class UNet(nn.Module):
         self.up_tr128 = UpTransition(256, 256, 1)
         self.up_tr64 = UpTransition(128, 128, 0)
         self.out_tr = OutputTransition(64, n_class)
+        if self.deep_supervision:
+            self.ds_heads = nn.ModuleList(
+                [OutputTransition(128, n_class), OutputTransition(256, n_class)]
+            )
 
     def forward(self, x):
         out64, skip64 = self.down_tr64(x)
@@ -93,10 +104,18 @@ class UNet(nn.Module):
         up256 = self.up_tr256(out512, skip256)
         up128 = self.up_tr128(up256, skip128)
         up64 = self.up_tr64(up128, skip64)
-        return self.out_tr(up64)
+        out = self.out_tr(up64)
+        if self.deep_supervision and self.training:
+            return [out, self.ds_heads[0](up128), self.ds_heads[1](up256)]
+        return out
 
 
-def load_model(model_name: str = "UNet", in_channels: int = 1, n_class: int = NUM_CLASSES):
+def load_model(
+    model_name: str = "UNet",
+    in_channels: int = 1,
+    n_class: int = NUM_CLASSES,
+    deep_supervision: bool = False,
+):
     if model_name == "UNet":
-        return UNet(in_channels=in_channels, n_class=n_class)
+        return UNet(in_channels=in_channels, n_class=n_class, deep_supervision=deep_supervision)
     raise ValueError(f"Please input valid model name, {model_name} not in model zoo.")

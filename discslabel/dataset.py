@@ -13,10 +13,11 @@ Per-sample pipeline:
        crop contains **disc** voxels. The disc mask is the dense disc
        segmentation from SEG_SPINE (voxels with value ``>= spine_disc_min_label``);
        when SEG_SPINE is unavailable we fall back to the point-wise ``LABEL``
-       (any non-zero disc landmark). In train mode the origin is drawn
-       randomly from the set of disc-bearing sagittal slices (plus a small
-       H/W jitter around the disc centroid); in valid / inference mode we use
-       the median disc slice and the exact disc centroid.
+       (any non-zero disc landmark). In train mode the origin follows
+       nnU-Net's sampling (``_pick_crop_origin_nnunet``): foreground-forced
+       crops are centred on a voxel of a uniformly drawn disc, the others are
+       uniformly random. In valid / inference mode we use the median disc
+       slice and the exact disc centroid.
     3. Apply the SAME crop (plus zero-padding if the volume is smaller than
        ``patch_size``) to every volume so every tensor stays co-registered.
     4. Z-score normalise the cropped image using the non-background voxels.
@@ -119,29 +120,28 @@ def _crop_or_pad_at(
     return out
 
 
-def _pick_crop_origin_random_fg(
+def _pick_crop_origin_nnunet(
     vol_shape: Tuple[int, int, int],
     patch_size: Tuple[int, int, int],
-    disc_presence: Optional[np.ndarray],
+    disc_ids: Optional[np.ndarray],
     rng: np.random.Generator,
-    foreground_prob: float,
+    force_fg: bool,
+    midline_on_disc: bool,
 ) -> Tuple[int, int, int]:
-    """Random 3D crop origin with a configurable minimum-foreground guarantee.
+    """nnU-Net-style training crop origin.
 
-    Used by the 3D pipeline where the full volume (not a 2D slice) is fed to
-    the model — a crop that misses every disc is a valid negative example,
-    but we still want the majority of crops to contain at least one disc so
-    the heatmap-regression loss has a positive target to pull toward.
+    ``disc_ids`` is an int volume where each disc carries its own id
+    (0 = background).
 
-    With probability ``foreground_prob``, picks a random disc voxel from
-    ``disc_presence`` and places the crop so that voxel lands at a uniformly
-    random position WITHIN the crop — the disc is guaranteed to be inside
-    the output. With probability ``1 - foreground_prob``, draws the origin
-    uniformly from the valid range on every axis independently; those crops
-    may or may not contain discs.
+    * ``force_fg`` (nnU-Net ``oversample_foreground``): draw one disc id
+      uniformly — so small cervical discs are as likely as large lumbar ones —
+      then one of its voxels, and centre the crop on it.
+    * otherwise: uniform random origin on every axis; the crop may hold no disc.
 
-    Falls back to a uniformly random crop when no disc voxels are available
-    (empty volume), instead of raising.
+    ``midline_on_disc`` (2D pipeline): the model only sees the crop's
+    mid-sagittal slice, and inference always runs on a slice through the
+    spine, so the R-L centre is always a disc-bearing slice; the
+    foreground / random choice then applies to H and W only.
     """
     D, H, W = vol_shape[:3]
     pD, pH, pW = (int(s) for s in patch_size)
@@ -156,27 +156,25 @@ def _pick_crop_origin_random_fg(
             return int(max(0, min(start, src_len - dst_len)))
         return 0
 
-    want_fg = (
-        disc_presence is not None
-        and disc_presence.any()
-        and rng.random() < foreground_prob
-    )
+    coords = np.argwhere(disc_ids > 0) if disc_ids is not None else np.empty((0, 3), int)
+    if len(coords) == 0:
+        return (_axis_uniform(D, pD), _axis_uniform(H, pH), _axis_uniform(W, pW))
 
-    if want_fg:
-        disc_voxels = np.argwhere(disc_presence)  # (N, 3) in (D, H, W)
-        d_fg, h_fg, w_fg = disc_voxels[rng.integers(0, len(disc_voxels))]
-        # Uniform random position of the chosen disc inside the crop. Any
-        # clamping afterwards keeps the disc inside (just at the edge).
-        od = int(rng.integers(0, pD))
-        oh = int(rng.integers(0, pH))
-        ow = int(rng.integers(0, pW))
-        d0 = int(d_fg) - od
-        h0 = int(h_fg) - oh
-        w0 = int(w_fg) - ow
+    if midline_on_disc:
+        d_mid = int(rng.choice(np.unique(coords[:, 0])))
+        coords = coords[coords[:, 0] == d_mid]
+
+    if force_fg:
+        ids = disc_ids[coords[:, 0], coords[:, 1], coords[:, 2]]
+        chosen_id = rng.choice(np.unique(ids))
+        candidates = coords[ids == chosen_id]
+        d_fg, h_fg, w_fg = candidates[rng.integers(0, len(candidates))]
+        d0, h0, w0 = int(d_fg) - pD // 2, int(h_fg) - pH // 2, int(w_fg) - pW // 2
     else:
-        d0 = _axis_uniform(D, pD)
-        h0 = _axis_uniform(H, pH)
-        w0 = _axis_uniform(W, pW)
+        d0, h0, w0 = _axis_uniform(D, pD), _axis_uniform(H, pH), _axis_uniform(W, pW)
+
+    if midline_on_disc:
+        d0 = d_mid - pD // 2
 
     return (_clamp(d0, D, pD), _clamp(h0, H, pH), _clamp(w0, W, pW))
 
@@ -282,7 +280,8 @@ class DiscVolumeDataset(Dataset):
         require_label: bool = True,
         spine_disc_min_label: int = SEG_SPINE_DISC_MIN_LABEL,
         random_crop: bool = False,
-        foreground_prob: Optional[float] = None,
+        oversample_foreground_percent: float = 0.33,
+        midline_on_disc: bool = False,
     ):
         super().__init__()
         with open(manifest_path, "r") as f:
@@ -296,12 +295,11 @@ class DiscVolumeDataset(Dataset):
         self.require_label = require_label
         self.spine_disc_min_label = int(spine_disc_min_label)
         self.random_crop = bool(random_crop)
-        # None  → use the 2D midline-tight sampler (``_pick_crop_origin``).
-        # float → use the 3D random-with-foreground sampler
-        #         (``_pick_crop_origin_random_fg``) when ``random_crop`` is on.
-        self.foreground_prob = (
-            float(foreground_prob) if foreground_prob is not None else None
-        )
+        # Training crops (``random_crop=True``) use ``_pick_crop_origin_nnunet``.
+        # ``ForegroundBatchSampler`` passes ``(index, force_fg)`` keys; a plain
+        # int index falls back to drawing ``force_fg`` with this probability.
+        self.oversample_foreground_percent = float(oversample_foreground_percent)
+        self.midline_on_disc = bool(midline_on_disc)
 
     def __len__(self) -> int:
         return len(self.entries)
@@ -310,7 +308,13 @@ class DiscVolumeDataset(Dataset):
         """Fresh RNG per __getitem__ call so DataLoader worker seeding sticks."""
         return np.random.default_rng()
 
-    def __getitem__(self, index: int) -> Dict[str, torch.Tensor | str]:
+    def __getitem__(self, key) -> Dict[str, torch.Tensor | str]:
+        rng = self._rng()
+        if isinstance(key, (tuple, list)):
+            index, force_fg = int(key[0]), bool(key[1])
+        else:
+            index = int(key)
+            force_fg = bool(rng.random() < self.oversample_foreground_percent)
         entry = self.entries[index]
 
         # 1. Load every 3D volume we need (raw, pre-crop).
@@ -340,30 +344,33 @@ class DiscVolumeDataset(Dataset):
         #    heatmap-regression task actually cares about.
         #    Preferred source: dense disc mask from SEG_SPINE (value >= threshold).
         #    Fallback: the point-wise LABEL (any non-zero disc landmark).
-        disc_presence: Optional[np.ndarray] = None
+        #    ``disc_ids`` keeps one id per disc (SEG_SPINE value or LABEL value)
+        #    so the foreground sampler can pick discs uniformly.
+        disc_ids: Optional[np.ndarray] = None
         if seg_spine_raw is not None:
-            dense_discs = seg_spine_raw >= self.spine_disc_min_label
-            if dense_discs.any():
-                disc_presence = dense_discs
-        if disc_presence is None and label_raw is not None:
-            label_points = label_raw > 0
-            if label_points.any():
-                disc_presence = label_points
-        if self.random_crop and self.foreground_prob is not None:
-            origin = _pick_crop_origin_random_fg(
+            dense_ids = np.where(seg_spine_raw >= self.spine_disc_min_label, seg_spine_raw, 0)
+            if dense_ids.any():
+                disc_ids = dense_ids
+        if disc_ids is None and label_raw is not None:
+            label_ids = label_raw.astype(np.int32)
+            if label_ids.any():
+                disc_ids = label_ids
+        if self.random_crop:
+            origin = _pick_crop_origin_nnunet(
                 image_raw.shape,
                 self.patch_size,
-                disc_presence,
-                rng=self._rng(),
-                foreground_prob=self.foreground_prob,
+                disc_ids,
+                rng=rng,
+                force_fg=force_fg,
+                midline_on_disc=self.midline_on_disc,
             )
         else:
             origin = _pick_crop_origin(
                 image_raw.shape,
                 self.patch_size,
-                disc_presence,
-                random_crop=self.random_crop,
-                rng=self._rng(),
+                disc_ids > 0 if disc_ids is not None else None,
+                random_crop=False,
+                rng=rng,
             )
 
         # 3. Crop + z-score normalise the image.
