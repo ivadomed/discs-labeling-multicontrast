@@ -149,7 +149,21 @@ def _evaluate_one(
     """Return ``(per_image_summary, per_disc_rows)`` for one image."""
     gt_discs, gt_affine = _extract_disc_voxels(gt_path)
     pred_discs, pred_affine = _extract_disc_voxels(pred_path)
+    return compare_discs(stem, gt_discs, gt_affine, pred_discs, pred_affine)
 
+
+def compare_discs(
+    stem: str,
+    gt_discs: Dict[int, np.ndarray],
+    gt_affine: np.ndarray,
+    pred_discs: Dict[int, np.ndarray],
+    pred_affine: np.ndarray,
+) -> Tuple[dict, List[dict]]:
+    """Match ``{label: (3,) voxel}`` dicts by label value.
+
+    Same output as ``_evaluate_one``; split out so training validation and
+    post-processing tuning can score in-memory predictions without NIfTI I/O.
+    """
     matched: List[Tuple[int, float]] = []
     fn_labels: List[int] = []
     fp_labels: List[int] = []
@@ -192,6 +206,21 @@ def _evaluate_one(
         "matched": [{"label": lbl, "distance_mm": d} for lbl, d in matched],
     }
     return summary, rows
+
+
+def f1_at_tolerance(per_image: List[dict], tolerance_mm: float) -> float:
+    """Label-aware F1 where a disc only counts when its label is right AND it
+    lies within ``tolerance_mm`` of the GT. Off-by-one labelings therefore
+    score as both a miss and a false positive, unlike plain recall/precision.
+    """
+    n_gt = sum(p["n_gt"] for p in per_image)
+    n_pred = sum(p["n_pred"] for p in per_image)
+    if n_gt + n_pred == 0:
+        return 0.0
+    hits = sum(
+        1 for p in per_image for m in p["matched"] if m["distance_mm"] <= tolerance_mm
+    )
+    return 2.0 * hits / (n_gt + n_pred)
 
 
 def _aggregate(per_image: List[dict]) -> dict:
