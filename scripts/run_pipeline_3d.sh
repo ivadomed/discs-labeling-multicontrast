@@ -51,6 +51,7 @@ DO_DEBUG=$(jopt '.debug' 'false')
 DO_DOWNLOAD=$(jopt  '.steps.download'  'false')
 DO_PREPARE=$(jopt   '.steps.prepare'   'false')
 DO_TRAIN=$(jopt     '.steps.train'     'false')
+DO_TUNE=$(jopt      '.steps.tune'      'false')
 DO_INFERENCE=$(jopt '.steps.inference' 'false')
 DO_EVALUATE=$(jopt  '.steps.evaluate'  'false')
 
@@ -97,7 +98,7 @@ _bids_complete() {
 }
 
 echo ""
-echo "Pipeline steps (config, 3D): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
+echo "Pipeline steps (config, 3D): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN tune=$DO_TUNE inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
 echo "Config:   $config_json"
 echo "Data:     $DATA_JSON"
 echo "Prepared: $PREP_ROOT"
@@ -141,6 +142,17 @@ if [ "$DO_TRAIN" = "true" ]; then
     discslabel_train_3d \
         --manifest "$MANIFEST" \
         --save-model-dir "$WEIGHTS_DIR" \
+        --config "$config_json"
+fi
+
+# Grid-search peak_threshold / min_peak_distance on the validation split and
+# write postprocessing.json next to the weights; inference and evaluation
+# pick it up automatically.
+if [ "$DO_TUNE" = "true" ]; then
+    echo "==> discslabel_tune_3d"
+    discslabel_tune_3d \
+        --weights "$WEIGHTS_DIR/best_model.pt" \
+        --manifest "$MANIFEST" \
         --config "$config_json"
 fi
 

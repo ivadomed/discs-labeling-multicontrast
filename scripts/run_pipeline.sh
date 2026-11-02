@@ -7,6 +7,7 @@
 #   download  — git clone + git annex get the BIDS data referenced by data_json
 #   prepare   — copy to prepared/, reorient to RPI, resample to 1 mm iso
 #   train     — call discslabel_train on the prepared manifest
+#   tune      — call discslabel_tune to grid-search the decoding parameters
 #   inference — call discslabel_inference on the chosen split
 #
 # Each step runs when either:
@@ -62,6 +63,7 @@ DO_DEBUG=$(jopt '.debug' 'false')
 DO_DOWNLOAD=$(jopt  '.steps.download'  'false')
 DO_PREPARE=$(jopt   '.steps.prepare'   'false')
 DO_TRAIN=$(jopt     '.steps.train'     'false')
+DO_TUNE=$(jopt      '.steps.tune'      'false')
 DO_INFERENCE=$(jopt '.steps.inference' 'false')
 DO_EVALUATE=$(jopt  '.steps.evaluate'  'false')
 
@@ -111,7 +113,7 @@ _bids_complete() {
 }
 
 echo ""
-echo "Pipeline steps (config): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
+echo "Pipeline steps (config): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN tune=$DO_TUNE inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
 echo "Config:   $config_json"
 echo "Data:     $DATA_JSON"
 echo "Prepared: $PREP_ROOT"
@@ -164,7 +166,19 @@ if [ "$DO_TRAIN" = "true" ]; then
         --config "$config_json"
 fi
 
-# -------- 5. Inference --------
+# -------- 5. Tune post-processing --------
+# Grid-search peak_threshold / min_peak_distance on the validation split and
+# write postprocessing.json next to the weights; inference and evaluation
+# pick it up automatically.
+if [ "$DO_TUNE" = "true" ]; then
+    echo "==> discslabel_tune"
+    discslabel_tune \
+        --weights "$WEIGHTS_DIR/best_model.pt" \
+        --manifest "$MANIFEST" \
+        --config "$config_json"
+fi
+
+# -------- 6. Inference --------
 if [ "$DO_INFERENCE" = "true" ]; then
     echo "==> discslabel_inference"
     discslabel_inference \
@@ -174,7 +188,7 @@ if [ "$DO_INFERENCE" = "true" ]; then
         --config "$config_json"
 fi
 
-# -------- 6. Evaluate --------
+# -------- 7. Evaluate --------
 if [ "$DO_EVALUATE" = "true" ]; then
     if [ ! -f "$EVAL_JSON" ]; then
         echo "Error: evaluate step enabled but $EVAL_JSON not found"

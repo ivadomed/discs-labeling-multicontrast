@@ -6,18 +6,22 @@ a single ``.nii`` / ``.nii.gz`` file or a flat folder of them. For each image:
     0. reorient to ``cfg["orientation"]`` and resample to
        ``cfg["resolution"]`` (same preprocessing as training inputs)
     1. z-score normalise the full 3D volume
-    2. slide ``(patch_D, patch_H, patch_W)`` windows over the whole volume,
-       traversing I-S superior → inferior along W
-    3. forward the windows through the 3D model in batches → 5-channel 3D heatmap
-    4. collect disc peaks from channel 0 and anchor peaks from channels 1..4
-       in GLOBAL volume coordinates, with duplicates merged across windows
-    5. pick the highest-priority detected anchor
+    2. slide ``(patch_D, patch_H, patch_W)`` windows over the whole volume and
+       stitch the 5-channel predictions into ONE volume-sized heatmap, each
+       window weighted by a Gaussian importance map (nnU-Net style)
+    3. decode once on the stitched heatmap: disc peaks from channel 0
+       (threshold + Euclidean NMS) and the argmax of anchor channels 1..4
+    4. pick the highest-priority detected anchor
        (``C2C3`` > ``L5S1`` > ``C7T1`` > ``T12L1``) and label every disc
        superior → inferior relative to that anchor
-    6. project the labeled discs back onto the input image's native grid via
+    5. project the labeled discs back onto the input image's native grid via
        pure affine arithmetic (points, no interpolation)
-    7. write a 3D NIfTI with single-voxel discs plus a PNG preview showing
+    6. write a 3D NIfTI with single-voxel discs plus a PNG preview showing
        the preprocessed mid-sagittal slice with each labeled disc overlaid.
+
+``peak_threshold`` / ``min_peak_distance`` come from ``postprocessing.json``
+next to the weights when ``discslabel_tune_3d`` has been run, else from the
+config.
 
 No label or seg files are required. No augmentation is applied.
 """
@@ -27,7 +31,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import List, Tuple
 
 import nibabel as nib
 import numpy as np
@@ -36,9 +40,12 @@ import tqdm
 
 logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 
-from .. import HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS, NUM_CLASSES
 from ..dataset import _z_score_normalize
+from ..decoding import _choose_anchor, label_discs
+from ..postprocessing import resolve_postprocessing
+from ..training import load_inference_weights
 from .model import load_model
+from .predictor import predict_candidates
 from .train import (
     _display_slice,
     _intensity_window,
@@ -78,188 +85,6 @@ def _discover_inputs(path: str) -> List[str]:
             raise FileNotFoundError(f"No .nii / .nii.gz files found in {path}")
         return files
     raise FileNotFoundError(f"--input must be a .nii/.nii.gz file or a folder: {path}")
-
-
-ANCHOR_PRIORITY: Tuple[str, ...] = ("C2C3", "L5S1", "C7T1", "T12L1")
-
-MIN_DISC_LABEL = 1
-MAX_DISC_LABEL = 25
-
-
-def _pad_volume_to_patch(
-    volume: np.ndarray, patch_dhw: Tuple[int, int, int]
-) -> Tuple[np.ndarray, Tuple[int, int, int]]:
-    """Zero-pad ``volume`` to at least ``patch_dhw`` on each axis."""
-    D, H, W = volume.shape
-    pD, pH, pW = patch_dhw
-    pad_d, pad_h, pad_w = max(0, pD - D), max(0, pH - H), max(0, pW - W)
-    pad_d_before, pad_h_before, pad_w_before = pad_d // 2, pad_h // 2, pad_w // 2
-    padded = np.pad(
-        volume,
-        (
-            (pad_d_before, pad_d - pad_d_before),
-            (pad_h_before, pad_h - pad_h_before),
-            (pad_w_before, pad_w - pad_w_before),
-        ),
-        mode="constant",
-    )
-    return padded, (pad_d_before, pad_h_before, pad_w_before)
-
-
-def _axis_origins(src_len: int, patch_len: int, stride: int) -> List[int]:
-    if src_len <= patch_len:
-        return [0]
-    origins = list(range(0, src_len - patch_len + 1, stride))
-    if origins[-1] + patch_len < src_len:
-        origins.append(src_len - patch_len)
-    return origins
-
-
-def _sliding_window_origins(
-    volume_shape: Tuple[int, int, int],
-    patch_dhw: Tuple[int, int, int],
-    overlap: float = 0.5,
-) -> List[Tuple[int, int, int]]:
-    """Generate ``(d0, h0, w0)`` origins covering ``volume_shape``.
-
-    W is the I-S axis in RPI: W origins are sorted descending so the traversal
-    walks superior → inferior (purely for human-readable logs; decoding is
-    per-window and insensitive to the order).
-    """
-    D, H, W = volume_shape
-    pD, pH, pW = patch_dhw
-    stride_d = max(1, int(pD * (1 - overlap)))
-    stride_h = max(1, int(pH * (1 - overlap)))
-    stride_w = max(1, int(pW * (1 - overlap)))
-    d_origins = _axis_origins(D, pD, stride_d)
-    h_origins = _axis_origins(H, pH, stride_h)
-    w_origins = sorted(_axis_origins(W, pW, stride_w), reverse=True)
-    return [(d, h, w) for d in d_origins for h in h_origins for w in w_origins]
-
-
-def _local_maxima_3d(
-    heatmap: np.ndarray, min_distance: int, threshold: float
-) -> List[Tuple[float, float, float, float]]:
-    """Return [(d, h, w, intensity), ...] for 3D local maxima above ``threshold``."""
-    try:
-        from skimage.feature import peak_local_max
-    except ImportError:  # pragma: no cover
-        peak_local_max = None
-    if peak_local_max is None:
-        peak = float(heatmap.max())
-        if peak < threshold:
-            return []
-        d, h, w = np.unravel_index(int(np.argmax(heatmap)), heatmap.shape)
-        return [(float(d), float(h), float(w), peak)]
-    coords = peak_local_max(
-        heatmap,
-        min_distance=min_distance,
-        threshold_abs=threshold,
-        exclude_border=False,
-    )
-    return [
-        (float(c[0]), float(c[1]), float(c[2]), float(heatmap[c[0], c[1], c[2]]))
-        for c in coords
-    ]
-
-
-def _argmax_3d(heatmap: np.ndarray) -> Tuple[float, float, float, float]:
-    """``(d, h, w, peak)`` of the max response of a 3D heatmap."""
-    peak = float(heatmap.max())
-    dd, hh, ww = np.where(heatmap == peak)
-    return float(np.mean(dd)), float(np.mean(hh)), float(np.mean(ww)), peak
-
-
-def _decode_predictions_3d(
-    heatmaps: np.ndarray, peak_threshold: float
-) -> Dict[str, dict]:
-    """Decode a (NUM_CLASSES, D, H, W) heatmap stack into per-channel landmarks.
-
-    * ``HEATMAP_CHANNELS[0]`` (``all_discs``) → {"peaks": [(d, h, w, intensity), ...]}
-    * other channels → {"d","h","w","peak","present"} for the single argmax.
-    """
-    assert heatmaps.ndim == 4 and heatmaps.shape[0] == NUM_CLASSES, (
-        f"Expected ({NUM_CLASSES}, D, H, W) heatmap stack, got {heatmaps.shape}"
-    )
-
-    result: Dict[str, dict] = {}
-    peaks = _local_maxima_3d(heatmaps[0], min_distance=5, threshold=peak_threshold)
-    result[HEATMAP_CHANNELS[0]] = {"peaks": peaks}
-
-    for ch in range(1, NUM_CLASSES):
-        d, h, w, peak = _argmax_3d(heatmaps[ch])
-        result[HEATMAP_CHANNELS[ch]] = {
-            "d": d,
-            "h": h,
-            "w": w,
-            "peak": peak,
-            "present": peak >= peak_threshold,
-        }
-    return result
-
-
-def _merge_peaks_3d(
-    peaks: List[Tuple[float, float, float, float]], min_distance: float
-) -> List[Tuple[float, float, float, float]]:
-    """Greedy 3D NMS: strongest peak kept, drop anything within ``min_distance``."""
-    kept: List[Tuple[float, float, float, float]] = []
-    for pd, ph, pw, pp in sorted(peaks, key=lambda p: -p[3]):
-        if any(
-            (pd - kd) ** 2 + (ph - kh) ** 2 + (pw - kw) ** 2 < min_distance ** 2
-            for (kd, kh, kw, _) in kept
-        ):
-            continue
-        kept.append((pd, ph, pw, pp))
-    return kept
-
-
-def _choose_anchor(
-    anchors_by_name: Dict[str, List[Tuple[float, float, float, float]]],
-) -> Optional[Tuple[str, int, float, float, float]]:
-    """Highest-priority anchor; tie-break by peak intensity.
-
-    Returns ``(channel_name, disc_label, d, h, w)`` or ``None``.
-    """
-    for name in ANCHOR_PRIORITY:
-        hits = anchors_by_name.get(name) or []
-        if not hits:
-            continue
-        best = max(hits, key=lambda p: p[3])
-        ch_idx = HEATMAP_CHANNELS.index(name)
-        anchor_label = LANDMARK_CHANNEL_LABELS[ch_idx]
-        return (name, int(anchor_label), best[0], best[1], best[2])
-    return None
-
-
-def _assign_labels(
-    discs: List[Tuple[float, float, float, float]],
-    anchor_label: int,
-    anchor_d: float,
-    anchor_h: float,
-    anchor_w: float,
-) -> List[Tuple[int, float, float, float]]:
-    """Label disc peaks superior → inferior from a known anchor.
-
-    RPI convention: W (axis 2) indexes I-S with higher values = superior. Sort
-    by W descending so index 0 is the most superior disc; the disc closest to
-    the anchor in 3D gets the anchor's label, and labels above/below move by
-    ±1 per step. Values outside ``[1, 25]`` are dropped.
-    """
-    if not discs:
-        return []
-    sorted_discs = sorted(discs, key=lambda d: (-d[2], d[1], d[0]))
-    anchor_idx = min(
-        range(len(sorted_discs)),
-        key=lambda i: (sorted_discs[i][0] - anchor_d) ** 2
-        + (sorted_discs[i][1] - anchor_h) ** 2
-        + (sorted_discs[i][2] - anchor_w) ** 2,
-    )
-    out: List[Tuple[int, float, float, float]] = []
-    for i, (d, h, w, _p) in enumerate(sorted_discs):
-        label = anchor_label + (i - anchor_idx)
-        if MIN_DISC_LABEL <= label <= MAX_DISC_LABEL:
-            out.append((label, d, h, w))
-    return out
 
 
 def _build_preview_png(
@@ -376,37 +201,6 @@ def _stem(path: str) -> str:
     return os.path.splitext(base)[0]
 
 
-def _forward_windows(
-    padded_volume: np.ndarray,
-    origins: List[Tuple[int, int, int]],
-    patch_dhw: Tuple[int, int, int],
-    model: torch.nn.Module,
-    device: torch.device,
-    batch_size: int,
-) -> np.ndarray:
-    """Model-forward every window of one image, chunked by ``batch_size``.
-
-    Returns ``(N, NUM_CLASSES, pD, pH, pW)`` heatmaps on CPU float32 in the
-    same order as ``origins``.
-    """
-    pD, pH, pW = patch_dhw
-    patches = np.stack(
-        [padded_volume[d0 : d0 + pD, h0 : h0 + pH, w0 : w0 + pW] for (d0, h0, w0) in origins]
-    )  # (N, pD, pH, pW)
-    patches_t = torch.from_numpy(patches).float().unsqueeze(1).to(device)  # (N, 1, pD, pH, pW)
-
-    chunks: List[np.ndarray] = []
-    with torch.no_grad():
-        for i in range(0, patches_t.size(0), batch_size):
-            chunk = patches_t[i : i + batch_size]
-            with torch.autocast(
-                device_type=device.type, enabled=device.type == "cuda"
-            ):
-                hm = model(chunk)
-            chunks.append(hm.float().cpu().numpy())
-    return np.concatenate(chunks, axis=0)
-
-
 def _parse_resolution(resolution: str) -> Tuple[float, float, float]:
     parts = resolution.lower().split("x")
     if len(parts) != 3:
@@ -459,45 +253,15 @@ def _infer_one_image(
     )
     image_norm = _z_score_normalize(image_raw)
 
-    padded_volume, (pad_d_before, pad_h_before, pad_w_before) = _pad_volume_to_patch(
-        image_norm, patch_dhw
+    candidates = predict_candidates(
+        image_norm, model, device, patch_dhw, overlap, batch_size, peak_threshold
     )
-    origins = _sliding_window_origins(padded_volume.shape, patch_dhw, overlap=overlap)
-    heatmaps = _forward_windows(
-        padded_volume, origins, patch_dhw, model, device, batch_size
-    )
-
-    all_discs: List[Tuple[float, float, float, float]] = []
-    anchors_by_name: Dict[str, List[Tuple[float, float, float, float]]] = {}
-    for i, (d0, h0, w0) in enumerate(origins):
-        decoded = _decode_predictions_3d(heatmaps[i], peak_threshold=peak_threshold)
-        for dp, hp, wp, pp in decoded[HEATMAP_CHANNELS[0]]["peaks"]:
-            gd = d0 + dp - pad_d_before
-            gh = h0 + hp - pad_h_before
-            gw = w0 + wp - pad_w_before
-            all_discs.append((gd, gh, gw, pp))
-        for ch_name in HEATMAP_CHANNELS[1:]:
-            pred = decoded[ch_name]
-            if pred["present"]:
-                gd = d0 + pred["d"] - pad_d_before
-                gh = h0 + pred["h"] - pad_h_before
-                gw = w0 + pred["w"] - pad_w_before
-                anchors_by_name.setdefault(ch_name, []).append(
-                    (gd, gh, gw, pred["peak"])
-                )
-
-    merged_discs = _merge_peaks_3d(all_discs, min_distance=min_peak_distance)
-    chosen = _choose_anchor(anchors_by_name)
-
-    if chosen is None:
+    labeled_discs = label_discs(candidates, peak_threshold, min_peak_distance)
+    if _choose_anchor(candidates["anchors"], peak_threshold) is None:
         tqdm.tqdm.write(
             f"[warn] no anchor detected for {os.path.basename(image_path)} "
-            f"(found {len(merged_discs)} disc peaks); writing empty NIfTI."
+            f"(found {len(candidates['discs'])} disc candidates); writing empty NIfTI."
         )
-        labeled_discs: List[Tuple[int, float, float, float]] = []
-    else:
-        _ch_name, anchor_label, ad, ah, aw = chosen
-        labeled_discs = _assign_labels(merged_discs, anchor_label, ad, ah, aw)
 
     stem = _stem(image_path)
     nifti_out = os.path.join(out_dir, f"{stem}_discs.nii.gz")
@@ -529,13 +293,12 @@ def predict(
     image_paths = _discover_inputs(input_path)
 
     model = load_model(cfg["model_name"], in_channels=cfg["in_channels"]).to(device)
-    model.load_state_dict(torch.load(weights_path, map_location=device))
+    load_inference_weights(model, weights_path, device)
     model.eval()
 
     patch_dhw = tuple(int(s) for s in cfg["patch_size"])
     overlap = float(cfg.get("inference_overlap", 0.5))
-    peak_thr = float(cfg.get("peak_threshold", 0.3))
-    min_peak_distance = float(cfg.get("inference_min_peak_distance", 10.0))
+    peak_thr, min_peak_distance, pp_source = resolve_postprocessing(cfg, weights_path)
     batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
     orientation = str(cfg.get("orientation", "RPI"))
     resolution_mm = _parse_resolution(str(cfg.get("resolution", "1x1x1")))
@@ -543,6 +306,10 @@ def predict(
         f"[inference 3D] device={device} inputs={len(image_paths)} "
         f"orientation={orientation} resolution={resolution_mm} "
         f"patch_dhw={patch_dhw} overlap={overlap} batch_size={batch_size}"
+    )
+    print(
+        f"[inference 3D] peak_threshold={peak_thr} min_peak_distance={min_peak_distance} "
+        f"(from {pp_source})"
     )
 
     check_and_make_dir(out_dir)
