@@ -1,7 +1,7 @@
 {
     "data_json": "data_t1w_t2w",
     "out_name": "data_t1w_t2w",
-    "run_name": "data_t1w_t2w_UNet_default_10MSE_focalLoss",
+    "run_name": "data_t1w_t2w_UNet_default_100MSE_focalLoss",
     "debug": false,
 
     "steps": {
@@ -45,7 +45,7 @@
     "beta2": 0.999,
     "momentum": 0.99,
 
-    "loss_name": {"focalLoss": 1.0, "MSE": 10.0},
+    "loss_name": {"focalLoss": 1, "MSE": 100},
     "peak_threshold": 0.3,
 
     "val_every": 1,
