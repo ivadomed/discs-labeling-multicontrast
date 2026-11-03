@@ -108,6 +108,7 @@ def predict_heatmap(
 
     ``image`` is ``(C_in, *S)`` (C_in = 1 for 3D, the slice stack for 2D).
     Returns the stitched ``(NUM_CLASSES, *S)`` heatmap as float32 on CPU.
+    The model outputs logits; the sigmoid is applied here before stitching.
     The caller is responsible for ``model.eval()``.
     """
     patch_shape = tuple(int(p) for p in patch_shape)
@@ -129,7 +130,7 @@ def predict_heatmap(
             batch = torch.stack([image_t[(slice(None),) + _window(o)] for o in chunk])
             with torch.autocast(device_type=device.type, enabled=device.type == "cuda"):
                 pred = model(batch)
-            pred = pred.float()
+            pred = torch.sigmoid(pred.float())
             for origin, p in zip(chunk, pred):
                 win = _window(origin)
                 accum[(slice(None),) + win] += p * weight

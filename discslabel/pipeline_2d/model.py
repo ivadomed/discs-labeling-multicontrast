@@ -61,20 +61,27 @@ class UpTransition(nn.Module):
 
 
 class OutputTransition(nn.Module):
+    """1x1 conv to per-class logits.
+
+    The sigmoid is NOT applied here: losses work on logits (``logsigmoid``
+    stays finite under fp16 autocast) and ``decoding.predict_heatmap``
+    applies the sigmoid at inference. Checkpoints are unaffected, the
+    sigmoid had no parameters.
+    """
+
     def __init__(self, in_channels, n_labels):
         super().__init__()
         self.final_conv = nn.Conv2d(in_channels, n_labels, kernel_size=1)
-        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        return self.sigmoid(self.final_conv(x))
+        return self.final_conv(x)
 
 
 class UNet(nn.Module):
-    """``deep_supervision=True`` adds sigmoid heads on the 1/2 and 1/4
+    """``deep_supervision=True`` adds logit heads on the 1/2 and 1/4
     resolution decoder stages; in training mode ``forward`` then returns
     ``[full, half, quarter]`` (nnU-Net style). Eval mode always returns the
-    full-resolution heatmap only.
+    full-resolution logits only.
     """
 
     def __init__(self, in_channels=1, n_class=NUM_CLASSES, deep_supervision=False):

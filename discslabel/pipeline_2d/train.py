@@ -159,7 +159,7 @@ def _one_epoch(
                 first_sample = {
                     "image": image_2d.detach().float().cpu().numpy(),
                     "heatmap_gt": heatmap_2d.detach().float().cpu().numpy(),
-                    "heatmap_pred": pred.detach().float().cpu().numpy(),
+                    "heatmap_pred": torch.sigmoid(pred.detach().float()).cpu().numpy(),
                     "name": str(name) if name is not None else "sample",
                 }
     return float(np.mean(losses)) if losses else float("inf"), first_sample

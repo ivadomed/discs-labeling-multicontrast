@@ -1,5 +1,6 @@
-"""Heatmap regression losses."""
+"""Heatmap regression losses. All losses take logits (no sigmoid in the model)."""
 
+import math
 from typing import Dict, List, Sequence, Union
 
 import torch
@@ -7,39 +8,59 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def focal_loss(predict: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-    """Pixel-wise focal loss on sigmoid heatmaps.
+_LN2 = math.log(2.0)
+
+
+def focal_loss(logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    """Pixel-wise focal loss (CornerNet) on heatmap logits.
 
     Positive pixels are those where the Gaussian target peak sits (>0.9).
     Negative pixels are down-weighted by (1 - target)^4 to suppress the
     massive background class.
+
+    ``log p`` and ``log(1 - p)`` come from ``logsigmoid`` on the logits, so
+    they stay finite without clamping and the gradient no longer blows up
+    as ``p -> 1`` (it did as ``1 / (1 - p)`` with the old clamp at 1e-4).
+    Base-2 logs keep values comparable with the previous implementation.
+
+    The batch sum is normalised by the batch's number of positives, floored
+    at 1, so a batch without any disc is no longer an un-normalised sum.
+    Normalising per sample instead would let disc-free random crops (most
+    of nnU-Net-style sampling) outweigh disc crops by ~``num_pos`` and
+    push every prediction towards 0.
     """
-    predict = torch.clamp(predict, min=1e-4, max=1 - 1e-4)
+    logits = logits.float()
+    target = target.float()
+    prob = torch.sigmoid(logits)
+    log_p = F.logsigmoid(logits) / _LN2
+    log_1mp = F.logsigmoid(-logits) / _LN2
 
-    pos_inds = target.gt(0.9)
-    neg_inds = target.lt(0.9)
-    neg_weights = torch.pow(1 - target[neg_inds], 4)
+    pos = target.gt(0.9).float()
+    neg = target.lt(0.9).float()
+    pos_loss = log_p * (1 - prob) ** 2 * pos
+    neg_loss = log_1mp * prob ** 2 * (1 - target) ** 4 * neg
 
-    pos_pred = predict[pos_inds]
-    neg_pred = predict[neg_inds]
+    num_pos = pos.sum().clamp_min(1.0)
+    return -(pos_loss.sum() + neg_loss.sum()) / num_pos
 
-    pos_loss = torch.log2(pos_pred) * torch.pow(1 - pos_pred, 2)
-    neg_loss = torch.log2(1 - neg_pred) * torch.pow(neg_pred, 2) * neg_weights
 
-    num_pos = pos_inds.float().sum()
-    pos_loss = pos_loss.sum()
-    neg_loss = neg_loss.sum()
+class _OnProbabilities(nn.Module):
+    """Apply a regression loss to ``sigmoid(logits)``."""
 
-    if num_pos == 0:
-        return -neg_loss
-    return -(pos_loss + neg_loss) / num_pos
+    def __init__(self, loss: nn.Module):
+        super().__init__()
+        self.loss = loss
+
+    def forward(self, logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        return self.loss(torch.sigmoid(logits.float()), target.float())
 
 
 def _single_loss(loss_name: str):
+    """Every loss takes the model's logits (the model has no final sigmoid)."""
     if loss_name == "L1":
-        return nn.L1Loss()
+        return _OnProbabilities(nn.L1Loss())
     if loss_name == "MSE":
-        return nn.MSELoss()
+        return _OnProbabilities(nn.MSELoss())
     if loss_name == "focalLoss":
         return focal_loss
     raise ValueError(f"Please input valid loss name, {loss_name} not in loss zoo.")
@@ -99,9 +120,9 @@ def deep_supervision_weights(n_outputs: int) -> List[float]:
 class DeepSupervisionLoss(nn.Module):
     """Apply ``loss_fn`` at every output scale and take the weighted sum.
 
-    ``predict`` is either a single tensor (eval mode / no deep supervision)
-    or a list ``[full, half, quarter, ...]``. Losses are computed in float32
-    so the focal loss' ``log2(1 - p)`` cannot hit ``-inf`` under fp16 autocast.
+    ``predict`` holds logits: either a single tensor (eval mode / no deep
+    supervision) or a list ``[full, half, quarter, ...]``. Losses are
+    computed in float32, outside the fp16 range limits of autocast.
     """
 
     def __init__(self, loss_fn):
