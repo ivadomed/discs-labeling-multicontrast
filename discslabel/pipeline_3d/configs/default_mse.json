@@ -7,7 +7,7 @@
     "steps": {
         "download": false,
         "prepare": false,
-        "train": false,
+        "train": true,
         "tune": true,
         "inference": false,
         "evaluate": true
@@ -73,7 +73,7 @@
 
     "lowres_si_config": {
         "p": 0.25,
-        "factor": [1.5, 5.0],
+        "spacing": [1.0, 5.0],
         "axis": "SI",
         "down_mode": "area",
         "up_mode": "linear"

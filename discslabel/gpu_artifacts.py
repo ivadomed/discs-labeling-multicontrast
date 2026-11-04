@@ -22,7 +22,7 @@ workers:
     =============  ===================================================
 
 plus ``RandomLowResAxisGPU``: downsample one axis (default: S-I, the last
-axis of RPI volumes) by a random factor and upsample back, simulating thick
+axis of RPI volumes) to a random spacing and upsample back, simulating thick
 slices / partial volume along that axis.
 
 Every transform takes a ``(B, C, D, H, W)`` float tensor and draws its random
@@ -45,7 +45,7 @@ Config (pipeline JSON)::
         "spike": {"intensity": [1, 2]},
         ...
     },
-    "lowres_si_config": {"p": 0.25, "factor": [1.5, 5.0]}
+    "lowres_si_config": {"p": 0.25, "spacing": [1.0, 5.0]}   # final S-I spacing, mm
 """
 
 from __future__ import annotations
@@ -436,29 +436,55 @@ def lowres_axis(
     return x[0].to(sample.dtype)
 
 
+def parse_spacing(resolution) -> Tuple[float, float, float]:
+    """``"1x1x1"`` / ``1.0`` / ``[1, 1, 3]`` → per-axis spacing in mm on ``(D, H, W)``."""
+    if resolution is None:
+        return (1.0, 1.0, 1.0)
+    if isinstance(resolution, str):
+        parts = resolution.lower().split("x")
+    elif isinstance(resolution, (list, tuple)):
+        parts = list(resolution)
+    else:
+        parts = [resolution] * 3
+    if len(parts) != 3:
+        raise ValueError(f"resolution must have 3 values (mm), got {resolution!r}")
+    return tuple(float(v) for v in parts)  # type: ignore[return-value]
+
+
 class RandomLowResAxisGPU(nn.Module):
     """Simulate a low resolution along one axis (default: S-I).
 
-    With probability ``p`` per batch item, a factor is drawn uniformly in
-    ``factor`` (e.g. ``[1.5, 5]`` → 1.5 to 5 mm slices at 1 mm resolution),
-    the axis is downsampled by it and upsampled back to the original size.
+    With probability ``p`` per batch item, a target spacing is drawn
+    uniformly in ``spacing`` (mm, e.g. ``[1, 5]``), the axis is downsampled
+    from its current spacing (``voxel_spacing``, i.e. the config
+    ``resolution``) to that target and upsampled back to the original size.
+    Targets at or below the current spacing leave the sample unchanged.
     ``axis`` is ``"SI"`` / ``"PA"`` / ``"RL"`` or 0..2 on ``(D, H, W)``;
     prepared volumes are RPI, so S-I is the last axis.
     """
 
-    def __init__(self, cfg: dict):
+    def __init__(self, cfg: dict, voxel_spacing=(1.0, 1.0, 1.0)):
         super().__init__()
+        if "factor" in cfg:
+            raise ValueError(
+                "lowres_si_config.factor was replaced by 'spacing': the [min, max] "
+                "final spacing in mm along the axis (e.g. [1, 5])."
+            )
         self.p = float(cfg.get("p", 1.0))
-        self.factor = _as_range(cfg.get("factor", (1.5, 5.0)))
-        if self.factor[0] < 1.0:
-            raise ValueError(f"lowres factor must be >= 1, got {self.factor}")
+        self.spacing = _as_range(cfg.get("spacing", (1.0, 5.0)))
+        if not 0 < self.spacing[0] <= self.spacing[1]:
+            raise ValueError(f"lowres spacing must be 0 < min <= max (mm), got {self.spacing}")
         axis = cfg.get("axis", "SI")
         self.axis = _AXIS_NAMES[axis.upper()] if isinstance(axis, str) else int(axis)
+        self.current_spacing = float(parse_spacing(voxel_spacing)[self.axis])
         self.down_mode = str(cfg.get("down_mode", "area"))
         self.up_mode = str(cfg.get("up_mode", "linear"))
 
     def extra_repr(self) -> str:
-        return f"p={self.p}, factor={self.factor}, axis={self.axis}, down={self.down_mode}, up={self.up_mode}"
+        return (
+            f"p={self.p}, spacing={self.spacing} mm (current {self.current_spacing} mm), "
+            f"axis={self.axis}, down={self.down_mode}, up={self.up_mode}"
+        )
 
     def forward(self, image: torch.Tensor) -> torch.Tensor:
         if self.p <= 0:
@@ -467,22 +493,28 @@ class RandomLowResAxisGPU(nn.Module):
         for b in range(image.shape[0]):
             if float(torch.rand(())) >= self.p:
                 continue
-            factor = float(_uniform(*self.factor))
+            target = float(_uniform(*self.spacing))
+            factor = target / self.current_spacing
+            if factor <= 1.0:
+                continue
             out[b] = lowres_axis(out[b], factor, self.axis, self.down_mode, self.up_mode)
         return out
 
 
 def build_image_augmentations(
-    artifact_config: Optional[dict] = None, lowres_config: Optional[dict] = None
+    artifact_config: Optional[dict] = None,
+    lowres_config: Optional[dict] = None,
+    voxel_spacing=(1.0, 1.0, 1.0),
 ) -> Optional[nn.Module]:
     """Image-only GPU augmentations run after the SmaugLab pipeline.
 
     Order: S-I low resolution first (acquisition geometry), then artifacts.
-    Returns ``None`` when both configs are empty / disabled.
+    ``voxel_spacing`` is the spacing (mm) of the training volumes, i.e. the
+    config ``resolution``. Returns ``None`` when both configs are empty / disabled.
     """
     modules = []
     if lowres_config:
-        modules.append(RandomLowResAxisGPU(lowres_config))
+        modules.append(RandomLowResAxisGPU(lowres_config, voxel_spacing))
     if artifact_config:
         modules.append(RandomArtifactsGPU(artifact_config))
     return nn.Sequential(*modules) if modules else None

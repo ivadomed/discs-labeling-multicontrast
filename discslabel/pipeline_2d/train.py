@@ -296,6 +296,7 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
         n_mid_slices=int(cfg["in_channels"]),
         artifact_config=cfg.get("artifact_config"),
         lowres_config=cfg.get("lowres_si_config"),
+        voxel_spacing=cfg.get("resolution", "1x1x1"),
     ).to(device)
 
     out_dir = os.path.join(save_model_dir, "dry_run")
@@ -509,6 +510,7 @@ def train(
         n_mid_slices=int(cfg["in_channels"]),
         artifact_config=cfg.get("artifact_config"),
         lowres_config=cfg.get("lowres_si_config"),
+        voxel_spacing=cfg.get("resolution", "1x1x1"),
     ).to(device)
 
     model = load_model(

@@ -2,7 +2,8 @@
 
 For each input volume, every artifact of ``discslabel.gpu_artifacts`` is
 applied on its own (forced, ``p = 1``) a few times with different random
-draws, plus the S-I low-resolution step and the full training mix
+draws, plus the S-I low-resolution step (final spacing drawn in
+``lowres_si_config.spacing`` from the volume's own spacing) and the full training mix
 (``lowres_si_config`` + ``artifact_config`` with their configured
 probabilities). Writes to ``--out-dir``:
 
@@ -49,7 +50,7 @@ from .gpu_artifacts import (
     build_image_augmentations,
 )
 
-DEFAULT_LOWRES = {"p": 1.0, "factor": [1.5, 5.0], "axis": "SI"}
+DEFAULT_LOWRES = {"p": 1.0, "spacing": [1.0, 5.0], "axis": "SI"}
 
 
 def _stem(path: str) -> str:
@@ -60,8 +61,8 @@ def _stem(path: str) -> str:
     return os.path.splitext(base)[0]
 
 
-def _load_inputs(args) -> List[Tuple[str, np.ndarray, np.ndarray]]:
-    """``[(stem, z-scored volume, affine), ...]`` on the training grid."""
+def _load_inputs(args) -> List[Tuple[str, np.ndarray, np.ndarray, Tuple[float, float, float]]]:
+    """``[(stem, z-scored volume, affine, voxel spacing mm), ...]`` on the training grid."""
     out = []
     if args.manifest:
         with open(args.manifest) as f:
@@ -69,7 +70,8 @@ def _load_inputs(args) -> List[Tuple[str, np.ndarray, np.ndarray]]:
         for entry in entries[: args.n_images]:
             img = nib.load(entry["image"])
             data = np.squeeze(np.asarray(img.get_fdata(), dtype=np.float32))
-            out.append((_stem(entry["image"]), _z_score_normalize(data), np.asarray(img.affine)))
+            spacing = tuple(float(z) for z in img.header.get_zooms()[:3])
+            out.append((_stem(entry["image"]), _z_score_normalize(data), np.asarray(img.affine), spacing))
         return out
 
     from .pipeline_2d.inference import _discover_inputs, _parse_resolution, _preprocess_image
@@ -82,11 +84,11 @@ def _load_inputs(args) -> List[Tuple[str, np.ndarray, np.ndarray]]:
         resolution = _parse_resolution(str(cfg.get("resolution", "1x1x1")))
     for path in _discover_inputs(args.input)[: args.n_images]:
         data, affine, _ = _preprocess_image(path, orientation, resolution)
-        out.append((_stem(path), _z_score_normalize(data), affine))
+        out.append((_stem(path), _z_score_normalize(data), affine, tuple(resolution)))
     return out
 
 
-def _variants(cfg: dict) -> Dict[str, callable]:
+def _variants(cfg: dict, voxel_spacing) -> Dict[str, callable]:
     """Augmentation name → ``fn(volume (1, 1, D, H, W)) -> same shape``, all forced."""
     artifact_cfg = cfg.get("artifact_config")
     lowres_cfg = cfg.get("lowres_si_config")
@@ -96,10 +98,10 @@ def _variants(cfg: dict) -> Dict[str, callable]:
     variants: Dict[str, callable] = {}
     for name, params in artifacts.items():
         variants[name] = lambda x, n=name, p=params: apply_artifact(n, x[0], p, retain)[None]
-    lowres_forced = RandomLowResAxisGPU({**(lowres_cfg or DEFAULT_LOWRES), "p": 1.0})
+    lowres_forced = RandomLowResAxisGPU({**(lowres_cfg or DEFAULT_LOWRES), "p": 1.0}, voxel_spacing)
     variants["lowres_si"] = lowres_forced
 
-    pipeline = build_image_augmentations(artifact_cfg, lowres_cfg)
+    pipeline = build_image_augmentations(artifact_cfg, lowres_cfg, voxel_spacing)
     if pipeline is not None:
         variants["training_mix"] = pipeline
     return variants
@@ -175,12 +177,14 @@ def main() -> None:
         with open(args.config) as f:
             cfg = json.load(f)
     device = torch.device(args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
-    variants = _variants(cfg)
-    print(f"[debug-aug] device={device} augmentations={list(variants)}")
+    print(f"[debug-aug] device={device}")
 
     os.makedirs(args.out_dir, exist_ok=True)
     timings: Dict[str, List[float]] = defaultdict(list)
-    for i_img, (stem, volume, affine) in enumerate(_load_inputs(args)):
+    for i_img, (stem, volume, affine, spacing) in enumerate(_load_inputs(args)):
+        variants = _variants(cfg, spacing)
+        if i_img == 0:
+            print(f"[debug-aug] augmentations={list(variants)}")
         x = torch.from_numpy(volume)[None, None].to(device)
         d_mid = volume.shape[0] // 2
         rows: Dict[str, List[np.ndarray]] = {}
@@ -211,7 +215,8 @@ def main() -> None:
                 os.path.join(args.out_dir, stem, "original.nii.gz"),
             )
         png = os.path.join(args.out_dir, f"{stem}_augmentations.png")
-        _save_grid(png, f"{stem}  shape={tuple(volume.shape)}", rows, volume[d_mid])
+        spacing_str = "x".join(f"{v:g}" for v in spacing)
+        _save_grid(png, f"{stem}  shape={tuple(volume.shape)}  spacing={spacing_str} mm", rows, volume[d_mid])
         print(f"[debug-aug] wrote {png}")
 
     print("[debug-aug] mean time per volume:")

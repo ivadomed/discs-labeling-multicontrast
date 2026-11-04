@@ -146,6 +146,7 @@ class GpuBatchProcessor(nn.Module):
         n_mid_slices: int = 1,
         artifact_config: Optional[dict] = None,
         lowres_config: Optional[dict] = None,
+        voxel_spacing=(1.0, 1.0, 1.0),
     ):
         super().__init__()
         if n_mid_slices < 1:
@@ -163,7 +164,7 @@ class GpuBatchProcessor(nn.Module):
         self._elastic: Optional[nn.Module] = None
         # Image-only GPU augmentations (S-I low resolution, MRI artifacts),
         # applied on the 3D batch after the SmaugLab pipeline.
-        self.image_aug = build_image_augmentations(artifact_config, lowres_config)
+        self.image_aug = build_image_augmentations(artifact_config, lowres_config, voxel_spacing)
 
     def _build_aug(self) -> nn.Module:
         if self.aug_config is None:
