@@ -1,0 +1,691 @@
+"""Train the UNet heatmap-regression model with GPU-side 3D augmentation.
+
+Originally based on https://github.com/haoyuuuuu/CL-Detection2024-Baseline-UNet
+
+The training loop pulls 3D volumes from the dataset, moves the batch to the
+GPU, and lets ``GpuBatchProcessor`` do:
+
+    1. optional SmaugLab 3D augmentations on the paired (image, seg)
+    2. mid-sagittal slice extraction (axis R-L)
+    3. point-wise label projection + Gaussian heatmap synthesis
+    4. optional 2D kornia random elastic transform on (image, heatmap)
+
+The 2D model then sees ``(image_2d, heatmap_2d)`` for the loss.
+
+Training schedule (nnU-Net style)
+---------------------------------
+* an epoch is ``num_iterations_per_epoch`` batches drawn with replacement by
+  ``ForegroundBatchSampler`` (``oversample_foreground_percent`` of each batch
+  is centred on a disc in H/W; the R-L centre is always a disc-bearing slice,
+  as at inference); there is no early stopping, training always runs
+  ``num_epochs`` epochs with a polynomial learning-rate decay;
+* ``deep_supervision`` adds losses on the 1/2 and 1/4 decoder outputs;
+* every ``val_every`` epochs the model runs the full inference decoding on
+  the validation images and is scored with ``f1_at_tolerance`` (label right
+  AND within ``val_tolerance_mm``). ``best_model.pt`` is saved whenever the
+  exponential moving average of that score reaches a new best;
+  ``final_model.pt`` is the last epoch.
+* ``checkpoint_latest.pt`` (model, optimizer, scheduler, AMP scaler, EMA,
+  wandb run id) is rewritten after every epoch. On start-up, if its epoch is
+  before ``num_epochs`` in the config, training resumes from it (falling back
+  to the newest weights-only ``checkpoint_epoch_<N>.pt``); if it already
+  reached ``num_epochs`` training is skipped. ``--no-resume`` starts fresh.
+
+Weights & Biases
+----------------
+When the config carries a ``wandb`` block, each epoch logs train/valid loss,
+the validation metrics, the current learning rate, and a per-epoch overlay figure that shows the
+mid-sagittal input, the GT heatmap channels, and the predicted heatmap
+channels for one validation sample — the same layout as the dry-run PNGs
+with an extra row for the model output.
+
+Debug / dry-run mode
+--------------------
+Pass ``--dry-run`` (or set ``debug: true`` in the pipeline config) to skip
+training entirely and instead render 10 random training samples through the
+full pipeline, saving one PNG per sample under
+``<save-model-dir>/dry_run/`` that shows the mid-sagittal image fed to the
+network with each disc-heatmap target channel overlaid. Use it to sanity-
+check patch size, random crop, z-score normalisation and heatmap sigmas
+before launching a long run.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+
+import numpy as np
+import torch
+import tqdm
+from torch.utils.data import DataLoader
+
+from .. import HEATMAP_CHANNELS
+from ..dataset import DiscVolumeDataset
+from .gpu_pipeline import GpuBatchProcessor
+from ..losses import DeepSupervisionLoss, load_loss
+from .model import load_model
+from ..postprocessing import DEFAULT_TOLERANCE_MM, collect_cases, score_cases
+from .predictor import labeled_to_voxels, predict_candidates
+from ..training import (
+    EmaTracker,
+    ForegroundBatchSampler,
+    PolyLRScheduler,
+    build_optimizer,
+    resume_training_state,
+    save_training_state,
+)
+from ..utils.io import check_and_make_dir
+
+
+GRAD_CLIP_NORM = 12.0
+
+
+def _load_config(path: str | None) -> dict:
+    with open(path, "r") as f:
+        cfg = json.load(f)
+    return cfg
+
+
+def _one_epoch(
+    model: torch.nn.Module,
+    loader: DataLoader,
+    processor: GpuBatchProcessor,
+    loss_fn,
+    optimizer: torch.optim.Optimizer | None,
+    device: torch.device,
+    desc: str,
+    capture_first_batch: bool = False,
+    scaler: "torch.cuda.amp.GradScaler | None" = None,
+    max_batches: int | None = None,
+) -> tuple[float, dict | None]:
+    """Run one pass over ``loader``. When ``optimizer`` is None, operates in eval mode.
+
+    Training clips the gradient norm at ``GRAD_CLIP_NORM`` (nnU-Net). The pass
+    stops after ``max_batches`` batches when set.
+
+    When ``scaler`` is provided (training only), the forward + loss run under
+    ``torch.autocast`` and gradients go through the GradScaler. In eval mode,
+    autocast still wraps the forward if ``scaler`` is not ``None`` so train
+    and valid losses stay comparable.
+
+    When ``capture_first_batch`` is set, the second return value holds a dict
+    with the first batch's ``image_2d``, ``heatmap_2d`` (ground truth) and
+    ``pred`` (model output) on CPU — handy for logging a per-epoch sample
+    without a separate forward pass.
+    """
+    train = optimizer is not None
+    model.train(train)
+    losses = []
+    first_sample: dict | None = None
+    use_amp = scaler is not None
+    with torch.set_grad_enabled(train):
+        for i_batch, batch in enumerate(
+            tqdm.tqdm(loader, desc=desc, total=min(len(loader), max_batches or len(loader)))
+        ):
+            if max_batches is not None and i_batch >= max_batches:
+                break
+            image_3d = batch["image"].to(device, non_blocking=True).float()
+            label_3d = batch["label"].to(device, non_blocking=True).float()
+            # Combined SPINE/CORD/CANAL anatomy mask — this is the "mask"
+            # fed to AugTransformsGPU (not the disc label).
+            seg_3d = batch.get("seg")
+            if seg_3d is not None:
+                seg_3d = seg_3d.to(device, non_blocking=True).float()
+
+            image_2d, heatmap_2d, _label_2d, _seg_2d = processor(
+                image_3d, label_3d, seg_3d=seg_3d, apply_augmentation=train
+            )
+
+            if train:
+                optimizer.zero_grad(set_to_none=True)
+            with torch.autocast(device_type=device.type, enabled=use_amp):
+                pred = model(image_2d)
+                loss = loss_fn(pred, heatmap_2d)
+
+            if train:
+                if use_amp:
+                    scaler.scale(loss).backward()
+                    scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP_NORM)
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    loss.backward()
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP_NORM)
+                    optimizer.step()
+            losses.append(loss.item())
+
+            if capture_first_batch and first_sample is None:
+                if isinstance(pred, (list, tuple)):
+                    pred = pred[0]
+                name = batch.get("name")
+                if isinstance(name, (list, tuple)) and name:
+                    name = name[0]
+                first_sample = {
+                    "image": image_2d.detach().float().cpu().numpy(),
+                    "heatmap_gt": heatmap_2d.detach().float().cpu().numpy(),
+                    "heatmap_pred": torch.sigmoid(pred.detach().float()).cpu().numpy(),
+                    "name": str(name) if name is not None else "sample",
+                }
+    return float(np.mean(losses)) if losses else float("inf"), first_sample
+
+
+def _display_slice(slice_2d: np.ndarray) -> np.ndarray:
+    """Reorient a mid-sagittal (P-A, I-S) slice for display: superior up, anterior left."""
+    return np.ascontiguousarray(slice_2d.T[::-1, :])
+
+
+def _intensity_window(img: np.ndarray) -> tuple[float, float]:
+    """Robust 1st..99th-percentile window for the gray background."""
+    vmin, vmax = float(np.percentile(img, 1.0)), float(np.percentile(img, 99.0))
+    if vmax <= vmin:
+        vmin, vmax = float(img.min()), float(img.max() + 1e-6)
+    return vmin, vmax
+
+
+def _draw_heatmap_row(axes, img, heatmap_2d, vmin, vmax, row_label):
+    """Fill a row of axes with [input, image+ch0 overlay, image+ch1 overlay, ...]."""
+    axes[0].imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
+    axes[0].set_title(f"image ({row_label})")
+    axes[0].set_xticks([])
+    axes[0].set_yticks([])
+    for i, ch_name in enumerate(HEATMAP_CHANNELS):
+        hm = _display_slice(heatmap_2d[i])
+        ax = axes[i + 1]
+        ax.imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
+        hm_masked = np.ma.masked_where(hm < 0.05, hm)
+        ax.imshow(hm_masked, cmap="hot", alpha=0.65, vmin=0.0, vmax=1.0)
+        ax.set_title(f"{row_label} ch{i}: {ch_name}")
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+
+def _apply_suptitle(fig, title: str) -> None:
+    """Draw a readable centered title and leave room for it above the axes."""
+    fig.suptitle(title, fontsize=14, fontweight="bold", y=0.995)
+    fig.tight_layout(rect=(0, 0, 1, 0.95))
+
+
+def _build_overlay_figure(image_2d: np.ndarray, heatmap_2d: np.ndarray, title: str):
+    """One-row figure: input + each heatmap channel overlaid. Returns a Figure."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    img = _display_slice(image_2d)
+    n_cols = len(HEATMAP_CHANNELS) + 1
+    fig, axes = plt.subplots(1, n_cols, figsize=(3.2 * n_cols, 3.6))
+    vmin, vmax = _intensity_window(img)
+    _draw_heatmap_row(axes, img, heatmap_2d, vmin, vmax, row_label="target")
+    _apply_suptitle(fig, title)
+    return fig
+
+
+def _build_gt_pred_figure(
+    image_2d: np.ndarray,
+    heatmap_gt: np.ndarray,
+    heatmap_pred: np.ndarray,
+    title: str,
+):
+    """Two-row figure: GT row on top, Pred row below. Returns a Figure."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    img = _display_slice(image_2d)
+    n_cols = len(HEATMAP_CHANNELS) + 1
+    fig, axes = plt.subplots(2, n_cols, figsize=(3.2 * n_cols, 7.2))
+    vmin, vmax = _intensity_window(img)
+    _draw_heatmap_row(axes[0], img, heatmap_gt, vmin, vmax, row_label="GT")
+    _draw_heatmap_row(axes[1], img, heatmap_pred, vmin, vmax, row_label="Pred")
+    _apply_suptitle(fig, title)
+    return fig
+
+
+def _save_dry_run_png(path: str, image_2d: np.ndarray, heatmap_2d: np.ndarray, title: str) -> None:
+    """Render one dry-run sample to disk."""
+    import matplotlib.pyplot as plt
+
+    fig = _build_overlay_figure(image_2d, heatmap_2d, title)
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=110, bbox_inches="tight")
+    plt.close(fig)
+
+
+def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int = 10) -> None:
+    """Pull ``n_samples`` training batches through the data pipeline and the
+    GPU processor and save one PNG per sample with the 2D mid-sagittal image
+    (as it is fed to the network) and each disc-heatmap channel overlaid.
+
+    No model is trained. Augmentations are applied so the PNG reflects exactly
+    what the forward pass would see for a given sample.
+    """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"[dry-run] device: {device}, pulling {n_samples} samples")
+
+    spine_disc_min = int(cfg.get("spine_disc_min_label", 60))
+    dataset = DiscVolumeDataset(
+        manifest_path,
+        split="train",
+        patch_size=tuple(cfg["patch_size"]),
+        spine_disc_min_label=spine_disc_min,
+        random_crop=True,
+        oversample_foreground_percent=float(cfg.get("oversample_foreground_percent", 0.33)),
+        midline_on_disc=True,
+    )
+    if len(dataset) == 0:
+        raise RuntimeError("Train split is empty — nothing to dry-run against.")
+
+    loader = DataLoader(
+        dataset,
+        batch_size=1,
+        shuffle=True,
+        num_workers=0,  # keep the worker RNG trace reproducible-ish and errors in-process
+        pin_memory=device.type == "cuda",
+    )
+
+    processor = GpuBatchProcessor(
+        aug_config=cfg.get("aug_config"),
+        heatmap_sigma=cfg["heatmap_sigma"],
+        heatmap_radius=cfg["heatmap_radius"],
+        elastic_config=cfg.get("elastic_config"),
+        n_mid_slices=int(cfg["in_channels"]),
+    ).to(device)
+
+    out_dir = os.path.join(save_model_dir, "dry_run")
+    check_and_make_dir(out_dir)
+
+    collected = 0
+    iterator = iter(loader)
+    while collected < n_samples:
+        try:
+            batch = next(iterator)
+        except StopIteration:
+            iterator = iter(loader)
+            batch = next(iterator)
+
+        image_3d = batch["image"].to(device, non_blocking=True).float()
+        label_3d = batch["label"].to(device, non_blocking=True).float()
+        seg_3d = batch.get("seg")
+        if seg_3d is not None:
+            seg_3d = seg_3d.to(device, non_blocking=True).float()
+
+        image_2d, heatmap_2d, _label_2d, _seg_2d = processor(
+            image_3d, label_3d, seg_3d=seg_3d, apply_augmentation=True
+        )
+
+        name = batch["name"][0] if isinstance(batch["name"], (list, tuple)) else str(batch["name"])
+        name_stem = name
+        for ext in (".nii.gz", ".nii"):
+            if name_stem.endswith(ext):
+                name_stem = name_stem[: -len(ext)]
+                break
+
+        png_path = os.path.join(out_dir, f"sample_{collected:02d}_{name_stem}.png")
+        # When the model takes >1 input channels (adjacent slice stack), the
+        # center channel is the mid-sagittal — the one closest to what the
+        # training preview was showing before the stack was introduced.
+        center_ch = image_2d.size(1) // 2
+        try:
+            _save_dry_run_png(
+                png_path,
+                image_2d[0, center_ch].detach().cpu().numpy(),
+                heatmap_2d[0].detach().cpu().numpy(),
+                title=f"[dry-run #{collected}] {name_stem}",
+            )
+        except ImportError:
+            print("[dry-run] matplotlib unavailable; cannot render PNGs")
+            return
+        print(f"[dry-run] wrote {png_path}")
+        collected += 1
+
+    print(f"[dry-run] done. {collected} PNGs in {out_dir}")
+
+
+def _resolve_num_workers(value) -> int:
+    """``"auto"`` / missing → ``min(cpu_count, 8)``; else honour the explicit int."""
+    if isinstance(value, int) and value >= 0:
+        return value
+    cpu = os.cpu_count() or 1
+    return min(cpu, 8)
+
+
+def _resolve_batch_size(value, device: torch.device, minimum: int = 1) -> int:
+    """Auto-size the batch to the GPU: roughly one sample per 8 GB of VRAM.
+
+    An explicit positive int in the config always wins. On CPU the batch is
+    forced to ``minimum`` since there is no GPU budget to spend.
+    """
+    if isinstance(value, int) and value > 0:
+        return value
+    if device.type != "cuda":
+        return minimum
+    total_gb = torch.cuda.get_device_properties(device).total_memory / (1024**3)
+    return max(minimum, int(total_gb // 8))
+
+
+def _init_wandb(cfg: dict, save_model_dir: str, run_id: str | None = None):
+    """Initialize a Weights & Biases run from the ``wandb`` config block.
+
+    Returns ``(run, wandb_module, log_images_every)``. All three are ``None``
+    / ``0`` when logging is disabled (``cfg["wandb"]`` missing/falsy) or when
+    the ``wandb`` package is not installed — training then runs with no
+    external logging.
+    """
+    wandb_cfg = cfg.get("wandb")
+    if not wandb_cfg:
+        return None, None, 0
+    
+    import wandb
+    run = wandb.init(
+        project=wandb_cfg.get("project"),
+        entity=wandb_cfg.get("entity"),
+        name=wandb_cfg.get("run_name"),
+        dir=save_model_dir,
+        config=cfg,
+        id=run_id,
+        resume="allow" if run_id else None,
+    )
+    return run, wandb, int(wandb_cfg.get("log_images_every", 1))
+
+
+def _validate_full_images(
+    model: torch.nn.Module,
+    cfg: dict,
+    manifest_path: str,
+    device: torch.device,
+) -> dict:
+    """Score the model on whole validation images with the inference decoding."""
+    model.eval()
+    patch_size = tuple(int(s) for s in cfg["patch_size"])
+    patch_hw = (patch_size[1], patch_size[2])
+    overlap = float(cfg.get("inference_overlap", 0.5))
+    batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
+    n_mid_slices = int(cfg["in_channels"])
+    peak_thr = float(cfg.get("peak_threshold", 0.3))
+    min_dist = float(cfg.get("inference_min_peak_distance", 10.0))
+    cases = collect_cases(
+        manifest_path,
+        "valid",
+        lambda v: predict_candidates(
+            v, model, device, patch_hw, overlap, batch_size, n_mid_slices, peak_thr
+        ),
+        max_images=cfg.get("val_max_images"),
+        desc="validation (full images)",
+    )
+    return score_cases(
+        cases,
+        labeled_to_voxels,
+        peak_thr,
+        min_dist,
+        float(cfg.get("val_tolerance_mm", DEFAULT_TOLERANCE_MM)),
+    )
+
+
+def train(
+    cfg: dict,
+    manifest_path: str,
+    save_model_dir: str,
+    resume: bool = True,
+) -> None:
+    device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
+    # cuDNN picks the fastest kernel per input shape; worth it since patch_size
+    # is fixed per run so shapes don't vary from batch to batch.
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True
+
+    num_workers = _resolve_num_workers(cfg.get("num_workers"))
+    batch_size = _resolve_batch_size(cfg.get("batch_size"), device)
+    batch_size_valid = _resolve_batch_size(cfg.get("batch_size_valid"), device)
+    use_amp = bool(cfg.get("use_amp", True)) and device.type == "cuda"
+    prefetch_factor = int(cfg.get("prefetch_factor", 4)) if num_workers > 0 else None
+    num_epochs = int(cfg.get("num_epochs", 1000))
+    num_iterations = int(cfg.get("num_iterations_per_epoch", 250))
+    num_val_iterations = int(cfg.get("num_val_iterations_per_epoch", 50))
+    val_every = max(1, int(cfg.get("val_every", 1)))
+    oversample_fg = float(cfg.get("oversample_foreground_percent", 0.33))
+    deep_supervision = bool(cfg.get("deep_supervision", True))
+    print(
+        f"[train] device={device} num_workers={num_workers} "
+        f"batch_size={batch_size} batch_size_valid={batch_size_valid} "
+        f"amp={use_amp} prefetch_factor={prefetch_factor}"
+    )
+    print(
+        f"[train] epochs={num_epochs} iterations/epoch={num_iterations} "
+        f"oversample_foreground_percent={oversample_fg} "
+        f"deep_supervision={deep_supervision} val_every={val_every}"
+    )
+
+    spine_disc_min = int(cfg.get("spine_disc_min_label", 60))
+    train_ds = DiscVolumeDataset(
+        manifest_path,
+        split="train",
+        patch_size=tuple(cfg["patch_size"]),
+        spine_disc_min_label=spine_disc_min,
+        random_crop=True,
+        oversample_foreground_percent=oversample_fg,
+        midline_on_disc=True,
+    )
+    valid_ds = DiscVolumeDataset(
+        manifest_path,
+        split="valid",
+        patch_size=tuple(cfg["patch_size"]),
+        spine_disc_min_label=spine_disc_min,
+        random_crop=False,
+    )
+
+    loader_kwargs = {
+        "pin_memory": device.type == "cuda",
+        "num_workers": num_workers,
+    }
+    # persistent_workers and prefetch_factor only make sense with workers > 0.
+    if num_workers > 0:
+        loader_kwargs["persistent_workers"] = True
+        loader_kwargs["prefetch_factor"] = prefetch_factor
+
+    train_loader = DataLoader(
+        train_ds,
+        batch_sampler=ForegroundBatchSampler(
+            len(train_ds), batch_size, num_iterations, oversample_fg
+        ),
+        **loader_kwargs,
+    )
+    valid_loader = DataLoader(
+        valid_ds, batch_size=batch_size_valid, shuffle=False, **loader_kwargs
+    )
+
+    processor = GpuBatchProcessor(
+        aug_config=cfg.get("aug_config"),
+        heatmap_sigma=cfg["heatmap_sigma"],
+        heatmap_radius=cfg["heatmap_radius"],
+        elastic_config=cfg.get("elastic_config"),
+        n_mid_slices=int(cfg["in_channels"]),
+    ).to(device)
+
+    model = load_model(
+        cfg["model_name"], in_channels=cfg["in_channels"], deep_supervision=deep_supervision
+    ).to(device)
+    optimizer = build_optimizer(cfg, model.parameters())
+    scheduler = PolyLRScheduler(optimizer, float(cfg["lr"]), num_epochs)
+    loss_fn = DeepSupervisionLoss(load_loss(cfg["loss_name"]))
+
+    check_and_make_dir(save_model_dir)
+
+    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+    ema = EmaTracker(alpha=float(cfg.get("val_ema_alpha", 0.9)))
+
+    start_epoch, wandb_run_id = 0, None
+    if resume:
+        start_epoch, wandb_run_id = resume_training_state(
+            save_model_dir, num_epochs, model, optimizer, scheduler, scaler, ema, device
+        )
+        if start_epoch >= num_epochs:
+            print(
+                f"[resume] last checkpoint is at epoch {start_epoch}/{num_epochs}: "
+                "training already finished, nothing to do."
+            )
+            return
+
+    wandb_run, wandb_mod, log_images_every = _init_wandb(cfg, save_model_dir, wandb_run_id)
+
+    for epoch in range(start_epoch, num_epochs):
+        lr = optimizer.param_groups[0]["lr"]
+        train_loss, _ = _one_epoch(
+            model,
+            train_loader,
+            processor,
+            loss_fn,
+            optimizer,
+            device,
+            desc=f"epoch {epoch + 1} train",
+            scaler=scaler if use_amp else None,
+        )
+        scheduler.step()
+        print(f"Train epoch [{epoch + 1:<4d}/{num_epochs:<4d}] Loss: {train_loss:.6f} lr: {lr:.2e}")
+
+        if cfg["save_model_step"] > 0 and epoch % cfg["save_model_step"] == 0:
+            ckpt = os.path.join(save_model_dir, f"checkpoint_epoch_{epoch}.pt")
+            torch.save(model.state_dict(), ckpt)
+            print("Saving checkpoint model:", ckpt)
+
+        capture = wandb_run is not None and log_images_every > 0 and (epoch % log_images_every == 0)
+        valid_loss, sample = _one_epoch(
+            model,
+            valid_loader,
+            processor,
+            loss_fn,
+            None,
+            device,
+            desc=f"epoch {epoch + 1} valid",
+            capture_first_batch=capture,
+            scaler=scaler if use_amp else None,
+            max_batches=num_val_iterations,
+        )
+        print(f"Validation loss: {valid_loss:.6f}")
+
+        metrics = None
+        if (epoch + 1) % val_every == 0 or epoch == num_epochs - 1:
+            metrics = _validate_full_images(model, cfg, manifest_path, device)
+            is_best = ema.update(metrics["f1_at_tolerance"])
+            dist = metrics["distance_mm"]["mean"]
+            print(
+                f"Validation F1@{metrics['tolerance_mm']:g}mm={metrics['f1_at_tolerance']:.4f} "
+                f"(EMA {ema.value:.4f}, best {ema.best:.4f}) "
+                f"recall={metrics['recall'] or 0:.4f} precision={metrics['precision'] or 0:.4f} "
+                f"mean_dist={dist if dist is not None else float('nan'):.2f}mm"
+            )
+            if is_best:
+                best_path = os.path.join(save_model_dir, "best_model.pt")
+                torch.save(model.state_dict(), best_path)
+                with open(os.path.join(save_model_dir, "best_model.json"), "w") as f:
+                    json.dump({"epoch": epoch, "ema_f1": ema.value, "metrics": metrics}, f, indent=2)
+                print("Saving best model:", best_path)
+
+        if wandb_run is not None:
+            log = {
+                "epoch": epoch,
+                "train/loss": train_loss,
+                "valid/loss": valid_loss,
+                "lr": lr,
+            }
+            if metrics is not None:
+                log.update(
+                    {
+                        "valid/f1_at_tolerance": metrics["f1_at_tolerance"],
+                        "valid/f1_ema": ema.value,
+                        "valid/recall": metrics["recall"],
+                        "valid/precision": metrics["precision"],
+                        "valid/distance_mm_mean": metrics["distance_mm"]["mean"],
+                    }
+                )
+            if sample is not None:
+                epoch_label = f"Epoch {epoch + 1}"
+                # Multi-channel inputs: show the mid-sagittal (center) slice.
+                center_ch = sample["image"].shape[1] // 2
+                fig = _build_gt_pred_figure(
+                    sample["image"][0, center_ch],
+                    sample["heatmap_gt"][0],
+                    sample["heatmap_pred"][0],
+                    title=f"{epoch_label} — validation sample: {sample['name']}",
+                )
+                log["valid/sample"] = wandb_mod.Image(
+                    fig, caption=f"{epoch_label} — {sample['name']}"
+                )
+                import matplotlib.pyplot as plt
+
+                plt.close(fig)
+            wandb_run.log(log, step=epoch)
+
+        save_training_state(
+            save_model_dir, epoch, model, optimizer, scheduler, scaler, ema,
+            wandb_run.id if wandb_run is not None else None,
+        )
+
+    final_path = os.path.join(save_model_dir, "final_model.pt")
+    torch.save(model.state_dict(), final_path)
+    print("Saving final model:", final_path)
+    if wandb_run is not None:
+        wandb_run.finish()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Train the disc-landmark UNet.")
+    parser.add_argument(
+        "--manifest",
+        required=True,
+        help="Path to manifest.json produced by `discslabel_prepare` / `scripts/prepare_datasets.sh`.",
+    )
+    parser.add_argument("--save-model-dir", required=True, help="Where to write checkpoints.")
+    parser.add_argument("--config", required=True, help="Optional JSON config overriding defaults.")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "Skip training. Pull 10 random training samples through the data "
+            "pipeline + GPU processor and save a PNG per sample under "
+            "<save-model-dir>/dry_run/ showing the mid-sagittal image fed to "
+            "the network with the disc-heatmap target channels overlaid. "
+            "Can also be enabled by setting `debug: true` in the config."
+        ),
+    )
+    parser.add_argument(
+        "--dry-run-samples",
+        type=int,
+        default=10,
+        help="How many random samples to render in dry-run mode (default: 10).",
+    )
+    parser.add_argument(
+        "--no-resume",
+        action="store_true",
+        help=(
+            "Start from scratch even if <save-model-dir> holds a checkpoint. "
+            "By default training resumes from the last checkpoint when its "
+            "epoch is before `num_epochs` in the config."
+        ),
+    )
+    args = parser.parse_args()
+
+    cfg = _load_config(args.config)
+    is_dry = bool(args.dry_run) or bool(cfg.get("debug", False))
+    if is_dry:
+        dry_run(
+            cfg,
+            manifest_path=args.manifest,
+            save_model_dir=args.save_model_dir,
+            n_samples=int(args.dry_run_samples),
+        )
+        return
+    train(
+        cfg,
+        manifest_path=args.manifest,
+        save_model_dir=args.save_model_dir,
+        resume=not args.no_resume,
+    )
+
+
+if __name__ == "__main__":
+    main()
