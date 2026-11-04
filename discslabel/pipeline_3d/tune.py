@@ -17,7 +17,7 @@ import torch
 from ..postprocessing import tune
 from ..training import load_inference_weights
 from .model import load_model
-from .predictor import labeled_to_voxels, predict_candidates
+from .predictor import labeled_to_voxels, predict_volume_heatmap
 from .train import _load_config, _resolve_batch_size
 
 
@@ -33,6 +33,12 @@ def main() -> None:
         "--out-dir",
         default=None,
         help="Where to write postprocessing.json (default: the weights folder).",
+    )
+    parser.add_argument(
+        "--num-workers",
+        default=None,
+        help="CPU worker processes for loading / peak extraction / grid scoring "
+        "(default: config inference_num_workers, else 'auto'; 0 = run inline).",
     )
     args = parser.parse_args()
 
@@ -50,11 +56,12 @@ def main() -> None:
         cfg,
         manifest_path=args.manifest,
         out_dir=args.out_dir or os.path.dirname(os.path.abspath(args.weights)),
-        predict_fn=lambda v, thr: predict_candidates(
-            v, model, device, patch_dhw, overlap, batch_size, thr
+        predict_fn=lambda v: predict_volume_heatmap(
+            v, model, device, patch_dhw, overlap, batch_size
         ),
         to_voxels=labeled_to_voxels,
         split=args.split,
+        num_workers=args.num_workers,
     )
 
 

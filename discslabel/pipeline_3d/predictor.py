@@ -14,6 +14,18 @@ import torch
 from ..decoding import extract_candidates, predict_heatmap
 
 
+def predict_volume_heatmap(
+    volume_norm: np.ndarray,
+    model: torch.nn.Module,
+    device: torch.device,
+    patch_dhw: Tuple[int, int, int],
+    overlap: float,
+    batch_size: int,
+) -> np.ndarray:
+    """Stitched ``(NUM_CLASSES, D, H, W)`` heatmap of a z-scored volume."""
+    return predict_heatmap(volume_norm[None], model, device, patch_dhw, overlap, batch_size)
+
+
 def predict_candidates(
     volume_norm: np.ndarray,
     model: torch.nn.Module,
@@ -24,9 +36,7 @@ def predict_candidates(
     min_threshold: float,
 ) -> Dict[str, object]:
     """Stitched 3D heatmap of a z-scored ``(D, H, W)`` volume → decoding candidates."""
-    heatmap = predict_heatmap(
-        volume_norm[None], model, device, patch_dhw, overlap, batch_size
-    )
+    heatmap = predict_volume_heatmap(volume_norm, model, device, patch_dhw, overlap, batch_size)
     return extract_candidates(heatmap, min_threshold)
 
 

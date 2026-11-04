@@ -59,7 +59,7 @@ from .gpu_pipeline import GpuBatchProcessor
 from ..losses import DeepSupervisionLoss, load_loss
 from .model import load_model
 from ..postprocessing import DEFAULT_TOLERANCE_MM, collect_cases, score_cases
-from .predictor import labeled_to_voxels, predict_candidates
+from .predictor import labeled_to_voxels, predict_volume_heatmap
 from ..training import (
     EmaTracker,
     ForegroundBatchSampler,
@@ -382,7 +382,8 @@ def _validate_full_images(
     cases = collect_cases(
         manifest_path,
         "valid",
-        lambda v: predict_candidates(v, model, device, patch_dhw, overlap, batch_size, peak_thr),
+        lambda v: predict_volume_heatmap(v, model, device, patch_dhw, overlap, batch_size),
+        peak_thr,
         max_images=cfg.get("val_max_images"),
         desc="validation (full images)",
     )

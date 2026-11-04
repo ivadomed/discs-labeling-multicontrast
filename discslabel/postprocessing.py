@@ -2,12 +2,15 @@
 
 * ``collect_cases`` runs the model once per validation image (stitched
   sliding window, same as inference) and keeps only the decoding candidates.
+  With a worker pool, image loading and peak extraction run in worker
+  processes while the main process keeps the GPU busy.
 * ``score_cases`` decodes those candidates with a given ``peak_threshold`` /
   ``min_peak_distance`` and scores them with ``discslabel.evaluate``.
 * ``tune`` grid-searches both parameters on the validation split (nnU-Net
   determines its post-processing empirically the same way) and writes
   ``postprocessing.json`` next to the weights; inference picks it up
-  automatically through ``resolve_postprocessing``.
+  automatically through ``resolve_postprocessing``. The grid points are
+  scored in parallel across the worker pool.
 
 Scores use ``f1_at_tolerance``: a disc is a hit only when its label is right
 AND it lies within ``tolerance_mm`` of the ground truth.
@@ -25,8 +28,9 @@ import numpy as np
 import tqdm
 
 from .dataset import _load_nifti, _z_score_normalize
-from .decoding import label_discs
+from .decoding import extract_candidates, label_discs
 from .evaluate import _aggregate, _extract_disc_voxels, compare_discs, f1_at_tolerance
+from .parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers, submit
 
 
 POSTPROCESSING_FILE = "postprocessing.json"
@@ -52,38 +56,61 @@ def _stem(path: str) -> str:
     return os.path.splitext(base)[0]
 
 
+def _load_case(entry: dict) -> Tuple[str, np.ndarray, Dict[int, np.ndarray], np.ndarray]:
+    """Worker job: z-scored volume + ground-truth discs for one manifest entry."""
+    volume = _z_score_normalize(_load_nifti(entry["image"]))
+    gt_discs, affine = _extract_disc_voxels(entry["label"])
+    return _stem(entry["image"]), volume, gt_discs, affine
+
+
 def collect_cases(
     manifest_path: str,
     split: str,
-    predict_fn: Callable[[np.ndarray], Dict[str, object]],
+    predict_fn: Callable[[np.ndarray], np.ndarray],
+    min_threshold: float,
     max_images: Optional[int] = None,
     desc: str = "validation",
+    executor=None,
+    num_workers: int = 0,
 ) -> List[ValidationCase]:
     """Run ``predict_fn`` on every labelled image of ``split``.
+
+    ``predict_fn(volume_norm)`` returns the stitched heatmap; candidates are
+    then extracted with ``extract_candidates(heatmap, min_threshold)``.
 
     Images in the manifest are already reoriented + resampled, so only the
     whole-volume z-score of inference is applied. The ground-truth label
     shares the image grid, so one affine serves both.
+
+    With ``executor`` (a pool of ``num_workers`` processes), loading the
+    next images and extracting the peaks of the previous heatmaps run in
+    the workers while the main process predicts the current image.
     """
     with open(manifest_path) as f:
         entries = [e for e in json.load(f)[split] if e.get("label")]
     if max_images is not None:
         entries = entries[: int(max_images)]
 
-    cases: List[ValidationCase] = []
-    for entry in tqdm.tqdm(entries, desc=desc):
-        volume = _z_score_normalize(_load_nifti(entry["image"]))
-        gt_discs, affine = _extract_disc_voxels(entry["label"])
-        cases.append(
-            ValidationCase(
-                stem=_stem(entry["image"]),
-                candidates=predict_fn(volume),
-                volume_shape=tuple(int(s) for s in volume.shape),
-                gt_discs=gt_discs,
-                affine=affine,
-            )
+    lookahead = max(2, 2 * num_workers)
+    extractor = BoundedSubmitter(executor, max_pending=lookahead)
+    meta = []
+    for stem, volume, gt_discs, affine in tqdm.tqdm(
+        imap_ordered(executor, _load_case, entries, lookahead),
+        total=len(entries),
+        desc=desc,
+    ):
+        heatmap = predict_fn(volume)
+        extractor.submit(extract_candidates, heatmap, min_threshold)
+        meta.append((stem, tuple(int(s) for s in volume.shape), gt_discs, affine))
+        del volume, heatmap
+
+    candidates = extractor.drain()
+    return [
+        ValidationCase(
+            stem=stem, candidates=cand, volume_shape=shape, gt_discs=gt, affine=affine
         )
-    return cases
+        for (stem, shape, gt, affine), cand in zip(meta, candidates)
+    ]
 
 
 def score_cases(
@@ -107,34 +134,49 @@ def score_cases(
     return overall
 
 
+def _grid_row(
+    cases: Sequence[ValidationCase],
+    to_voxels: Callable,
+    thr: float,
+    dist: float,
+    tolerance_mm: float,
+) -> dict:
+    """Worker job: score one ``(peak_threshold, min_peak_distance)`` pair."""
+    s = score_cases(cases, to_voxels, thr, dist, tolerance_mm)
+    return {
+        "peak_threshold": float(thr),
+        "min_peak_distance": float(dist),
+        "f1_at_tolerance": s["f1_at_tolerance"],
+        "recall": s["recall"],
+        "precision": s["precision"],
+        "distance_mm_mean": s["distance_mm"]["mean"],
+        "n_false_negative": s["n_false_negative"],
+        "n_false_positive": s["n_false_positive"],
+    }
+
+
 def grid_search(
     cases: Sequence[ValidationCase],
     to_voxels: Callable,
     peak_thresholds: Sequence[float],
     min_peak_distances: Sequence[float],
     tolerance_mm: float = DEFAULT_TOLERANCE_MM,
+    executor=None,
 ) -> Tuple[dict, List[dict]]:
     """Score every ``(peak_threshold, min_peak_distance)`` pair.
 
+    Pairs are scored in parallel when ``executor`` is given (``to_voxels``
+    must then be a module-level function so it can be pickled).
     Returns ``(best_row, all_rows)``; best = highest ``f1_at_tolerance``,
     ties broken by lower mean distance.
     """
-    rows: List[dict] = []
-    for thr in tqdm.tqdm(peak_thresholds, desc="grid search"):
-        for dist in min_peak_distances:
-            s = score_cases(cases, to_voxels, thr, dist, tolerance_mm)
-            rows.append(
-                {
-                    "peak_threshold": float(thr),
-                    "min_peak_distance": float(dist),
-                    "f1_at_tolerance": s["f1_at_tolerance"],
-                    "recall": s["recall"],
-                    "precision": s["precision"],
-                    "distance_mm_mean": s["distance_mm"]["mean"],
-                    "n_false_negative": s["n_false_negative"],
-                    "n_false_positive": s["n_false_positive"],
-                }
-            )
+    cases = list(cases)
+    futures = [
+        submit(executor, _grid_row, cases, to_voxels, thr, dist, tolerance_mm)
+        for thr in peak_thresholds
+        for dist in min_peak_distances
+    ]
+    rows: List[dict] = [f.result() for f in tqdm.tqdm(futures, desc="grid search")]
 
     def _key(row):
         mean = row["distance_mm_mean"]
@@ -147,29 +189,49 @@ def tune(
     cfg: dict,
     manifest_path: str,
     out_dir: str,
-    predict_fn: Callable[[np.ndarray, float], Dict[str, object]],
+    predict_fn: Callable[[np.ndarray], np.ndarray],
     to_voxels: Callable,
     split: str = "valid",
+    num_workers=None,
 ) -> dict:
     """Grid-search the decoding parameters and write ``postprocessing.json``.
 
-    ``predict_fn(volume_norm, min_threshold)`` must return decoding
-    candidates; it runs once per image at the lowest threshold of the grid.
+    ``predict_fn(volume_norm)`` must return the stitched heatmap; candidates
+    are extracted once per image at the lowest threshold of the grid.
+    ``num_workers`` (default: ``cfg["inference_num_workers"]``, ``"auto"``)
+    CPU processes load images, extract peaks and score the grid.
     """
     thresholds = [float(t) for t in cfg.get("tune_peak_thresholds", DEFAULT_PEAK_THRESHOLDS)]
     distances = [float(d) for d in cfg.get("tune_min_peak_distances", DEFAULT_MIN_PEAK_DISTANCES)]
     tolerance = float(cfg.get("val_tolerance_mm", DEFAULT_TOLERANCE_MM))
     min_thr = min(thresholds)
-
-    cases = collect_cases(
-        manifest_path, split, lambda v: predict_fn(v, min_thr), desc=f"predict {split}"
-    )
-    if not cases:
-        raise RuntimeError(f"No labelled images in split '{split}' of {manifest_path}.")
-    best, rows = grid_search(cases, to_voxels, thresholds, distances, tolerance)
+    if num_workers is None:
+        num_workers = cfg.get("inference_num_workers", "auto")
+    num_workers = resolve_num_workers(num_workers)
+    print(f"[tune] num_workers={num_workers}")
 
     default_thr = float(cfg.get("peak_threshold", 0.3))
     default_dist = float(cfg.get("inference_min_peak_distance", 10.0))
+
+    executor = make_executor(num_workers)
+    try:
+        cases = collect_cases(
+            manifest_path,
+            split,
+            predict_fn,
+            min_thr,
+            desc=f"predict {split}",
+            executor=executor,
+            num_workers=num_workers,
+        )
+        if not cases:
+            raise RuntimeError(f"No labelled images in split '{split}' of {manifest_path}.")
+        best, rows = grid_search(
+            cases, to_voxels, thresholds, distances, tolerance, executor=executor
+        )
+    finally:
+        if executor is not None:
+            executor.shutdown(cancel_futures=True)
     default = score_cases(cases, to_voxels, default_thr, default_dist, tolerance)
 
     os.makedirs(out_dir, exist_ok=True)

@@ -260,6 +260,8 @@ Common knobs:
 
 Inference stitches every sliding-window prediction into one heatmap with a Gaussian importance map, then decodes peaks once. `discslabel_tune` / `discslabel_tune_3d` grid-search `peak_threshold` × `min_peak_distance` (`tune_peak_thresholds`, `tune_min_peak_distances`) on the validation split and write `postprocessing.json` + `postprocessing_grid.csv` next to the weights; inference uses `postprocessing.json` automatically when present, otherwise the config's `peak_threshold` / `inference_min_peak_distance`.
 
+Tuning, inference and evaluation run their CPU work in a pool of worker processes while the main process keeps the GPU busy: workers preprocess (load, reorient, resample, z-score) the next images, extract peaks / decode / write the NIfTI + PNG of the previous ones, score the tuning grid points in parallel, and score GT/prediction pairs in `discslabel_evaluate`. The pool size comes from `inference_num_workers` (`"auto"` = available CPUs − 1, capped at 8) and can be overridden with `--num-workers` on `discslabel_tune[_3d]`, `discslabel_inference[_3d]` and `discslabel_evaluate`; `0` runs everything inline (useful for debugging). Training validation keeps running inline.
+
 The config is archived next to the trained weights (`$DISCSLABEL_DATA/weights/<run_name>/config.json`), together with the resolved `data.json` and a `pip freeze` snapshot, so each checkpoint carries the exact context used to produce it.
 
 ## License

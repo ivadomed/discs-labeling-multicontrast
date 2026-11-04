@@ -35,7 +35,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import nibabel as nib
 import numpy as np
@@ -45,11 +45,12 @@ import tqdm
 logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 
 from ..dataset import _z_score_normalize
-from ..decoding import _choose_anchor, label_discs
+from ..decoding import _choose_anchor, extract_candidates, label_discs
+from ..parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers
 from ..postprocessing import resolve_postprocessing
 from ..training import load_inference_weights
 from .model import load_model
-from .predictor import predict_candidates
+from .predictor import predict_volume_heatmap
 from .train import (
     _display_slice,
     _intensity_window,
@@ -149,7 +150,8 @@ def _resample_discs_to_native(
     labeled_discs: List[Tuple[int, float, float]],
     preproc_affine: np.ndarray,
     d_mid: int,
-    original_nib: nib.Nifti1Image,
+    native_shape: Tuple[int, int, int],
+    native_affine: np.ndarray,
 ) -> np.ndarray:
     """Project disc labels from the preprocessed grid back to the native grid.
 
@@ -164,7 +166,7 @@ def _resample_discs_to_native(
     than ``_resample_label_pointwise`` and mathematically exact for
     single-voxel landmarks.
     """
-    dest_shape = tuple(int(s) for s in original_nib.shape[:3])
+    dest_shape = tuple(int(s) for s in native_shape[:3])
     out = np.zeros(dest_shape, dtype=np.int16)
     if not labeled_discs:
         return out
@@ -181,7 +183,7 @@ def _resample_discs_to_native(
     preproc_voxels[3, :] = 1.0
 
     world = np.asarray(preproc_affine) @ preproc_voxels
-    native_affine_inv = np.linalg.inv(np.asarray(original_nib.affine))
+    native_affine_inv = np.linalg.inv(np.asarray(native_affine))
     native_voxels = native_affine_inv @ world  # (4, N)
     native_rounded = np.rint(native_voxels[:3, :]).astype(np.int64).T  # (N, 3)
 
@@ -254,43 +256,40 @@ def _preprocess_image(
     return data, affine, original_nib
 
 
-def _infer_one_image(
+def _load_and_preprocess(job: Tuple[str, str, Tuple[float, float, float]]) -> dict:
+    """Worker job: preprocess + z-score one image (CPU only, no model)."""
+    image_path, orientation, resolution_mm = job
+    image_raw, affine, original_nib = _preprocess_image(image_path, orientation, resolution_mm)
+    return {
+        "path": image_path,
+        "volume": _z_score_normalize(image_raw),
+        "affine": affine,
+        "native_shape": tuple(int(s) for s in original_nib.shape[:3]),
+        "native_affine": np.asarray(original_nib.affine),
+    }
+
+
+def _finalize_one(
     image_path: str,
-    model: torch.nn.Module,
-    device: torch.device,
-    orientation: str,
-    resolution_mm: Tuple[float, float, float],
-    patch_hw: Tuple[int, int],
-    overlap: float,
+    heatmap: np.ndarray,
+    slice_2d: np.ndarray,
+    d_mid: int,
+    affine: np.ndarray,
+    native_shape: Tuple[int, int, int],
+    native_affine: np.ndarray,
     peak_threshold: float,
     min_peak_distance: float,
-    batch_size: int,
-    n_mid_slices: int,
     out_dir: str,
-) -> None:
-    """Run the full sliding-window pipeline on one 3D image."""
-    image_raw, affine, original_nib = _preprocess_image(
-        image_path, orientation, resolution_mm
-    )
-    image_norm = _z_score_normalize(image_raw)
+) -> Optional[str]:
+    """Worker job: decode the stitched heatmap and write the NIfTI + PNG.
 
-    d_mid = image_raw.shape[0] // 2
-    # Center slice of the input stack — the display background of the preview.
-    slice_2d = image_norm[d_mid]
-
-    candidates = predict_candidates(
-        image_norm,
-        model,
-        device,
-        patch_hw,
-        overlap,
-        batch_size,
-        n_mid_slices,
-        peak_threshold,
-    )
+    Returns a warning message (or ``None``) so the main process prints it
+    above its progress bar.
+    """
+    candidates = extract_candidates(heatmap, peak_threshold)
+    warning = None
     if _choose_anchor(candidates["anchors"], peak_threshold) is None:
-        # tqdm.write prints above the active bar instead of smearing it.
-        tqdm.tqdm.write(
+        warning = (
             f"[warn] no anchor detected for {os.path.basename(image_path)} "
             f"(found {len(candidates['discs'])} disc candidates); writing empty NIfTI."
         )
@@ -320,9 +319,11 @@ def _infer_one_image(
         labeled_discs,
         preproc_affine=affine,
         d_mid=d_mid,
-        original_nib=original_nib,
+        native_shape=native_shape,
+        native_affine=native_affine,
     )
-    _write_disc_nifti(nifti_out, native_label_volume, original_nib.affine)
+    _write_disc_nifti(nifti_out, native_label_volume, native_affine)
+    return warning
 
 
 def predict(
@@ -330,7 +331,14 @@ def predict(
     weights_path: str,
     input_path: str,
     out_dir: str,
+    num_workers=None,
 ) -> None:
+    """Sliding-window inference on every input image.
+
+    Three-stage pipeline: ``num_workers`` CPU processes preprocess the next
+    images and decode / write the previous ones while the main process runs
+    the model on the current one.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     image_paths = _discover_inputs(input_path)
@@ -347,11 +355,14 @@ def predict(
     orientation = str(cfg.get("orientation", "RPI"))
     resolution_mm = _parse_resolution(str(cfg.get("resolution", "1x1x1")))
     n_mid_slices = int(cfg["in_channels"])
+    if num_workers is None:
+        num_workers = cfg.get("inference_num_workers", "auto")
+    num_workers = min(resolve_num_workers(num_workers), len(image_paths))
     print(
         f"[inference] device={device} inputs={len(image_paths)} "
         f"orientation={orientation} resolution={resolution_mm} "
         f"patch_hw={patch_hw} overlap={overlap} batch_size={batch_size} "
-        f"n_mid_slices={n_mid_slices}"
+        f"n_mid_slices={n_mid_slices} num_workers={num_workers}"
     )
     print(
         f"[inference] peak_threshold={peak_thr} min_peak_distance={min_peak_distance} "
@@ -359,21 +370,46 @@ def predict(
     )
 
     check_and_make_dir(out_dir)
-    for image_path in tqdm.tqdm(image_paths, desc="inference"):
-        _infer_one_image(
-            image_path,
-            model=model,
-            device=device,
-            orientation=orientation,
-            resolution_mm=resolution_mm,
-            patch_hw=patch_hw,
-            overlap=overlap,
-            peak_threshold=peak_thr,
-            min_peak_distance=min_peak_distance,
-            batch_size=batch_size,
-            n_mid_slices=n_mid_slices,
-            out_dir=out_dir,
+    lookahead = max(2, 2 * num_workers)
+    jobs = [(p, orientation, resolution_mm) for p in image_paths]
+    executor = make_executor(num_workers)
+    try:
+        writer = BoundedSubmitter(executor, max_pending=lookahead)
+        bar = tqdm.tqdm(
+            imap_ordered(executor, _load_and_preprocess, jobs, lookahead),
+            total=len(jobs),
+            desc="inference",
         )
+        for item in bar:
+            volume = item["volume"]
+            d_mid = volume.shape[0] // 2
+            heatmap = predict_volume_heatmap(
+                volume, model, device, patch_hw, overlap, batch_size, n_mid_slices
+            )
+            writer.submit(
+                _finalize_one,
+                item["path"],
+                heatmap,
+                # Center slice of the input stack — the preview background.
+                np.ascontiguousarray(volume[d_mid]),
+                d_mid,
+                item["affine"],
+                item["native_shape"],
+                item["native_affine"],
+                peak_thr,
+                min_peak_distance,
+                out_dir,
+            )
+            del volume, heatmap, item
+            for warning in writer.pop_ready():
+                if warning:
+                    tqdm.tqdm.write(warning)
+        for warning in writer.drain():
+            if warning:
+                tqdm.tqdm.write(warning)
+    finally:
+        if executor is not None:
+            executor.shutdown(cancel_futures=True)
     print(f"Wrote per-image NIfTI + PNG into {out_dir}")
 
 
@@ -393,6 +429,12 @@ def main() -> None:
         help="Directory for per-image <name>_discs.nii.gz + <name>_discs.png outputs.",
     )
     parser.add_argument("--config", required=True, help="JSON config.")
+    parser.add_argument(
+        "--num-workers",
+        default=None,
+        help="CPU worker processes for preprocessing / decoding / writing "
+        "(default: config inference_num_workers, else 'auto'; 0 = run inline).",
+    )
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
@@ -401,6 +443,7 @@ def main() -> None:
         weights_path=args.weights,
         input_path=args.input,
         out_dir=args.out_dir,
+        num_workers=args.num_workers,
     )
 
 

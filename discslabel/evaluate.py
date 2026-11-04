@@ -42,6 +42,8 @@ from typing import Dict, List, Tuple
 import nibabel as nib
 import numpy as np
 
+from .parallel import make_executor, resolve_num_workers
+
 
 NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")
 PRED_SUFFIX = "_discs"
@@ -88,16 +90,21 @@ def _extract_disc_voxels(label_path: str) -> Tuple[Dict[int, np.ndarray], np.nda
     normal case.
     """
     img = nib.load(label_path)
-    data = np.rint(np.asarray(img.dataobj)).astype(np.int32)
-    data = np.squeeze(data)
+    data = np.squeeze(np.rint(np.asarray(img.dataobj)).astype(np.int32))
+    # One pass over the volume: gather every labelled voxel, then average the
+    # coordinates per label value (instead of one full-volume scan per label).
+    coords = np.argwhere(data > 0)
     discs: Dict[int, np.ndarray] = {}
-    for value in np.unique(data):
-        if value <= 0:
-            continue
-        coords = np.argwhere(data == int(value))
-        if len(coords) == 0:
-            continue
-        discs[int(value)] = coords.mean(axis=0)
+    if len(coords):
+        values = data[tuple(coords.T)]
+        uniq, inverse = np.unique(values, return_inverse=True)
+        inverse = inverse.ravel()
+        counts = np.bincount(inverse).astype(np.float64)
+        means = np.stack(
+            [np.bincount(inverse, weights=coords[:, a]) for a in range(coords.shape[1])],
+            axis=1,
+        ) / counts[:, None]
+        discs = {int(v): means[i] for i, v in enumerate(uniq)}
     return discs, np.asarray(img.affine)
 
 
@@ -141,6 +148,11 @@ def _discover_pairs(gt_dir: str, pred_dir: str) -> List[Tuple[str, str, str]]:
             continue
         pairs.append((stem, gt_path, pred_path))
     return pairs
+
+
+def _evaluate_pair(pair: Tuple[str, str, str]) -> Tuple[dict, List[dict]]:
+    """Worker job: ``_evaluate_one`` on a ``(stem, gt_path, pred_path)`` tuple."""
+    return _evaluate_one(*pair)
 
 
 def _evaluate_one(
@@ -347,19 +359,33 @@ def evaluate(
     pred_dir: str,
     out_dir: str,
     run_name: str = "",
+    num_workers="auto",
 ) -> None:
-    """Compare every GT/pred pair under the two directories, write metrics."""
+    """Compare every GT/pred pair under the two directories, write metrics.
+
+    Pairs are scored in parallel over ``num_workers`` processes (0 = inline).
+    """
     os.makedirs(out_dir, exist_ok=True)
     run_name = run_name or os.path.basename(os.path.normpath(pred_dir))
     pairs = _discover_pairs(gt_dir, pred_dir)
-    print(f"[eval] {len(pairs)} GT/pred pairs")
+    num_workers = min(resolve_num_workers(num_workers), len(pairs))
+    print(f"[eval] {len(pairs)} GT/pred pairs (num_workers={num_workers})")
 
     per_image: List[dict] = []
     all_rows: List[dict] = []
-    for stem, gt_path, pred_path in pairs:
-        summary, rows = _evaluate_one(stem, gt_path, pred_path)
-        per_image.append(summary)
-        all_rows.extend(rows)
+    executor = make_executor(num_workers)
+    try:
+        if executor is None:
+            results = map(_evaluate_pair, pairs)
+        else:
+            chunksize = max(1, len(pairs) // (4 * num_workers))
+            results = executor.map(_evaluate_pair, pairs, chunksize=chunksize)
+        for summary, rows in results:
+            per_image.append(summary)
+            all_rows.extend(rows)
+    finally:
+        if executor is not None:
+            executor.shutdown()
 
     overall = _aggregate(per_image)
     out = {
@@ -483,12 +509,18 @@ def main() -> None:
         default="",
         help="Run identifier stored in metrics.json (defaults to the pred-dir name).",
     )
+    parser.add_argument(
+        "--num-workers",
+        default="auto",
+        help="Worker processes used to score the pairs (default: auto; 0 = run inline).",
+    )
     args = parser.parse_args()
     evaluate(
         gt_dir=args.gt_dir,
         pred_dir=args.pred_dir,
         out_dir=args.out_dir,
         run_name=args.run_name,
+        num_workers=args.num_workers,
     )
 
 

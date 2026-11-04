@@ -78,5 +78,6 @@
     "inference_save_images": true,
     "inference_overlap": 0.5,
     "inference_min_peak_distance": 10.0,
-    "inference_batch_size": "auto"
+    "inference_batch_size": "auto",
+    "inference_num_workers": "auto"
 }
