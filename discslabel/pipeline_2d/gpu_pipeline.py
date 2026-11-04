@@ -5,7 +5,10 @@ SmaugLab 3D GPU augmentations, extracts the mid-sagittal slice, projects the
 3D point-wise disc label onto the mid-sagittal plane, and builds the
 5-channel Gaussian heatmap target. When ``elastic_config`` is set, a 2D
 kornia random elastic transform is then applied jointly to the image and
-heatmap to simulate spine curvature.
+heatmap to simulate spine curvature. ``artifact_config`` /
+``lowres_config`` add image-only MRI artifacts and an S-I low-resolution
+simulation on the 3D batch right after the SmaugLab augmentations (see
+``discslabel.gpu_artifacts``).
 
 All operations run on the GPU with no CPU round-trips.
 
@@ -36,6 +39,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .. import LANDMARK_CHANNEL_LABELS
+from ..gpu_artifacts import build_image_augmentations
 
 
 def _resolve_aug_config(name: str) -> str:
@@ -140,6 +144,8 @@ class GpuBatchProcessor(nn.Module):
         heatmap_radius: int = 20,
         elastic_config: Optional[dict] = None,
         n_mid_slices: int = 1,
+        artifact_config: Optional[dict] = None,
+        lowres_config: Optional[dict] = None,
     ):
         super().__init__()
         if n_mid_slices < 1:
@@ -155,6 +161,9 @@ class GpuBatchProcessor(nn.Module):
         self.n_mid_slices = int(n_mid_slices)
         self._aug: Optional[nn.Module] = None
         self._elastic: Optional[nn.Module] = None
+        # Image-only GPU augmentations (S-I low resolution, MRI artifacts),
+        # applied on the 3D batch after the SmaugLab pipeline.
+        self.image_aug = build_image_augmentations(artifact_config, lowres_config)
 
     def _build_aug(self) -> nn.Module:
         if self.aug_config is None:
@@ -250,6 +259,8 @@ class GpuBatchProcessor(nn.Module):
 
         if apply_augmentation and seg_3d is not None:
             image_3d, seg_3d = self._augment_3d(image_3d, seg_3d)
+        if apply_augmentation and self.image_aug is not None:
+            image_3d = self.image_aug(image_3d)
 
         D = image_3d.size(_SAGITTAL_AXIS)
         mid = D // 2

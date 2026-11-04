@@ -283,6 +283,8 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
         aug_config=cfg.get("aug_config"),
         heatmap_sigma=cfg["heatmap_sigma"],
         heatmap_radius=cfg["heatmap_radius"],
+        artifact_config=cfg.get("artifact_config"),
+        lowres_config=cfg.get("lowres_si_config"),
     ).to(device)
 
     out_dir = os.path.join(save_model_dir, "dry_run")
@@ -468,6 +470,8 @@ def train(
         aug_config=cfg.get("aug_config"),
         heatmap_sigma=cfg["heatmap_sigma"],
         heatmap_radius=cfg["heatmap_radius"],
+        artifact_config=cfg.get("artifact_config"),
+        lowres_config=cfg.get("lowres_si_config"),
     ).to(device)
 
     model = load_model(

@@ -247,6 +247,19 @@ Common knobs:
 - `heatmap_sigma`, `heatmap_radius` — Gaussian spread and kernel radius for the on-GPU heatmap synthesis.
 - `label_sigma` — Gaussian spread **in millimetres** of the sphere used to carry point labels through the resample step. The sigma is converted to per-axis voxel sigmas via the input image zooms, so the sphere stays isotropic in physical space even on thick-slice MRI (anisotropic voxels). Set `label_debug_dir` in the config (or pass `--debug-dir` to `discslabel_resample_image`) to write a mid-sagittal 4-panel PNG per processed file — use it to confirm the sphere is big enough that its peak survives the resample.
 - `aug_config` — path to a SmaugLab GPU augmentation JSON (same format as the ones used by SmaugLab-benchmark). Set to `null` to disable augmentation.
+- `artifact_config` — GPU MRI artifacts (`discslabel/gpu_artifacts.py`), pure-torch ports of the torchio transforms used by SmaugLab's CPU `ArtifactTransform`: `motion`, `ghosting`, `spike`, `bias_field`, `blur`, `noise`, `swap`. Each batch item is corrupted with probability `p`; with `random_pick` one random enabled artifact is applied, otherwise all of them in that order. Each artifact is `true` (defaults), `false`, or a dict of parameters. `retain_stats` restores each sample's mean/std so inputs stay z-scored. Image-only: labels and heatmaps are untouched. Remove the key (or set `null`) to disable.
+- `lowres_si_config` — with probability `p`, downsample the S-I axis by a random `factor` (e.g. `[1.5, 5]` = 1.5–5 mm slices at 1 mm) with `down_mode` (`area` = slab averaging, `nearest` = slice dropping) and upsample back with `up_mode`, to simulate thick-slice acquisitions. `axis` can also be `PA` or `RL`.
+
+Both run on the 3D batch on the GPU, right after the SmaugLab augmentations (low resolution first, then artifacts), in the 2D and 3D pipelines. To check what they produce, run:
+
+```bash
+discslabel_debug_augmentations --manifest $DISCSLABEL_DATA/prepared/<out_name>/manifest.json \
+    --config discslabel/pipeline_2d/configs/default.json --out-dir debug_aug [--save-nifti]
+# or on raw images (reoriented / resampled like inference):
+discslabel_debug_augmentations --input /path/to/image_or_folder --out-dir debug_aug
+```
+
+It writes one PNG per volume (one row per augmentation forced on, original in column 0, `--n-draws` random draws in the others, plus a `training_mix` row with the configured probabilities), optionally the augmented NIfTIs, and prints the time each augmentation takes per volume.
 
 ### Training schedule (nnU-Net style)
 

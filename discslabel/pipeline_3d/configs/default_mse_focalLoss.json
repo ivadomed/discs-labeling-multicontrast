@@ -58,6 +58,27 @@
 
     "aug_config": "transform_params_one-sequence-to-segment-them-all.json",
 
+    "artifact_config": {
+        "p": 0.3,
+        "random_pick": true,
+        "retain_stats": true,
+        "motion": {"degrees": 10, "translation": 10, "num_transforms": 2},
+        "ghosting": {"num_ghosts": [4, 10], "axes": [0, 1, 2], "intensity": [0.5, 1.0]},
+        "spike": {"num_spikes": 1, "intensity": [1, 2]},
+        "bias_field": {"coefficients": 0.5, "order": 3},
+        "blur": {"std": [0, 2]},
+        "noise": {"mean": 0, "std": [0, 0.25]},
+        "swap": {"patch_size": 15, "num_iterations": 100}
+    },
+
+    "lowres_si_config": {
+        "p": 0.25,
+        "factor": [1.5, 5.0],
+        "axis": "SI",
+        "down_mode": "area",
+        "up_mode": "linear"
+    },
+
     "wandb": {
         "project": "discs-labeling-multicontrast",
         "entity": null,

@@ -3,7 +3,10 @@
 Takes a batch of 3D ``(image, label, seg)`` volumes, optionally runs the
 SmaugLab 3D GPU augmentations, and builds the 5-channel 3D Gaussian heatmap
 target from the point-wise disc label. No mid-sagittal projection, no 2D
-elastic transform — the model consumes the full volume.
+elastic transform — the model consumes the full volume. ``artifact_config``
+/ ``lowres_config`` add image-only MRI artifacts and an S-I low-resolution
+simulation right after the SmaugLab augmentations (see
+``discslabel.gpu_artifacts``).
 
 Expected tensor layout:
     image : (B, 1, D, H, W) float, intensities in [0, 1]
@@ -27,6 +30,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .. import LANDMARK_CHANNEL_LABELS
+from ..gpu_artifacts import build_image_augmentations
 
 
 def _resolve_aug_config(name: str) -> str:
@@ -115,12 +119,17 @@ class GpuBatchProcessor(nn.Module):
         aug_config: Optional[str] = None,
         heatmap_sigma: float = 3.0,
         heatmap_radius: int = 6,
+        artifact_config: Optional[dict] = None,
+        lowres_config: Optional[dict] = None,
     ):
         super().__init__()
         self.aug_config = aug_config
         self.heatmap_sigma = float(heatmap_sigma)
         self.heatmap_radius = int(heatmap_radius)
         self._aug: Optional[nn.Module] = None
+        # Image-only GPU augmentations (S-I low resolution, MRI artifacts),
+        # applied after the SmaugLab pipeline.
+        self.image_aug = build_image_augmentations(artifact_config, lowres_config)
 
     def _build_aug(self) -> nn.Module:
         if self.aug_config is None:
@@ -165,6 +174,8 @@ class GpuBatchProcessor(nn.Module):
 
         if apply_augmentation and seg_3d is not None:
             image_3d, seg_3d = self._augment_3d(image_3d, seg_3d)
+        if apply_augmentation and self.image_aug is not None:
+            image_3d = self.image_aug(image_3d)
 
         if label_3d is None:
             return image_3d, None, None, seg_3d
