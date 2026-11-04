@@ -21,6 +21,11 @@ Training schedule (nnU-Net style)
   AND within ``val_tolerance_mm``). ``best_model.pt`` is saved whenever the
   exponential moving average of that score reaches a new best;
   ``final_model.pt`` is the last epoch.
+* ``checkpoint_latest.pt`` (model, optimizer, scheduler, AMP scaler, EMA,
+  wandb run id) is rewritten after every epoch. On start-up, if its epoch is
+  before ``num_epochs`` in the config, training resumes from it (falling back
+  to the newest weights-only ``checkpoint_epoch_<N>.pt``); if it already
+  reached ``num_epochs`` training is skipped. ``--no-resume`` starts fresh.
 
 Weights & Biases
 ----------------
@@ -60,6 +65,8 @@ from ..training import (
     ForegroundBatchSampler,
     PolyLRScheduler,
     build_optimizer,
+    resume_training_state,
+    save_training_state,
 )
 from ..utils.io import check_and_make_dir
 
@@ -341,7 +348,7 @@ def _resolve_batch_size(value, device: torch.device, minimum: int = 1) -> int:
     return minimum
 
 
-def _init_wandb(cfg: dict, save_model_dir: str):
+def _init_wandb(cfg: dict, save_model_dir: str, run_id: str | None = None):
     wandb_cfg = cfg.get("wandb")
     if not wandb_cfg:
         return None, None, 0
@@ -353,6 +360,8 @@ def _init_wandb(cfg: dict, save_model_dir: str):
         name=wandb_cfg.get("run_name"),
         dir=save_model_dir,
         config=cfg,
+        id=run_id,
+        resume="allow" if run_id else None,
     )
     return run, wandb, int(wandb_cfg.get("log_images_every", 1))
 
@@ -390,6 +399,7 @@ def train(
     cfg: dict,
     manifest_path: str,
     save_model_dir: str,
+    resume: bool = True,
 ) -> None:
     device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
     if device.type == "cuda":
@@ -469,11 +479,23 @@ def train(
     check_and_make_dir(save_model_dir)
 
     scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
-    wandb_run, wandb_mod, log_images_every = _init_wandb(cfg, save_model_dir)
-
     ema = EmaTracker(alpha=float(cfg.get("val_ema_alpha", 0.9)))
 
-    for epoch in range(num_epochs):
+    start_epoch, wandb_run_id = 0, None
+    if resume:
+        start_epoch, wandb_run_id = resume_training_state(
+            save_model_dir, num_epochs, model, optimizer, scheduler, scaler, ema, device
+        )
+        if start_epoch >= num_epochs:
+            print(
+                f"[resume] last checkpoint is at epoch {start_epoch}/{num_epochs}: "
+                "training already finished, nothing to do."
+            )
+            return
+
+    wandb_run, wandb_mod, log_images_every = _init_wandb(cfg, save_model_dir, wandb_run_id)
+
+    for epoch in range(start_epoch, num_epochs):
         lr = optimizer.param_groups[0]["lr"]
         train_loss, _ = _one_epoch(
             model,
@@ -559,6 +581,11 @@ def train(
                 plt.close(fig)
             wandb_run.log(log, step=epoch)
 
+        save_training_state(
+            save_model_dir, epoch, model, optimizer, scheduler, scaler, ema,
+            wandb_run.id if wandb_run is not None else None,
+        )
+
     final_path = os.path.join(save_model_dir, "final_model.pt")
     torch.save(model.state_dict(), final_path)
     print("Saving final model:", final_path)
@@ -590,6 +617,15 @@ def main() -> None:
         default=10,
         help="How many random samples to render in dry-run mode (default: 10).",
     )
+    parser.add_argument(
+        "--no-resume",
+        action="store_true",
+        help=(
+            "Start from scratch even if <save-model-dir> holds a checkpoint. "
+            "By default training resumes from the last checkpoint when its "
+            "epoch is before `num_epochs` in the config."
+        ),
+    )
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
@@ -602,7 +638,12 @@ def main() -> None:
             n_samples=int(args.dry_run_samples),
         )
         return
-    train(cfg, manifest_path=args.manifest, save_model_dir=args.save_model_dir)
+    train(
+        cfg,
+        manifest_path=args.manifest,
+        save_model_dir=args.save_model_dir,
+        resume=not args.no_resume,
+    )
 
 
 if __name__ == "__main__":

@@ -15,6 +15,9 @@ Modelled on nnU-Net's ``nnUNetTrainer``:
 
 from __future__ import annotations
 
+import json
+import os
+import re
 from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
@@ -142,3 +145,120 @@ def load_inference_weights(model: torch.nn.Module, weights_path: str, device) ->
     state = torch.load(weights_path, map_location=device)
     state = {k: v for k, v in state.items() if not k.startswith(DEEP_SUPERVISION_PREFIX)}
     model.load_state_dict(state)
+
+
+# ---------------------------------------------------------------------------
+# Resuming
+# ---------------------------------------------------------------------------
+
+LATEST_CHECKPOINT = "checkpoint_latest.pt"
+
+
+def save_training_state(
+    save_model_dir: str,
+    epoch: int,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    scheduler: PolyLRScheduler,
+    scaler,
+    ema: EmaTracker,
+    wandb_run_id: Optional[str] = None,
+) -> None:
+    """Write everything needed to resume after ``epoch`` to ``checkpoint_latest.pt``.
+
+    Written to a temp file then renamed, so a job killed mid-save never
+    leaves a truncated checkpoint behind.
+    """
+    path = os.path.join(save_model_dir, LATEST_CHECKPOINT)
+    tmp = path + ".tmp"
+    torch.save(
+        {
+            "epoch": int(epoch),
+            "model": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "scheduler": scheduler.state_dict(),
+            "scaler": scaler.state_dict(),
+            "ema": {"value": ema.value, "best": ema.best},
+            "wandb_run_id": wandb_run_id,
+        },
+        tmp,
+    )
+    os.replace(tmp, path)
+
+
+def _latest_epoch_checkpoint(save_model_dir: str) -> Optional[Tuple[int, str]]:
+    """Highest ``checkpoint_epoch_<N>.pt`` (weights only) in ``save_model_dir``."""
+    best = None
+    for name in os.listdir(save_model_dir):
+        m = re.fullmatch(r"checkpoint_epoch_(\d+)\.pt", name)
+        if m and (best is None or int(m.group(1)) > best[0]):
+            best = (int(m.group(1)), os.path.join(save_model_dir, name))
+    return best
+
+
+def resume_training_state(
+    save_model_dir: str,
+    num_epochs: int,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    scheduler: PolyLRScheduler,
+    scaler,
+    ema: EmaTracker,
+    device,
+) -> Tuple[int, Optional[str]]:
+    """Restore the last saved state if training stopped before ``num_epochs``.
+
+    Returns ``(start_epoch, wandb_run_id)``. ``start_epoch == 0`` means a
+    fresh run; ``start_epoch >= num_epochs`` means the run is already done.
+
+    Prefers ``checkpoint_latest.pt`` (full state). Falls back to the newest
+    weights-only ``checkpoint_epoch_<N>.pt`` from older runs: the model and
+    LR schedule resume, but the optimizer moments restart from zero and the
+    EMA best is recovered from ``best_model.json`` when present.
+    """
+    if not os.path.isdir(save_model_dir):
+        return 0, None
+
+    latest = os.path.join(save_model_dir, LATEST_CHECKPOINT)
+    if os.path.isfile(latest):
+        state = torch.load(latest, map_location=device)
+        start_epoch = int(state["epoch"]) + 1
+        if start_epoch >= num_epochs:
+            return start_epoch, state.get("wandb_run_id")
+        model.load_state_dict(state["model"])
+        optimizer.load_state_dict(state["optimizer"])
+        scheduler.load_state_dict(state["scheduler"])
+        if scaler.is_enabled() and state.get("scaler"):
+            scaler.load_state_dict(state["scaler"])
+        ema.value = state["ema"]["value"]
+        ema.best = state["ema"]["best"]
+        wandb_run_id = state.get("wandb_run_id")
+        print(f"[resume] {latest}: continuing at epoch {start_epoch + 1}/{num_epochs}")
+    else:
+        legacy = _latest_epoch_checkpoint(save_model_dir)
+        if legacy is None:
+            return 0, None
+        epoch, path = legacy
+        start_epoch = epoch + 1
+        if start_epoch >= num_epochs:
+            return start_epoch, None
+        model.load_state_dict(torch.load(path, map_location=device))
+        scheduler.last_epoch = epoch
+        best_json = os.path.join(save_model_dir, "best_model.json")
+        if os.path.isfile(best_json):
+            with open(best_json) as f:
+                ema.best = float(json.load(f)["ema_f1"])
+        wandb_run_id = None
+        print(
+            f"[resume] {path} (weights only): continuing at epoch "
+            f"{start_epoch + 1}/{num_epochs}; optimizer state starts fresh"
+        )
+
+    # The schedule length follows the current config, even if num_epochs was
+    # edited since the checkpoint was written (state_dict restores max_steps).
+    scheduler.max_steps = int(num_epochs)
+    scheduler.last_epoch = start_epoch
+    lr = scheduler.get_lr()
+    for group, value in zip(optimizer.param_groups, lr):
+        group["lr"] = value
+    return start_epoch, wandb_run_id
