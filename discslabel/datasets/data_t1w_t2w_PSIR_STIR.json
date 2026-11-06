@@ -1,5 +1,5 @@
 {
-    "TYPE": "LABEL",
+    "TYPE": "LABEL-MULTI",
     "CONTRASTS": "PSIR_STIR_T2w_T1w",
     "SOURCE": [
         "git@data.neuro.polymtl.ca:datasets/whole-spine.git",
