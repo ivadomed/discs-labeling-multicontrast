@@ -1,7 +1,7 @@
 {
-    "data_json": "data_t1w_t2w",
-    "out_name": "data_t1w_t2w",
-    "run_name": "data_t1w_t2w_UNet3D_default_MSE",
+    "data_json": "data_t1w_t2w_PSIR_STIR",
+    "out_name": "data_t1w_t2w_PSIR_STIR",
+    "run_name": "data_t1w_t2w_PSIR_STIR_UNet3D_MSE",
     "debug": false,
 
     "steps": {
@@ -31,7 +31,7 @@
     "prefetch_factor": 4,
     "use_amp": true,
 
-    "num_epochs": 500,
+    "num_epochs": 700,
     "num_iterations_per_epoch": 250,
     "num_val_iterations_per_epoch": 50,
     "oversample_foreground_percent": 0.33,

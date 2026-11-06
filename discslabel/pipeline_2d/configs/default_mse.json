@@ -1,12 +1,12 @@
 {
-    "data_json": "data_t1w_t2w",
-    "out_name": "data_t1w_t2w",
-    "run_name": "data_t1w_t2w_UNet_default_MSE",
+    "data_json": "data_t1w_t2w_PSIR_STIR",
+    "out_name": "data_t1w_t2w_PSIR_STIR",
+    "run_name": "data_t1w_t2w_PSIR_STIR_UNet_MSE",
     "debug": false,
 
     "steps": {
-        "download": false,
-        "prepare": false,
+        "download": true,
+        "prepare": true,
         "train": true,
         "tune": true,
         "inference": false,
@@ -32,7 +32,7 @@
     "prefetch_factor": 4,
     "use_amp": true,
 
-    "num_epochs": 250,
+    "num_epochs": 500,
     "num_iterations_per_epoch": 250,
     "num_val_iterations_per_epoch": 50,
     "oversample_foreground_percent": 0.33,
