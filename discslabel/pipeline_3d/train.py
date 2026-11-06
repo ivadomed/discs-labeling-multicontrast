@@ -54,11 +54,19 @@ import tqdm
 from torch.utils.data import DataLoader
 
 from .. import HEATMAP_CHANNELS
-from ..dataset import DiscVolumeDataset
+from ..cache import build_cache, resolve_cache_root
+from ..dataset import DiscVolumeDataset, batch_to_device
 from .gpu_pipeline import GpuBatchProcessor
 from ..losses import DeepSupervisionLoss, load_loss
 from .model import load_model
-from ..postprocessing import DEFAULT_TOLERANCE_MM, collect_cases, score_cases
+from ..parallel import resolve_num_workers
+from ..postprocessing import (
+    DEFAULT_TOLERANCE_MM,
+    PreloadedCase,
+    collect_preloaded_cases,
+    preload_cases,
+    score_cases,
+)
 from .predictor import labeled_to_voxels, predict_volume_heatmap
 from ..training import (
     EmaTracker,
@@ -112,11 +120,8 @@ def _one_epoch(
         ):
             if max_batches is not None and i_batch >= max_batches:
                 break
-            image_3d = batch["image"].to(device, non_blocking=True).float()
-            label_3d = batch["label"].to(device, non_blocking=True).float()
-            seg_3d = batch.get("seg")
-            if seg_3d is not None:
-                seg_3d = seg_3d.to(device, non_blocking=True).float()
+            # z-score + seg unpacking run on the GPU.
+            image_3d, label_3d, seg_3d = batch_to_device(batch, device)
 
             image_3d, heatmap_3d, _label_3d, _seg_3d = processor(
                 image_3d, label_3d, seg_3d=seg_3d, apply_augmentation=train
@@ -300,11 +305,7 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
             iterator = iter(loader)
             batch = next(iterator)
 
-        image_3d = batch["image"].to(device, non_blocking=True).float()
-        label_3d = batch["label"].to(device, non_blocking=True).float()
-        seg_3d = batch.get("seg")
-        if seg_3d is not None:
-            seg_3d = seg_3d.to(device, non_blocking=True).float()
+        image_3d, label_3d, seg_3d = batch_to_device(batch, device)
 
         image_3d, heatmap_3d, _label_3d, _seg_3d = processor(
             image_3d, label_3d, seg_3d=seg_3d, apply_augmentation=True
@@ -369,11 +370,30 @@ def _init_wandb(cfg: dict, save_model_dir: str, run_id: str | None = None):
     return run, wandb, int(wandb_cfg.get("log_images_every", 1))
 
 
+def _preload_validation(
+    cfg: dict, manifest_path: str, cache_root: str | None, spine_disc_min: int
+) -> list[PreloadedCase]:
+    """Load the validation ground truth once. Whole z-scored volumes are too
+    large to keep in memory, so each validation round reloads them (from the
+    ``.npy`` cache when available)."""
+    return preload_cases(
+        manifest_path,
+        "valid",
+        max_images=cfg.get("val_max_images"),
+        keep_in_memory=False,
+        cache_root=cache_root,
+        spine_disc_min_label=spine_disc_min,
+        num_workers=resolve_num_workers(cfg.get("inference_num_workers", "auto")),
+        desc="preload validation ground truth",
+    )
+
+
 def _validate_full_images(
     model: torch.nn.Module,
     cfg: dict,
-    manifest_path: str,
+    preloaded: list[PreloadedCase],
     device: torch.device,
+    cache_root: str | None,
 ) -> dict:
     """Score the model on whole validation volumes with the inference decoding."""
     model.eval()
@@ -382,12 +402,12 @@ def _validate_full_images(
     batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
     peak_thr = float(cfg.get("peak_threshold", 0.3))
     min_dist = float(cfg.get("inference_min_peak_distance", 10.0))
-    cases = collect_cases(
-        manifest_path,
-        "valid",
+    cases = collect_preloaded_cases(
+        preloaded,
         lambda v: predict_volume_heatmap(v, model, device, patch_dhw, overlap, batch_size),
         peak_thr,
-        max_images=cfg.get("val_max_images"),
+        cache_root=cache_root,
+        split="valid",
         desc="validation (full images)",
     )
     return score_cases(
@@ -432,6 +452,17 @@ def train(
     )
 
     spine_disc_min = int(cfg.get("spine_disc_min_label", 60))
+    # Uncompressed, memory-mapped copy of the train / valid cases: a sample
+    # then reads only its crop instead of gunzipping the whole volume.
+    cache_root = resolve_cache_root(cfg.get("data_cache", True), manifest_path)
+    if cache_root is not None:
+        build_cache(
+            manifest_path,
+            ("train", "valid"),
+            cache_root,
+            spine_disc_min,
+            num_workers=resolve_num_workers(cfg.get("inference_num_workers", "auto")),
+        )
     train_ds = DiscVolumeDataset(
         manifest_path,
         split="train",
@@ -439,6 +470,7 @@ def train(
         spine_disc_min_label=spine_disc_min,
         random_crop=True,
         oversample_foreground_percent=oversample_fg,
+        cache_root=cache_root,
     )
     valid_ds = DiscVolumeDataset(
         manifest_path,
@@ -446,7 +478,9 @@ def train(
         patch_size=tuple(cfg["patch_size"]),
         spine_disc_min_label=spine_disc_min,
         random_crop=False,
+        cache_root=cache_root,
     )
+    val_cases = _preload_validation(cfg, manifest_path, cache_root, spine_disc_min)
 
     loader_kwargs = {
         "pin_memory": device.type == "cuda",
@@ -539,7 +573,7 @@ def train(
 
         metrics = None
         if (epoch + 1) % val_every == 0 or epoch == num_epochs - 1:
-            metrics = _validate_full_images(model, cfg, manifest_path, device)
+            metrics = _validate_full_images(model, cfg, val_cases, device, cache_root)
             is_best = ema.update(metrics["f1_at_tolerance"])
             dist = metrics["distance_mm"]["mean"]
             print(

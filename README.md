@@ -269,6 +269,12 @@ discslabel_debug_augmentations --input /path/to/image_or_folder --out-dir debug_
 
 It writes one PNG per volume (one row per augmentation forced on, original in column 0, `--n-draws` random draws in the others, plus a `training_mix` row with the configured probabilities), optionally the augmented NIfTIs, and prints the time each augmentation takes per volume.
 
+### Data loading speed
+
+- `data_cache` (default `true`) — at the start of training, every train / valid case is written once to `$DISCSLABEL_DATA/prepared/<out_name>/cache/` as uncompressed `.npy` files: the image as float16 (rescaled, which the z-score ignores), the anatomy segmentations as one uint8 bit mask, and the point-wise label and disc locations as sparse coordinates. The data loader memory-maps them and reads only the crop (~0.03 s per sample instead of ~0.7 s to gunzip a whole-spine NIfTI). Cases are rebuilt when their prepared files or `spine_disc_min_label` change. Expect about 2 bytes per voxel per image, plus 1 byte per voxel when segmentations exist. Set it to `false` to read the NIfTIs, or to a path to put the cache elsewhere (e.g. local SSD).
+- The data loader returns compact tensors (float16 image, uint8 label, uint8 seg bit mask, ~6x fewer bytes than float32) and the z-score normalisation and seg unpacking run on the GPU (`discslabel.dataset.batch_to_device`).
+- Full-image validation loads its ground truth once before training. The 2D pipeline also keeps the z-scored mid-sagittal slice stacks in memory, so a validation round only runs the model and the decoding. The 3D pipeline reloads each volume from the cache.
+
 ### Training schedule (nnU-Net style)
 
 - `num_epochs` × `num_iterations_per_epoch` — fixed training length; batches are drawn with replacement and there is **no early stopping**. The learning rate follows nnU-Net's polynomial decay `lr * (1 - epoch / num_epochs) ** 0.9`.

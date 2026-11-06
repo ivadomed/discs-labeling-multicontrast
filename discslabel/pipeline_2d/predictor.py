@@ -28,6 +28,11 @@ def extract_slice_stack(volume: np.ndarray, d_mid: int, n_slices: int) -> np.nda
     return volume[indices]
 
 
+def mid_slice_stack(volume: np.ndarray, n_slices: int) -> np.ndarray:
+    """The ``n_slices`` R-L slices around the volume centre (the model input)."""
+    return extract_slice_stack(volume, volume.shape[0] // 2, n_slices)
+
+
 def predict_volume_heatmap(
     volume_norm: np.ndarray,
     model: torch.nn.Module,
@@ -38,7 +43,7 @@ def predict_volume_heatmap(
     n_mid_slices: int,
 ) -> np.ndarray:
     """Stitched ``(NUM_CLASSES, H, W)`` heatmap of the mid-sagittal slice stack."""
-    stack = extract_slice_stack(volume_norm, volume_norm.shape[0] // 2, n_mid_slices)
+    stack = mid_slice_stack(volume_norm, n_mid_slices)
     return predict_heatmap(stack, model, device, patch_hw, overlap, batch_size)
 
 

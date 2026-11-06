@@ -113,6 +113,132 @@ def collect_cases(
     ]
 
 
+@dataclass
+class PreloadedCase:
+    """A validation case whose ground truth (and optionally model input) is
+    loaded once, before training, instead of at every validation round."""
+
+    stem: str
+    entry: dict
+    cached: bool
+    data: Optional[np.ndarray]
+    volume_shape: Tuple[int, int, int]
+    gt_discs: Dict[int, np.ndarray]
+    affine: np.ndarray
+
+
+def _load_volume_norm(entry: dict, cache_root: Optional[str], split: str, cached: bool) -> np.ndarray:
+    """Whole-volume z-scored image, from the ``.npy`` cache when available.
+
+    The cached image is a rescaled float16 copy; the z-score is invariant to
+    the scale, so only float16 rounding differs from the NIfTI path.
+    """
+    if cached:
+        from .cache import case_paths
+
+        image = np.load(case_paths(cache_root, split, entry)["image"]).astype(np.float32)
+    else:
+        image = _load_nifti(entry["image"])
+    return _z_score_normalize(image)
+
+
+def _preload_case(job) -> PreloadedCase:
+    """Worker job for ``preload_cases``."""
+    entry, cache_root, split, cached, reduce_fn, keep_in_memory = job
+    volume = _load_volume_norm(entry, cache_root, split, cached)
+    data = None
+    if keep_in_memory:
+        data = reduce_fn(volume) if reduce_fn is not None else volume
+        data = np.ascontiguousarray(data)
+    gt_discs, affine = _extract_disc_voxels(entry["label"])
+    return PreloadedCase(
+        stem=_stem(entry["image"]),
+        entry=entry,
+        cached=cached,
+        data=data,
+        volume_shape=tuple(int(s) for s in volume.shape),
+        gt_discs=gt_discs,
+        affine=affine,
+    )
+
+
+def preload_cases(
+    manifest_path: str,
+    split: str,
+    max_images: Optional[int] = None,
+    reduce_fn: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+    keep_in_memory: bool = True,
+    cache_root: Optional[str] = None,
+    spine_disc_min_label: int = 60,
+    num_workers: int = 0,
+    desc: str = "preload validation",
+) -> List[PreloadedCase]:
+    """Load the ground truth of every labelled image of ``split`` once.
+
+    With ``keep_in_memory`` the z-scored model input is kept too, after
+    ``reduce_fn`` (e.g. the 2D pipeline keeps only the mid-sagittal slice
+    stack, a few MB per image); otherwise ``collect_preloaded_cases`` reloads
+    the volume at each call (fast when it is in the ``.npy`` cache).
+    ``reduce_fn`` must be picklable when ``num_workers > 0``.
+    """
+    from .cache import is_cached
+
+    with open(manifest_path) as f:
+        entries = [e for e in json.load(f)[split] if e.get("label")]
+    if max_images is not None:
+        entries = entries[: int(max_images)]
+
+    jobs = []
+    for entry in entries:
+        cached = cache_root is not None and is_cached(cache_root, split, entry, spine_disc_min_label)
+        jobs.append((entry, cache_root, split, cached, reduce_fn, keep_in_memory))
+
+    executor = make_executor(num_workers)
+    try:
+        return list(
+            tqdm.tqdm(
+                imap_ordered(executor, _preload_case, jobs, max(2, 2 * num_workers)),
+                total=len(jobs),
+                desc=desc,
+            )
+        )
+    finally:
+        if executor is not None:
+            executor.shutdown()
+
+
+def collect_preloaded_cases(
+    preloaded: Sequence[PreloadedCase],
+    predict_fn: Callable[[np.ndarray], np.ndarray],
+    min_threshold: float,
+    cache_root: Optional[str] = None,
+    split: str = "valid",
+    desc: str = "validation",
+) -> List[ValidationCase]:
+    """``collect_cases`` on ``preload_cases`` output: no NIfTI is re-read.
+
+    ``predict_fn`` receives the kept model input (or the reloaded z-scored
+    volume when it was not kept in memory).
+    """
+    cases = []
+    for case in tqdm.tqdm(preloaded, desc=desc):
+        data = case.data
+        if data is None:
+            data = _load_volume_norm(case.entry, cache_root, split, case.cached)
+        heatmap = predict_fn(data)
+        cases.append(
+            ValidationCase(
+                stem=case.stem,
+                candidates=extract_candidates(heatmap, min_threshold),
+                volume_shape=case.volume_shape,
+                gt_discs=case.gt_discs,
+                affine=case.affine,
+            )
+        )
+        del data, heatmap
+    return cases
+
+
 def score_cases(
     cases: Sequence[ValidationCase],
     to_voxels: Callable,
