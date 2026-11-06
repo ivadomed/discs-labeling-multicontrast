@@ -20,340 +20,296 @@
     "VALIDATION": [],
     "TESTING": [
         {
-            "IMAGE": "philadelphia-pediatric/sub-103/anat/sub-103_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-103/anat/sub-103_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-158/anat/sub-158_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-158/anat/sub-158_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-119/anat/sub-119_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-119/anat/sub-119_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-236/anat/sub-236_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-236/anat/sub-236_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-133/anat/sub-133_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-133/anat/sub-133_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-216/anat/sub-216_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-216/anat/sub-216_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-184/anat/sub-184_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-184/anat/sub-184_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-214/anat/sub-214_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-214/anat/sub-214_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-208/anat/sub-208_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-208/anat/sub-208_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "philadelphia-pediatric/sub-219/anat/sub-219_acq-top_run-1_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-219/anat/sub-219_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-133/anat/sub-133_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-133/anat/sub-133_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-209/anat/sub-209_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-209/anat/sub-209_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-235/anat/sub-235_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-235/anat/sub-235_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-183/anat/sub-183_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-183/anat/sub-183_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-132/anat/sub-132_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-132/anat/sub-132_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-193/anat/sub-193_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-193/anat/sub-193_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-177/anat/sub-177_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-177/anat/sub-177_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-234/anat/sub-234_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-234/anat/sub-234_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-184/anat/sub-184_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-184/anat/sub-184_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-150/anat/sub-150_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-150/anat/sub-150_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-105/anat/sub-105_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-105/anat/sub-105_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-128/anat/sub-128_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-128/anat/sub-128_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-217/anat/sub-217_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-217/anat/sub-217_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-102/anat/sub-102_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-102/anat/sub-102_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-239/anat/sub-239_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-239/anat/sub-239_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-225/anat/sub-225_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-225/anat/sub-225_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-104/anat/sub-104_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-104/anat/sub-104_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-199/anat/sub-199_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-199/anat/sub-199_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-156/anat/sub-156_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-156/anat/sub-156_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-134/anat/sub-134_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-134/anat/sub-134_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-208/anat/sub-208_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-208/anat/sub-208_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-131/anat/sub-131_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-131/anat/sub-131_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-121/anat/sub-121_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-121/anat/sub-121_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-185/anat/sub-185_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-185/anat/sub-185_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-158/anat/sub-158_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-158/anat/sub-158_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-175/anat/sub-175_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-175/anat/sub-175_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-199/anat/sub-199_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-199/anat/sub-199_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-172/anat/sub-172_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-172/anat/sub-172_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-197/anat/sub-197_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-197/anat/sub-197_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-115/anat/sub-115_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-115/anat/sub-115_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-228/anat/sub-228_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-228/anat/sub-228_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-116/anat/sub-116_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-116/anat/sub-116_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-134/anat/sub-134_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-134/anat/sub-134_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-103/anat/sub-103_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-103/anat/sub-103_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-144/anat/sub-144_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-144/anat/sub-144_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "philadelphia-pediatric/sub-122/anat/sub-122_acq-top_run-1_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-122/anat/sub-122_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-135/anat/sub-135_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-135/anat/sub-135_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-159/anat/sub-159_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-159/anat/sub-159_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-112/anat/sub-112_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-112/anat/sub-112_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-168/anat/sub-168_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-168/anat/sub-168_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-206/anat/sub-206_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-206/anat/sub-206_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-126/anat/sub-126_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-126/anat/sub-126_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-228/anat/sub-228_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-228/anat/sub-228_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-188/anat/sub-188_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-188/anat/sub-188_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-238/anat/sub-238_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-238/anat/sub-238_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-233/anat/sub-233_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-233/anat/sub-233_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-192/anat/sub-192_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-192/anat/sub-192_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-180/anat/sub-180_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-180/anat/sub-180_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-120/anat/sub-120_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-120/anat/sub-120_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-121/anat/sub-121_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-121/anat/sub-121_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-150/anat/sub-150_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-150/anat/sub-150_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-212/anat/sub-212_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-212/anat/sub-212_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-111/anat/sub-111_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-111/anat/sub-111_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-220/anat/sub-220_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-220/anat/sub-220_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-151/anat/sub-151_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-151/anat/sub-151_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-212/anat/sub-212_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-212/anat/sub-212_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-127/anat/sub-127_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-127/anat/sub-127_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-167/anat/sub-167_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-167/anat/sub-167_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-196/anat/sub-196_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-196/anat/sub-196_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-168/anat/sub-168_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-168/anat/sub-168_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-207/anat/sub-207_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-207/anat/sub-207_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-129/anat/sub-129_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-129/anat/sub-129_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-153/anat/sub-153_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-153/anat/sub-153_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-109/anat/sub-109_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-109/anat/sub-109_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-154/anat/sub-154_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-154/anat/sub-154_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-142/anat/sub-142_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-142/anat/sub-142_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-128/anat/sub-128_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-128/anat/sub-128_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "philadelphia-pediatric/sub-229/anat/sub-229_acq-top_run-1_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-229/anat/sub-229_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-225/anat/sub-225_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-225/anat/sub-225_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-234/anat/sub-234_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-234/anat/sub-234_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-176/anat/sub-176_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-176/anat/sub-176_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-162/anat/sub-162_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-162/anat/sub-162_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-193/anat/sub-193_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-193/anat/sub-193_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-226/anat/sub-226_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-226/anat/sub-226_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-156/anat/sub-156_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-156/anat/sub-156_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-169/anat/sub-169_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-169/anat/sub-169_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-221/anat/sub-221_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-221/anat/sub-221_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-121/anat/sub-121_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-121/anat/sub-121_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-123/anat/sub-123_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-123/anat/sub-123_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-145/anat/sub-145_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-145/anat/sub-145_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-111/anat/sub-111_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-111/anat/sub-111_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-121/anat/sub-121_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-121/anat/sub-121_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-175/anat/sub-175_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-175/anat/sub-175_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-135/anat/sub-135_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-135/anat/sub-135_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-125/anat/sub-125_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-125/anat/sub-125_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-238/anat/sub-238_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-238/anat/sub-238_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-118/anat/sub-118_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-118/anat/sub-118_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-232/anat/sub-232_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-232/anat/sub-232_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-160/anat/sub-160_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-160/anat/sub-160_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-206/anat/sub-206_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-206/anat/sub-206_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-163/anat/sub-163_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-163/anat/sub-163_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-192/anat/sub-192_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-192/anat/sub-192_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-148/anat/sub-148_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-148/anat/sub-148_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-131/anat/sub-131_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-131/anat/sub-131_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-106/anat/sub-106_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-106/anat/sub-106_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-105/anat/sub-105_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-105/anat/sub-105_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-239/anat/sub-239_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-239/anat/sub-239_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-183/anat/sub-183_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-183/anat/sub-183_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-231/anat/sub-231_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-231/anat/sub-231_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-180/anat/sub-180_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-180/anat/sub-180_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-189/anat/sub-189_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-189/anat/sub-189_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-201/anat/sub-201_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-201/anat/sub-201_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-164/anat/sub-164_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-164/anat/sub-164_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-236/anat/sub-236_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-236/anat/sub-236_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-163/anat/sub-163_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-163/anat/sub-163_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-182/anat/sub-182_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-182/anat/sub-182_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-169/anat/sub-169_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-169/anat/sub-169_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-124/anat/sub-124_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-124/anat/sub-124_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-199/anat/sub-199_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-199/anat/sub-199_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-115/anat/sub-115_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-115/anat/sub-115_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-181/anat/sub-181_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-181/anat/sub-181_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-220/anat/sub-220_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-220/anat/sub-220_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-205/anat/sub-205_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-205/anat/sub-205_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-139/anat/sub-139_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-139/anat/sub-139_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-231/anat/sub-231_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-231/anat/sub-231_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-168/anat/sub-168_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-168/anat/sub-168_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-145/anat/sub-145_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-145/anat/sub-145_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-210/anat/sub-210_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-210/anat/sub-210_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-224/anat/sub-224_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-224/anat/sub-224_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-119/anat/sub-119_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-119/anat/sub-119_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-154/anat/sub-154_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-154/anat/sub-154_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-237/anat/sub-237_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-237/anat/sub-237_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-116/anat/sub-116_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-116/anat/sub-116_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-238/anat/sub-238_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-238/anat/sub-238_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-173/anat/sub-173_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-173/anat/sub-173_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "philadelphia-pediatric/sub-205/anat/sub-205_rec-composed_T2w.nii.gz",
@@ -364,460 +320,860 @@
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-106/anat/sub-106_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-161/anat/sub-161_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-161/anat/sub-161_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-143/anat/sub-143_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-143/anat/sub-143_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-227/anat/sub-227_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-227/anat/sub-227_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-137/anat/sub-137_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-137/anat/sub-137_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-194/anat/sub-194_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-194/anat/sub-194_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-209/anat/sub-209_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-209/anat/sub-209_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-127/anat/sub-127_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-127/anat/sub-127_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-166/anat/sub-166_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-166/anat/sub-166_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-232/anat/sub-232_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-232/anat/sub-232_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-109/anat/sub-109_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-109/anat/sub-109_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-150/anat/sub-150_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-150/anat/sub-150_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "philadelphia-pediatric/sub-232/anat/sub-232_rec-composed_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-232/anat/sub-232_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-174/anat/sub-174_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-174/anat/sub-174_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-211/anat/sub-211_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-211/anat/sub-211_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-163/anat/sub-163_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-163/anat/sub-163_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-149/anat/sub-149_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-149/anat/sub-149_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-124/anat/sub-124_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-124/anat/sub-124_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-237/anat/sub-237_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-237/anat/sub-237_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-136/anat/sub-136_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-136/anat/sub-136_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-113/anat/sub-113_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-113/anat/sub-113_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-147/anat/sub-147_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-147/anat/sub-147_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-204/anat/sub-204_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-204/anat/sub-204_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-171/anat/sub-171_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-171/anat/sub-171_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-193/anat/sub-193_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-193/anat/sub-193_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-113/anat/sub-113_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-113/anat/sub-113_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-188/anat/sub-188_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-188/anat/sub-188_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-147/anat/sub-147_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-147/anat/sub-147_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-200/anat/sub-200_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-200/anat/sub-200_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-181/anat/sub-181_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-181/anat/sub-181_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-155/anat/sub-155_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-155/anat/sub-155_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-162/anat/sub-162_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-162/anat/sub-162_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-116/anat/sub-116_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-116/anat/sub-116_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-102/anat/sub-102_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-102/anat/sub-102_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-146/anat/sub-146_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-146/anat/sub-146_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-145/anat/sub-145_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-145/anat/sub-145_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-171/anat/sub-171_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-171/anat/sub-171_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-224/anat/sub-224_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-224/anat/sub-224_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-192/anat/sub-192_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-192/anat/sub-192_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-135/anat/sub-135_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-135/anat/sub-135_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-227/anat/sub-227_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-227/anat/sub-227_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-151/anat/sub-151_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-151/anat/sub-151_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-132/anat/sub-132_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-132/anat/sub-132_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-219/anat/sub-219_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-219/anat/sub-219_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-139/anat/sub-139_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-139/anat/sub-139_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-139/anat/sub-139_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-139/anat/sub-139_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-185/anat/sub-185_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-185/anat/sub-185_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-218/anat/sub-218_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-218/anat/sub-218_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-115/anat/sub-115_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-115/anat/sub-115_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-183/anat/sub-183_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-183/anat/sub-183_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-202/anat/sub-202_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-202/anat/sub-202_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-205/anat/sub-205_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-205/anat/sub-205_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-105/anat/sub-105_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-105/anat/sub-105_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-210/anat/sub-210_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-210/anat/sub-210_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-146/anat/sub-146_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-146/anat/sub-146_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-120/anat/sub-120_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-120/anat/sub-120_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-152/anat/sub-152_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-152/anat/sub-152_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-209/anat/sub-209_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-209/anat/sub-209_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-222/anat/sub-222_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-222/anat/sub-222_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-110/anat/sub-110_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-110/anat/sub-110_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-131/anat/sub-131_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-131/anat/sub-131_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-117/anat/sub-117_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-117/anat/sub-117_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-160/anat/sub-160_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-160/anat/sub-160_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-231/anat/sub-231_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-231/anat/sub-231_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-178/anat/sub-178_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-178/anat/sub-178_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-226/anat/sub-226_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-226/anat/sub-226_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-196/anat/sub-196_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-196/anat/sub-196_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-165/anat/sub-165_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-165/anat/sub-165_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-237/anat/sub-237_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-237/anat/sub-237_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-104/anat/sub-104_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-104/anat/sub-104_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-155/anat/sub-155_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-155/anat/sub-155_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-169/anat/sub-169_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-169/anat/sub-169_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-236/anat/sub-236_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-236/anat/sub-236_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-136/anat/sub-136_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-136/anat/sub-136_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-138/anat/sub-138_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-138/anat/sub-138_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-124/anat/sub-124_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-124/anat/sub-124_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-211/anat/sub-211_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-211/anat/sub-211_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
-        },
-        {
             "IMAGE": "philadelphia-pediatric/sub-189/anat/sub-189_rec-composed_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-189/anat/sub-189_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-161/anat/sub-161_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-161/anat/sub-161_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-160/anat/sub-160_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-160/anat/sub-160_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-209/anat/sub-209_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-209/anat/sub-209_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-163/anat/sub-163_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-163/anat/sub-163_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-216/anat/sub-216_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-216/anat/sub-216_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-179/anat/sub-179_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-179/anat/sub-179_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-154/anat/sub-154_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-154/anat/sub-154_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-190/anat/sub-190_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-190/anat/sub-190_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-239/anat/sub-239_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-239/anat/sub-239_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-123/anat/sub-123_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-123/anat/sub-123_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-176/anat/sub-176_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-176/anat/sub-176_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
-        },
-        {
-            "IMAGE": "philadelphia-pediatric/sub-156/anat/sub-156_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-156/anat/sub-156_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-223/anat/sub-223_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-223/anat/sub-223_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "philadelphia-pediatric/sub-165/anat/sub-165_rec-composed_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-165/anat/sub-165_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-183/anat/sub-183_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-183/anat/sub-183_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-139/anat/sub-139_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-139/anat/sub-139_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-208/anat/sub-208_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-208/anat/sub-208_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-164/anat/sub-164_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-164/anat/sub-164_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-167/anat/sub-167_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-167/anat/sub-167_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-114/anat/sub-114_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-114/anat/sub-114_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_acq-top_run-1_T1w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-159/anat/sub-159_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-159/anat/sub-159_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-220/anat/sub-220_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-220/anat/sub-220_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-128/anat/sub-128_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-128/anat/sub-128_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-138/anat/sub-138_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-138/anat/sub-138_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-177/anat/sub-177_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-177/anat/sub-177_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-155/anat/sub-155_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-155/anat/sub-155_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-107/anat/sub-107_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-107/anat/sub-107_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-104/anat/sub-104_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-104/anat/sub-104_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-215/anat/sub-215_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-215/anat/sub-215_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-188/anat/sub-188_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-188/anat/sub-188_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-178/anat/sub-178_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-178/anat/sub-178_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-101/anat/sub-101_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-101/anat/sub-101_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-158/anat/sub-158_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-158/anat/sub-158_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-212/anat/sub-212_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-212/anat/sub-212_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-186/anat/sub-186_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-186/anat/sub-186_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "philadelphia-pediatric/sub-184/anat/sub-184_rec-composed_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-184/anat/sub-184_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-148/anat/sub-148_acq-top_run-1_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-148/anat/sub-148_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-214/anat/sub-214_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-214/anat/sub-214_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
         },
         {
-            "IMAGE": "philadelphia-pediatric/sub-149/anat/sub-149_rec-composed_T2w.nii.gz",
-            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-149/anat/sub-149_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+            "IMAGE": "philadelphia-pediatric/sub-216/anat/sub-216_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-216/anat/sub-216_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-121/anat/sub-121_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-121/anat/sub-121_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-211/anat/sub-211_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-211/anat/sub-211_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-129/anat/sub-129_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-129/anat/sub-129_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-235/anat/sub-235_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-235/anat/sub-235_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-162/anat/sub-162_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-162/anat/sub-162_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-162/anat/sub-162_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-162/anat/sub-162_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-211/anat/sub-211_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-211/anat/sub-211_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-227/anat/sub-227_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-227/anat/sub-227_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-228/anat/sub-228_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-228/anat/sub-228_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-190/anat/sub-190_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-190/anat/sub-190_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-110/anat/sub-110_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-110/anat/sub-110_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-237/anat/sub-237_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-237/anat/sub-237_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-113/anat/sub-113_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-113/anat/sub-113_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-188/anat/sub-188_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-188/anat/sub-188_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-196/anat/sub-196_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-196/anat/sub-196_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-235/anat/sub-235_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-235/anat/sub-235_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-165/anat/sub-165_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-165/anat/sub-165_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-116/anat/sub-116_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-116/anat/sub-116_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-143/anat/sub-143_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-143/anat/sub-143_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-200/anat/sub-200_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-200/anat/sub-200_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-127/anat/sub-127_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-127/anat/sub-127_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-201/anat/sub-201_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-201/anat/sub-201_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-180/anat/sub-180_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-180/anat/sub-180_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-208/anat/sub-208_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-208/anat/sub-208_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "philadelphia-pediatric/sub-202/anat/sub-202_rec-composed_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-202/anat/sub-202_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
+            "IMAGE": "philadelphia-pediatric/sub-174/anat/sub-174_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-174/anat/sub-174_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-128/anat/sub-128_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-128/anat/sub-128_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-179/anat/sub-179_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-179/anat/sub-179_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-163/anat/sub-163_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-163/anat/sub-163_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-226/anat/sub-226_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-226/anat/sub-226_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-179/anat/sub-179_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-179/anat/sub-179_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-112/anat/sub-112_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-112/anat/sub-112_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-234/anat/sub-234_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-234/anat/sub-234_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-197/anat/sub-197_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-197/anat/sub-197_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-140/anat/sub-140_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-140/anat/sub-140_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-167/anat/sub-167_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-167/anat/sub-167_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-202/anat/sub-202_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-202/anat/sub-202_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-174/anat/sub-174_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-174/anat/sub-174_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-175/anat/sub-175_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-175/anat/sub-175_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-130/anat/sub-130_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-130/anat/sub-130_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-138/anat/sub-138_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-138/anat/sub-138_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-151/anat/sub-151_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-151/anat/sub-151_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-233/anat/sub-233_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-233/anat/sub-233_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-212/anat/sub-212_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-212/anat/sub-212_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-194/anat/sub-194_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-194/anat/sub-194_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-147/anat/sub-147_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-147/anat/sub-147_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-126/anat/sub-126_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-126/anat/sub-126_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-117/anat/sub-117_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-117/anat/sub-117_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-140/anat/sub-140_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-140/anat/sub-140_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-124/anat/sub-124_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-124/anat/sub-124_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-219/anat/sub-219_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-219/anat/sub-219_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-236/anat/sub-236_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-236/anat/sub-236_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-226/anat/sub-226_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-226/anat/sub-226_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
             "IMAGE": "philadelphia-pediatric/sub-172/anat/sub-172_rec-composed_T2w.nii.gz",
             "LABEL": "philadelphia-pediatric/derivatives/labels/sub-172/anat/sub-172_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-133/anat/sub-133_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-133/anat/sub-133_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-222/anat/sub-222_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-222/anat/sub-222_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-211/anat/sub-211_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-211/anat/sub-211_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-137/anat/sub-137_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-137/anat/sub-137_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-161/anat/sub-161_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-161/anat/sub-161_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-173/anat/sub-173_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-173/anat/sub-173_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-222/anat/sub-222_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-222/anat/sub-222_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-109/anat/sub-109_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-109/anat/sub-109_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-225/anat/sub-225_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-225/anat/sub-225_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-203/anat/sub-203_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-203/anat/sub-203_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-101/anat/sub-101_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-101/anat/sub-101_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-239/anat/sub-239_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-239/anat/sub-239_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-149/anat/sub-149_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-149/anat/sub-149_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-190/anat/sub-190_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-190/anat/sub-190_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-206/anat/sub-206_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-206/anat/sub-206_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-230/anat/sub-230_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-230/anat/sub-230_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-142/anat/sub-142_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-142/anat/sub-142_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-112/anat/sub-112_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-112/anat/sub-112_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-181/anat/sub-181_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-181/anat/sub-181_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-215/anat/sub-215_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-215/anat/sub-215_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-176/anat/sub-176_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-176/anat/sub-176_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-224/anat/sub-224_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-224/anat/sub-224_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-104/anat/sub-104_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-104/anat/sub-104_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-143/anat/sub-143_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-143/anat/sub-143_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-196/anat/sub-196_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-196/anat/sub-196_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-108/anat/sub-108_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-108/anat/sub-108_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-149/anat/sub-149_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-149/anat/sub-149_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-166/anat/sub-166_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-166/anat/sub-166_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-152/anat/sub-152_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-152/anat/sub-152_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-159/anat/sub-159_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-159/anat/sub-159_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-113/anat/sub-113_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-113/anat/sub-113_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-150/anat/sub-150_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-150/anat/sub-150_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-227/anat/sub-227_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-227/anat/sub-227_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-127/anat/sub-127_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-127/anat/sub-127_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-133/anat/sub-133_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-133/anat/sub-133_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-168/anat/sub-168_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-168/anat/sub-168_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-147/anat/sub-147_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-147/anat/sub-147_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-126/anat/sub-126_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-126/anat/sub-126_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-214/anat/sub-214_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-214/anat/sub-214_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-177/anat/sub-177_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-177/anat/sub-177_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-153/anat/sub-153_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-153/anat/sub-153_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-223/anat/sub-223_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-223/anat/sub-223_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-111/anat/sub-111_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-111/anat/sub-111_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-103/anat/sub-103_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-103/anat/sub-103_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-220/anat/sub-220_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-220/anat/sub-220_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-160/anat/sub-160_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-160/anat/sub-160_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-218/anat/sub-218_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-218/anat/sub-218_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-166/anat/sub-166_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-166/anat/sub-166_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-141/anat/sub-141_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-141/anat/sub-141_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-176/anat/sub-176_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-176/anat/sub-176_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-154/anat/sub-154_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-154/anat/sub-154_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-110/anat/sub-110_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-110/anat/sub-110_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-225/anat/sub-225_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-225/anat/sub-225_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-209/anat/sub-209_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-209/anat/sub-209_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-118/anat/sub-118_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-118/anat/sub-118_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-200/anat/sub-200_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-200/anat/sub-200_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-194/anat/sub-194_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-194/anat/sub-194_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-229/anat/sub-229_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-229/anat/sub-229_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-171/anat/sub-171_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-171/anat/sub-171_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-133/anat/sub-133_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-133/anat/sub-133_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-158/anat/sub-158_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-158/anat/sub-158_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-102/anat/sub-102_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-102/anat/sub-102_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-204/anat/sub-204_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-204/anat/sub-204_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-142/anat/sub-142_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-142/anat/sub-142_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-207/anat/sub-207_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-207/anat/sub-207_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-213/anat/sub-213_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-213/anat/sub-213_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-170/anat/sub-170_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-170/anat/sub-170_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-171/anat/sub-171_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-171/anat/sub-171_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-130/anat/sub-130_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-130/anat/sub-130_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-151/anat/sub-151_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-151/anat/sub-151_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-135/anat/sub-135_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-135/anat/sub-135_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-178/anat/sub-178_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-178/anat/sub-178_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-177/anat/sub-177_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-177/anat/sub-177_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-204/anat/sub-204_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-204/anat/sub-204_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-120/anat/sub-120_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-120/anat/sub-120_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-159/anat/sub-159_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-159/anat/sub-159_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-146/anat/sub-146_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-146/anat/sub-146_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-193/anat/sub-193_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-193/anat/sub-193_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-198/anat/sub-198_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-198/anat/sub-198_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-156/anat/sub-156_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-156/anat/sub-156_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-207/anat/sub-207_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-207/anat/sub-207_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-160/anat/sub-160_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-160/anat/sub-160_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-185/anat/sub-185_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-185/anat/sub-185_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-122/anat/sub-122_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-122/anat/sub-122_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-131/anat/sub-131_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-131/anat/sub-131_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-210/anat/sub-210_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-210/anat/sub-210_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-134/anat/sub-134_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-134/anat/sub-134_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-107/anat/sub-107_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-107/anat/sub-107_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-146/anat/sub-146_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-146/anat/sub-146_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-190/anat/sub-190_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-190/anat/sub-190_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-132/anat/sub-132_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-132/anat/sub-132_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-115/anat/sub-115_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-115/anat/sub-115_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-191/anat/sub-191_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-191/anat/sub-191_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-167/anat/sub-167_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-167/anat/sub-167_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-136/anat/sub-136_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-136/anat/sub-136_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-208/anat/sub-208_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-208/anat/sub-208_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-228/anat/sub-228_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-228/anat/sub-228_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-215/anat/sub-215_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-215/anat/sub-215_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-216/anat/sub-216_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-216/anat/sub-216_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-155/anat/sub-155_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-155/anat/sub-155_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-178/anat/sub-178_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-178/anat/sub-178_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-109/anat/sub-109_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-109/anat/sub-109_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-233/anat/sub-233_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-233/anat/sub-233_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-172/anat/sub-172_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-172/anat/sub-172_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-168/anat/sub-168_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-168/anat/sub-168_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-192/anat/sub-192_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-192/anat/sub-192_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-114/anat/sub-114_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-114/anat/sub-114_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-134/anat/sub-134_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-134/anat/sub-134_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-102/anat/sub-102_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-102/anat/sub-102_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-111/anat/sub-111_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-111/anat/sub-111_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-120/anat/sub-120_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-120/anat/sub-120_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-129/anat/sub-129_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-129/anat/sub-129_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-101/anat/sub-101_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-101/anat/sub-101_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-230/anat/sub-230_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-230/anat/sub-230_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-153/anat/sub-153_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-153/anat/sub-153_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-165/anat/sub-165_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-165/anat/sub-165_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-182/anat/sub-182_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-182/anat/sub-182_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-161/anat/sub-161_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-161/anat/sub-161_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-148/anat/sub-148_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-148/anat/sub-148_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-199/anat/sub-199_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-199/anat/sub-199_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-136/anat/sub-136_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-136/anat/sub-136_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-117/anat/sub-117_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-117/anat/sub-117_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-150/anat/sub-150_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-150/anat/sub-150_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-179/anat/sub-179_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-179/anat/sub-179_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-185/anat/sub-185_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-185/anat/sub-185_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-193/anat/sub-193_acq-top_run-1_T1w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-193/anat/sub-193_acq-top_run-1_T1w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-123/anat/sub-123_acq-top_run-1_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-123/anat/sub-123_acq-top_run-1_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-119/anat/sub-119_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-119/anat/sub-119_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-197/anat/sub-197_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-197/anat/sub-197_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
+        },
+        {
+            "IMAGE": "philadelphia-pediatric/sub-103/anat/sub-103_rec-composed_T2w.nii.gz",
+            "LABEL": "philadelphia-pediatric/derivatives/labels/sub-103/anat/sub-103_rec-composed_T2w_labels-disc_step1_levels.nii.gz"
         },
         {
             "IMAGE": "canproco/sub-edm157/ses-M0/anat/sub-edm157_ses-M0_PSIR.nii.gz",
