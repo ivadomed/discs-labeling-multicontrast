@@ -276,6 +276,7 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
         random_crop=True,
         oversample_foreground_percent=float(cfg.get("oversample_foreground_percent", 0.33)),
         midline_on_disc=True,
+        midline_jitter=int(cfg.get("midline_jitter", 2)),
     )
     if len(dataset) == 0:
         raise RuntimeError("Train split is empty — nothing to dry-run against.")
@@ -473,6 +474,7 @@ def train(
         random_crop=True,
         oversample_foreground_percent=oversample_fg,
         midline_on_disc=True,
+        midline_jitter=int(cfg.get("midline_jitter", 2)),
     )
     valid_ds = DiscVolumeDataset(
         manifest_path,
@@ -480,6 +482,7 @@ def train(
         patch_size=tuple(cfg["patch_size"]),
         spine_disc_min_label=spine_disc_min,
         random_crop=False,
+        midline_on_disc=True,
     )
 
     loader_kwargs = {

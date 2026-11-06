@@ -159,7 +159,12 @@ Each dataset is described by a JSON file under `discslabel/datasets/`:
     "CONTRASTS": "T1w_T2w",
     "SOURCE": ["git@data.neuro.polymtl.ca:datasets/<bids-ds>.git"],
     "COMMIT": ["<commit-sha>"],
-    "LABELS": {"3": "disc_C2C3", "8": "disc_C7T1", "20": "disc_T12L1", "25": "disc_L5S1"},
+    "LABELS": {
+        "LABEL":     {"3": "disc_C2C3", "8": "disc_C7T1", "20": "disc_T12L1", "25": "disc_L5S1"},
+        "SEG_SPINE": {"11": "C1", "12": "C2", "...": "...", "63": "C2-C3", "...": "...", "100": "L5-S"},
+        "SEG_CORD":  {"1": "spinal_cord"},
+        "SEG_CANAL": {"1": "spinal_canal"}
+    },
     "TRAINING":   [{ "IMAGE":     "<bids-ds>/sub-001/anat/sub-001_T2w.nii.gz",
                      "LABEL":     "<bids-ds>/derivatives/labels/sub-001/anat/sub-001_T2w_label-discs.nii.gz",
                      "SEG_SPINE": "<bids-ds>/derivatives/labels/sub-001/anat/sub-001_T2w_label-spine_dseg.nii.gz",
@@ -171,6 +176,8 @@ Each dataset is described by a JSON file under `discslabel/datasets/`:
 ```
 
 - `SOURCE[i]` and `COMMIT[i]` are paired; each repo is checked out at the matching commit.
+- `LABELS` maps each file key (`LABEL`, `SEG_SPINE`, `SEG_CORD`, `SEG_CANAL`) to a `{value: name}` dict describing the voxel values of that file. It is documentation only; the code does not read it.
+- `IMAGE` and `LABEL` are required in every entry; `SEG_SPINE`, `SEG_CORD` and `SEG_CANAL` are optional and may be missing for some entries (e.g. `data_t1w_t2w_PSIR_STIR.json`).
 - `IMAGE` / `LABEL` paths are relative to `$DISCSLABEL_DATA/bids/`, and the first path segment names the repo (used by `git annex get`).
 - All files must be `.nii.gz`.
 - `LABEL` is a point-wise 3D volume with one voxel per disc at the posterior tip, carrying the disc-level value (`1..25`).
@@ -183,7 +190,8 @@ Each dataset is described by a JSON file under `discslabel/datasets/`:
   | 2 — spinal cord | `SEG_CORD` | `value > 0` |
   | 3 — spinal canal | `SEG_CANAL` | `value > 0` |
 
-  This 4-channel tensor is fed as the **second parameter** to SmaugLab's `AugTransformsGPU`: every channel receives the same 3D spatial transforms with nearest resampling. The point-wise disc landmark volume (`LABEL`) is not augmented. Each SEG_* field is optional per entry.
+  This 4-channel tensor is fed as the **second parameter** to SmaugLab's `AugTransformsGPU`: every channel receives the same 3D spatial transforms with nearest resampling. The point-wise disc landmark volume (`LABEL`) is not augmented. Each SEG_* field is optional per entry: a missing segmentation leaves its channel(s) empty (all zeros), so every sample carries a seg tensor of the same shape, mixed batches collate, and every sample goes through the augmentations.
+- **Mid-sagittal slice without `SEG_SPINE` (2D pipeline).** The dense disc mask from `SEG_SPINE` is used to put the crop's centre R-L slice on a disc-bearing slice. Without it, the point-wise `LABEL` does not say which sagittal slices cross the discs, so the volume's middle sagittal slice (`D // 2`, the slice inference uses) is used instead. In training it is drawn uniformly among the `2 * midline_jitter + 1` slices centred on it (`midline_jitter`, default `2` → 5 slices); validation uses the middle slice exactly. The `LABEL` points still set the H/W position of the foreground crops. The chosen slice always lands on the patch centre, even when the volume has fewer R-L slices than `patch_size[0]`.
 
 ## Why the projection runs on GPU
 

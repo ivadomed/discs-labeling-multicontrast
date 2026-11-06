@@ -18,6 +18,7 @@
     "label_sigma": 2.0,
 
     "spine_disc_min_label": 60,
+    "midline_jitter": 2,
 
     "model_name": "UNet",
     "in_channels": 3,
