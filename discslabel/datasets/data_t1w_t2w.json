@@ -12,14 +12,14 @@
         "b082afb619fe360c8bf324725267ee3ccb67aa77",
         "718cbe8f3f8e8f6d57f89b35c9cfb199c93a20bf"
     ],
-    "LABELS": [
-        {
+    "LABELS": {
+        "LABEL": {
             "3": "disc_C2C3",
             "8": "disc_C7T1",
             "20": "disc_T12L1",
             "25": "disc_L5S1"
         },
-        {
+        "SEG_SPINE": {
             "11": "C1",
             "12": "C2",
             "13": "C3",
@@ -71,13 +71,13 @@
             "95": "L4-L5",
             "100": "L5-S"
         },
-        {
+        "SEG_CORD": {
             "1": "spinal_cord"
         },
-        {
+        "SEG_CANAL": {
             "1": "spinal_canal"
         }
-    ],
+    },
     "TRAINING": [
         {
             "IMAGE": "data-multi-subject/sub-tehranS04/anat/sub-tehranS04_T2w.nii.gz",
