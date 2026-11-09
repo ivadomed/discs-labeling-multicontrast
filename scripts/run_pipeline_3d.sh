@@ -60,6 +60,8 @@ INFERENCE_SPLIT=$(jopt       '.inference_split'       '"test"')
 INFERENCE_SAVE_IMAGES=$(jopt '.inference_save_images' 'false')
 # Skeleton QC after labelling at inference: off | flag | correct
 INFERENCE_SKELETON=$(jopt    '.inference_skeleton'    '"off"')
+# Evaluate both without and with the skeleton correction (one forward pass).
+EVALUATE_SKELETON_COMPARE=$(jopt '.evaluate_skeleton_compare' 'true')
 
 if [ ! -f "$DATA_JSON" ]; then
     cand="$PROJECT_ROOT/discslabel/datasets/$(basename "${DATA_JSON%.json}").json"
@@ -79,6 +81,8 @@ EVAL_JSON="$PROJECT_ROOT/discslabel/datasets/evaluation.json"
 EVAL_ROOT="$DISCSLABEL_DATA/evaluation"
 EVAL_PRED_DIR="$EVAL_ROOT/prediction_$RUN_NAME"
 EVAL_METRICS_DIR="$EVAL_ROOT/metrics_$RUN_NAME"
+EVAL_PRED_DIR_SK="$EVAL_ROOT/prediction_${RUN_NAME}_skeleton"
+EVAL_METRICS_DIR_SK="$EVAL_ROOT/metrics_${RUN_NAME}_skeleton"
 if [ "$DO_DEBUG" = "true" ]; then
     DEBUG_DIR="$DISCSLABEL_DATA/debug/$OUT_NAME"
 else
@@ -149,8 +153,11 @@ if [ "$DO_TRAIN" = "true" ]; then
 fi
 
 # Fit the inter-disc distance skeleton on the training labels. Also runs
-# when inference needs it (inference_skeleton != off) and it is missing.
-if [ "$DO_SKELETON" = "true" ] || { [ "$INFERENCE_SKELETON" != "off" ] && [ ! -f "$WEIGHTS_DIR/skeleton.json" ]; }; then
+# when inference or the evaluation comparison needs it and it is missing.
+NEED_SKELETON=false
+if [ "$INFERENCE_SKELETON" != "off" ]; then NEED_SKELETON=true; fi
+if [ "$DO_EVALUATE" = "true" ] && [ "$EVALUATE_SKELETON_COMPARE" = "true" ]; then NEED_SKELETON=true; fi
+if [ "$DO_SKELETON" = "true" ] || { [ "$NEED_SKELETON" = "true" ] && [ ! -f "$WEIGHTS_DIR/skeleton.json" ]; }; then
     echo "==> discslabel_skeleton"
     discslabel_skeleton \
         --manifest "$MANIFEST" \
@@ -190,13 +197,26 @@ if [ "$DO_EVALUATE" = "true" ]; then
     echo "==> prepare_evaluation.sh"
     "$SCRIPT_DIR/prepare_evaluation.sh" "$EVAL_JSON"
 
-    echo "==> discslabel_inference_3d (evaluation)"
-    discslabel_inference_3d \
-        --weights "$WEIGHTS_DIR/best_model.pt" \
-        --input "$EVAL_ROOT/images" \
-        --out-dir "$EVAL_PRED_DIR" \
-        --config "$config_json" \
-        --skeleton "$INFERENCE_SKELETON"
+    if [ "$EVALUATE_SKELETON_COMPARE" = "true" ]; then
+        # One forward pass: the skeleton-corrected predictions go to
+        # $EVAL_PRED_DIR_SK and the plain ones (same heatmaps) to $EVAL_PRED_DIR.
+        echo "==> discslabel_inference_3d (evaluation, without + with skeleton)"
+        discslabel_inference_3d \
+            --weights "$WEIGHTS_DIR/best_model.pt" \
+            --input "$EVAL_ROOT/images" \
+            --out-dir "$EVAL_PRED_DIR_SK" \
+            --plain-out-dir "$EVAL_PRED_DIR" \
+            --config "$config_json" \
+            --skeleton correct
+    else
+        echo "==> discslabel_inference_3d (evaluation)"
+        discslabel_inference_3d \
+            --weights "$WEIGHTS_DIR/best_model.pt" \
+            --input "$EVAL_ROOT/images" \
+            --out-dir "$EVAL_PRED_DIR" \
+            --config "$config_json" \
+            --skeleton "$INFERENCE_SKELETON"
+    fi
 
     echo "==> discslabel_evaluate"
     discslabel_evaluate \
@@ -205,6 +225,22 @@ if [ "$DO_EVALUATE" = "true" ]; then
         --out-dir "$EVAL_METRICS_DIR" \
         --run-name "$RUN_NAME"
     echo "Metrics for $RUN_NAME in $EVAL_METRICS_DIR"
+
+    if [ "$EVALUATE_SKELETON_COMPARE" = "true" ]; then
+        echo "==> discslabel_evaluate (skeleton)"
+        discslabel_evaluate \
+            --gt-dir "$EVAL_ROOT/labels" \
+            --pred-dir "$EVAL_PRED_DIR_SK" \
+            --out-dir "$EVAL_METRICS_DIR_SK" \
+            --run-name "${RUN_NAME}_skeleton"
+        echo "Metrics for ${RUN_NAME}_skeleton in $EVAL_METRICS_DIR_SK"
+
+        echo "==> discslabel_compare_evaluation (without vs with skeleton)"
+        discslabel_compare_evaluation \
+            --metrics-dirs "$EVAL_METRICS_DIR" "$EVAL_METRICS_DIR_SK" \
+            --tolerance-mm "$(jopt '.val_tolerance_mm' '10')" \
+            --out-dir "$EVAL_METRICS_DIR_SK"
+    fi
     echo "Run 'discslabel_aggregate_evaluation' to compare all runs in $EVAL_ROOT/evaluation.json"
 fi
 

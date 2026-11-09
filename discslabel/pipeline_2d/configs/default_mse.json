@@ -109,5 +109,6 @@
     "inference_min_peak_distance": 10.0,
     "inference_batch_size": "auto",
     "inference_num_workers": "auto",
-    "inference_skeleton": "off"
+    "inference_skeleton": "off",
+    "evaluate_skeleton_compare": true
 }

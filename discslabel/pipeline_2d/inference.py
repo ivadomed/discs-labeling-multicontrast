@@ -301,8 +301,12 @@ def _finalize_one(
     skeleton=None,
     skeleton_kwargs: Optional[dict] = None,
     skeleton_mode: str = "off",
+    plain_out_dir: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[dict]]:
     """Worker job: decode the stitched heatmap and write the NIfTI + PNG.
+
+    With a skeleton and ``plain_out_dir``, the decoding without the skeleton
+    is also written there (same heatmap, no second forward pass).
 
     Returns ``(warning, qc_row)``: a message (or ``None``) the main process
     prints above its progress bar, and the QC summary row (``None`` when the
@@ -338,26 +342,51 @@ def _finalize_one(
         qc_row = _qc_row(report)
         if report["status"] != "ok" and warning is None:
             warning = f"[qc] {stem}: {', '.join(report['flags'])}"
-    # Decoding yields (label, h, w); the preview / native projection below use
-    # the slice convention (label, x = I-S = w, y = P-A = h).
-    labeled_discs = [(label, w, h) for label, h, w in decoded]
-
-    nifti_out = os.path.join(out_dir, f"{stem}_discs.nii.gz")
-    png_out = os.path.join(out_dir, f"{stem}_discs.png")
-
-    # Preview first — it shows what the model actually saw, so it is kept
-    # in the preprocessed frame regardless of what the output NIfTI is in.
-    title = f"{stem} — {len(labeled_discs)} discs"
+    title = f"{stem} — {len(decoded)} discs"
     if qc_row is not None and qc_row["status"] != "ok":
         title += f"\nQC: {qc_row['flags']}"
+    _write_outputs(
+        out_dir, stem, decoded, title, imputed,
+        slice_2d, d_mid, affine, native_shape, native_affine,
+    )
+    if plain_out_dir is not None and skeleton is not None:
+        # Same heatmap decoded without the skeleton, for side-by-side evaluation.
+        plain = label_discs(candidates, peak_threshold, min_peak_distance)
+        _write_outputs(
+            plain_out_dir, stem, plain, f"{stem} — {len(plain)} discs", frozenset(),
+            slice_2d, d_mid, affine, native_shape, native_affine,
+        )
+    return warning, qc_row
+
+
+def _write_outputs(
+    out_dir: str,
+    stem: str,
+    decoded: List[Tuple[int, float, float]],
+    title: str,
+    imputed: frozenset,
+    slice_2d: np.ndarray,
+    d_mid: int,
+    affine: np.ndarray,
+    native_shape: Tuple[int, int, int],
+    native_affine: np.ndarray,
+) -> None:
+    """Write ``<stem>_discs.png`` + ``<stem>_discs.nii.gz`` (native grid) into ``out_dir``.
+
+    ``decoded`` is ``[(label, h, w), ...]`` as returned by the decoding.
+    """
+    # The preview / native projection use the slice convention
+    # (label, x = I-S = w, y = P-A = h).
+    labeled_discs = [(label, w, h) for label, h, w in decoded]
+    # Preview first — it shows what the model actually saw, so it is kept
+    # in the preprocessed frame regardless of what the output NIfTI is in.
     _build_preview_png(
         slice_2d,
         labeled_discs,
         title=title,
-        save_path=png_out,
+        save_path=os.path.join(out_dir, f"{stem}_discs.png"),
         imputed_labels=imputed,
     )
-
     # Project the preprocessed-frame labels back onto the user's native grid
     # so the output NIfTI overlays cleanly on their input image.
     native_label_volume = _resample_discs_to_native(
@@ -367,8 +396,9 @@ def _finalize_one(
         native_shape=native_shape,
         native_affine=native_affine,
     )
-    _write_disc_nifti(nifti_out, native_label_volume, native_affine)
-    return warning, qc_row
+    _write_disc_nifti(
+        os.path.join(out_dir, f"{stem}_discs.nii.gz"), native_label_volume, native_affine
+    )
 
 
 def predict(
@@ -379,12 +409,15 @@ def predict(
     num_workers=None,
     skeleton_mode: str = "off",
     skeleton_path: Optional[str] = None,
+    plain_out_dir: Optional[str] = None,
 ) -> None:
     """Sliding-window inference on every input image.
 
     ``skeleton_mode`` (``off`` / ``flag`` / ``correct``) enables the skeleton
     QC / correction step (``skeleton_path`` defaults to ``skeleton.json``
-    next to the weights).
+    next to the weights). ``plain_out_dir`` additionally writes the
+    predictions decoded WITHOUT the skeleton from the same heatmaps, so both
+    can be evaluated with a single forward pass.
 
     Three-stage pipeline: ``num_workers`` CPU processes preprocess the next
     images and decode / write the previous ones while the main process runs
@@ -422,6 +455,11 @@ def predict(
     skeleton, skeleton_kwargs, sk_source = resolve_skeleton(
         cfg, weights_path, skeleton_mode, skeleton_path, SKELETON_PROJECTION
     )
+    if plain_out_dir is not None:
+        if skeleton is None:
+            raise ValueError("--plain-out-dir needs --skeleton flag|correct.")
+        check_and_make_dir(plain_out_dir)
+        print(f"[inference] predictions without skeleton also written to {plain_out_dir}")
     if skeleton is not None:
         print(f"[inference] skeleton={skeleton_mode} {skeleton_kwargs} (from {sk_source})")
 
@@ -459,6 +497,7 @@ def predict(
                 skeleton,
                 skeleton_kwargs,
                 skeleton_mode,
+                plain_out_dir,
             )
             del volume, heatmap, item
             for warning, qc_row in writer.pop_ready():
@@ -514,6 +553,12 @@ def main() -> None:
         default=None,
         help="skeleton.json from discslabel_skeleton (default: next to the weights).",
     )
+    parser.add_argument(
+        "--plain-out-dir",
+        default=None,
+        help="With --skeleton, also write the predictions decoded without the "
+        "skeleton (same heatmaps) into this folder, for comparison.",
+    )
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
@@ -525,6 +570,7 @@ def main() -> None:
         num_workers=args.num_workers,
         skeleton_mode=args.skeleton or str(cfg.get("inference_skeleton", "off")),
         skeleton_path=args.skeleton_path,
+        plain_out_dir=args.plain_out_dir,
     )
 
 

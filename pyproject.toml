@@ -79,6 +79,7 @@ discslabel_tune_3d = "discslabel.pipeline_3d.tune:main"
 discslabel_skeleton = "discslabel.skeleton:main"
 discslabel_evaluate = "discslabel.evaluate:main"
 discslabel_aggregate_evaluation = "discslabel.evaluate:aggregate_main"
+discslabel_compare_evaluation = "discslabel.evaluate:compare_main"
 discslabel_debug_augmentations = "discslabel.debug_augmentations:main"
 
 [build-system]

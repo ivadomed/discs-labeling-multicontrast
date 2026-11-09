@@ -485,6 +485,132 @@ def aggregate_runs(eval_dir: str, out_dir: str = "") -> None:
     )
 
 
+def _image_f1(p: dict, tolerance_mm: float) -> float:
+    """``f1_at_tolerance`` of one image (1.0 when there is nothing to find or predict)."""
+    denom = p["n_gt"] + p["n_pred"]
+    if denom == 0:
+        return 1.0
+    hits = sum(1 for m in p["matched"] if m["distance_mm"] <= tolerance_mm)
+    return 2.0 * hits / denom
+
+
+def compare_runs(metrics_dirs: List[str], tolerance_mm: float = 10.0, out_dir: str = "") -> dict:
+    """Side-by-side comparison of several ``metrics_<run>/metrics.json``.
+
+    Prints the overall metrics (plus ``f1_at_tolerance``) of every run, with
+    the difference to the FIRST run. Per image, ``f1_at_tolerance`` is
+    compared with the first run on the images both runs scored; the counts of
+    improved / worse images and the largest changes are printed, and
+    ``comparison.csv`` (one row per image) is written to ``out_dir`` when
+    given. The first run is the reference (e.g. without skeleton).
+    """
+    runs = []
+    for d in metrics_dirs:
+        with open(os.path.join(d, "metrics.json")) as f:
+            m = json.load(f)
+        per_image = m.get("per_image", [])
+        runs.append(
+            {
+                "name": m.get("run_name") or os.path.basename(os.path.normpath(d)),
+                "summary": m["summary"],
+                "f1": f1_at_tolerance(per_image, tolerance_mm),
+                "per_image": {p["image"]: p for p in per_image},
+            }
+        )
+
+    def _overall(run: dict) -> Dict[str, float]:
+        s = run["summary"]
+        d = s["distance_mm"]
+        return {
+            f"f1_at_{tolerance_mm:g}mm": run["f1"],
+            "recall": s["recall"],
+            "precision": s["precision"],
+            "n_pred_discs": s["n_pred_discs"],
+            "n_matched": s["n_matched"],
+            "n_false_negative": s["n_false_negative"],
+            "n_false_positive": s["n_false_positive"],
+            "distance_mm_mean": d["mean"],
+            "distance_mm_median": d["median"],
+            "distance_mm_p95": d["p95"],
+            "distance_mm_max": d["max"],
+        }
+
+    tables = [_overall(r) for r in runs]
+    width = max(14, *(len(r["name"]) for r in runs))
+    header = f"{'metric':<20}" + "".join(f"{r['name']:>{width + 2}}" for r in runs)
+    header += "".join(f"{'Δ ' + r['name'][-width + 2:]:>{width + 2}}" for r in runs[1:])
+    print(f"[compare] {runs[0]['name']} is the reference; n_gt_discs={runs[0]['summary']['n_gt_discs']}")
+    print(header)
+    for key in tables[0]:
+        vals = [t[key] for t in tables]
+        line = f"{key:<20}" + "".join(
+            f"{'' if v is None else (f'{v:.4f}' if isinstance(v, float) else v):>{width + 2}}" for v in vals
+        )
+        for v in vals[1:]:
+            delta = None if v is None or vals[0] is None else v - vals[0]
+            line += f"{'' if delta is None else (f'{delta:+.4f}' if isinstance(delta, float) else f'{delta:+d}'):>{width + 2}}"
+        print(line)
+
+    rows: List[dict] = []
+    ref = runs[0]
+    summary = {"runs": [r["name"] for r in runs], "overall": dict(zip([r["name"] for r in runs], tables))}
+    for other in runs[1:]:
+        common = sorted(set(ref["per_image"]) & set(other["per_image"]))
+        changes = []
+        for image in common:
+            a = _image_f1(ref["per_image"][image], tolerance_mm)
+            b = _image_f1(other["per_image"][image], tolerance_mm)
+            changes.append((b - a, image, a, b))
+            rows.append(
+                {
+                    "image": image,
+                    "reference": ref["name"],
+                    "run": other["name"],
+                    "f1_reference": f"{a:.4f}",
+                    "f1_run": f"{b:.4f}",
+                    "delta": f"{b - a:+.4f}",
+                }
+            )
+        better = [c for c in changes if c[0] > 1e-9]
+        worse = [c for c in changes if c[0] < -1e-9]
+        print(
+            f"[compare] {other['name']} vs {ref['name']} on {len(common)} images: "
+            f"{len(better)} better, {len(worse)} worse, {len(common) - len(better) - len(worse)} unchanged "
+            f"(per-image F1@{tolerance_mm:g}mm)"
+        )
+        for title, items in (("worse", sorted(worse)[:10]), ("better", sorted(better, reverse=True)[:10])):
+            for delta, image, a, b in items:
+                print(f"    {title:6s} {delta:+.3f}  {a:.3f} -> {b:.3f}  {image}")
+        summary[other["name"]] = {"n_images": len(common), "better": len(better), "worse": len(worse)}
+
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+        _write_csv_atomic(
+            os.path.join(out_dir, "comparison.csv"),
+            ["image", "reference", "run", "f1_reference", "f1_run", "delta"],
+            rows,
+        )
+        _write_json_atomic(os.path.join(out_dir, "comparison.json"), summary)
+        print(f"[compare] wrote {out_dir}/comparison.csv + comparison.json")
+    return summary
+
+
+def compare_main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Compare the metrics of several evaluation runs (first one = reference)."
+    )
+    parser.add_argument(
+        "--metrics-dirs",
+        nargs="+",
+        required=True,
+        help="metrics_<run_name>/ folders written by discslabel_evaluate; the first is the reference.",
+    )
+    parser.add_argument("--tolerance-mm", type=float, default=10.0, help="F1 tolerance (default: 10 mm).")
+    parser.add_argument("--out-dir", default="", help="Where to write comparison.csv / comparison.json.")
+    args = parser.parse_args()
+    compare_runs(args.metrics_dirs, args.tolerance_mm, args.out_dir)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Compare predicted disc-label NIfTIs with ground-truth NIfTIs."
