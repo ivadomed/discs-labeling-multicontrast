@@ -11,6 +11,11 @@
   ``postprocessing.json`` next to the weights; inference picks it up
   automatically through ``resolve_postprocessing``. The grid points are
   scored in parallel across the worker pool.
+* When ``skeleton.json`` (``discslabel_skeleton``) sits in the output folder,
+  ``tune`` also scores the skeleton refinement (``discslabel.skeleton``) with
+  the best decoding parameters for every ``tune_skeleton_z_thresholds`` value
+  and stores the best one (and whether it beats plain decoding) under the
+  ``"skeleton"`` key of ``postprocessing.json``.
 
 Scores use ``f1_at_tolerance``: a disc is a hit only when its label is right
 AND it lies within ``tolerance_mm`` of the ground truth.
@@ -31,12 +36,21 @@ from .dataset import _load_nifti, _z_score_normalize
 from .decoding import extract_candidates, label_discs
 from .evaluate import _aggregate, _extract_disc_voxels, compare_discs, f1_at_tolerance
 from .parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers, submit
+from .skeleton import (
+    SKELETON_FILE,
+    SkeletonModel,
+    affine_spacing,
+    decode_with_skeleton,
+    load_skeleton,
+    skeleton_settings,
+)
 
 
 POSTPROCESSING_FILE = "postprocessing.json"
 DEFAULT_PEAK_THRESHOLDS: Tuple[float, ...] = tuple(round(0.05 * i, 2) for i in range(2, 13))
 DEFAULT_MIN_PEAK_DISTANCES: Tuple[float, ...] = (4.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0)
 DEFAULT_TOLERANCE_MM = 10.0
+DEFAULT_SKELETON_Z_THRESHOLDS: Tuple[float, ...] = (2.0, 2.5, 3.0, 3.5, 4.0, 5.0)
 
 
 @dataclass
@@ -245,11 +259,28 @@ def score_cases(
     peak_threshold: float,
     min_peak_distance: float,
     tolerance_mm: float = DEFAULT_TOLERANCE_MM,
+    skeleton: Optional[SkeletonModel] = None,
+    skeleton_kwargs: Optional[dict] = None,
 ) -> dict:
-    """``_aggregate`` summary of all cases plus ``f1_at_tolerance``."""
+    """``_aggregate`` summary of all cases plus ``f1_at_tolerance``.
+
+    With ``skeleton``, decoding is followed by the skeleton correction
+    (``skeleton_kwargs`` are passed to ``refine_chain``).
+    """
     per_image = []
     for case in cases:
-        labeled = label_discs(case.candidates, peak_threshold, min_peak_distance)
+        if skeleton is None:
+            labeled = label_discs(case.candidates, peak_threshold, min_peak_distance)
+        else:
+            labeled, _report = decode_with_skeleton(
+                case.candidates,
+                peak_threshold,
+                min_peak_distance,
+                affine_spacing(case.affine, skeleton.projection),
+                skeleton,
+                mode="correct",
+                **(skeleton_kwargs or {}),
+            )
         pred = to_voxels(labeled, case.volume_shape)
         summary, _rows = compare_discs(case.stem, case.gt_discs, case.affine, pred, case.affine)
         per_image.append(summary)
@@ -278,6 +309,26 @@ def _grid_row(
         "distance_mm_mean": s["distance_mm"]["mean"],
         "n_false_negative": s["n_false_negative"],
         "n_false_positive": s["n_false_positive"],
+    }
+
+
+def _skeleton_row(
+    cases: Sequence[ValidationCase],
+    to_voxels: Callable,
+    thr: float,
+    dist: float,
+    tolerance_mm: float,
+    skeleton: SkeletonModel,
+    skeleton_kwargs: dict,
+) -> dict:
+    """Worker job: score the skeleton correction at one ``z_threshold``."""
+    s = score_cases(cases, to_voxels, thr, dist, tolerance_mm, skeleton, skeleton_kwargs)
+    return {
+        "z_threshold": skeleton_kwargs["z_threshold"],
+        "f1_at_tolerance": s["f1_at_tolerance"],
+        "recall": s["recall"],
+        "precision": s["precision"],
+        "distance_mm_mean": s["distance_mm"]["mean"],
     }
 
 
@@ -319,8 +370,13 @@ def tune(
     to_voxels: Callable,
     split: str = "valid",
     num_workers=None,
+    projection: Optional[str] = None,
+    skeleton_path: Optional[str] = None,
 ) -> dict:
     """Grid-search the decoding parameters and write ``postprocessing.json``.
+
+    ``projection`` (``"3d"`` / ``"sagittal"``) enables the skeleton search
+    when ``skeleton_path`` (default: ``<out_dir>/skeleton.json``) exists.
 
     ``predict_fn(volume_norm)`` must return the stitched heatmap; candidates
     are extracted once per image at the lowest threshold of the grid.
@@ -355,6 +411,15 @@ def tune(
         best, rows = grid_search(
             cases, to_voxels, thresholds, distances, tolerance, executor=executor
         )
+        skeleton_result = None
+        skeleton_path = skeleton_path or os.path.join(out_dir, SKELETON_FILE)
+        if projection is not None and os.path.isfile(skeleton_path):
+            skeleton_result = _tune_skeleton(
+                cfg, cases, to_voxels, best, tolerance,
+                load_skeleton(skeleton_path, projection), skeleton_path, executor,
+            )
+        elif projection is not None:
+            print(f"[tune] no skeleton at {skeleton_path}; skipping skeleton tuning")
     finally:
         if executor is not None:
             executor.shutdown(cancel_futures=True)
@@ -377,6 +442,8 @@ def tune(
             "f1_at_tolerance": default["f1_at_tolerance"],
         },
     }
+    if skeleton_result is not None:
+        result["skeleton"] = skeleton_result
     with open(os.path.join(out_dir, POSTPROCESSING_FILE), "w") as f:
         json.dump(result, f, indent=2)
     with open(os.path.join(out_dir, "postprocessing_grid.csv"), "w", newline="") as f:
@@ -390,8 +457,81 @@ def tune(
         f"F1@{tolerance:g}mm={result['f1_at_tolerance']:.4f} "
         f"(config default {default_thr}/{default_dist}: {default['f1_at_tolerance']:.4f})"
     )
+    if skeleton_result is not None:
+        print(
+            f"[tune] skeleton z_threshold={skeleton_result['z_threshold']} "
+            f"F1@{tolerance:g}mm={skeleton_result['f1_at_tolerance']:.4f} "
+            f"(without skeleton: {result['f1_at_tolerance']:.4f}"
+            f"{'' if skeleton_result['improves'] else ' -> skeleton does NOT help on ' + split})"
+        )
     print(f"[tune] wrote {os.path.join(out_dir, POSTPROCESSING_FILE)} + postprocessing_grid.csv")
     return result
+
+
+def _tune_skeleton(
+    cfg: dict,
+    cases: Sequence[ValidationCase],
+    to_voxels: Callable,
+    best: dict,
+    tolerance: float,
+    skeleton: SkeletonModel,
+    skeleton_path: str,
+    executor,
+) -> dict:
+    """Score the skeleton correction for each ``z_threshold`` at the best decoding parameters."""
+    z_values = [
+        float(z) for z in cfg.get("tune_skeleton_z_thresholds", DEFAULT_SKELETON_Z_THRESHOLDS)
+    ]
+    base = skeleton_settings(cfg)
+    futures = [
+        submit(
+            executor, _skeleton_row, list(cases), to_voxels,
+            best["peak_threshold"], best["min_peak_distance"], tolerance,
+            skeleton, {**base, "z_threshold": z},
+        )
+        for z in z_values
+    ]
+    rows = [f.result() for f in tqdm.tqdm(futures, desc="skeleton search")]
+    top = max(rows, key=lambda r: (r["f1_at_tolerance"], -(r["distance_mm_mean"] or float("inf"))))
+    return {
+        "path": os.path.abspath(skeleton_path),
+        "projection": skeleton.projection,
+        "z_threshold": top["z_threshold"],
+        "f1_at_tolerance": top["f1_at_tolerance"],
+        "recall": top["recall"],
+        "precision": top["precision"],
+        "distance_mm_mean": top["distance_mm_mean"],
+        "improves": bool(top["f1_at_tolerance"] > best["f1_at_tolerance"]),
+        "grid": rows,
+    }
+
+
+def resolve_skeleton(cfg: dict, weights_path: str, mode: str, skeleton_path: Optional[str], projection: str):
+    """``(SkeletonModel, refine kwargs, source)`` for inference, or ``(None, None, None)`` when off.
+
+    ``skeleton_path`` defaults to ``skeleton.json`` next to the weights; the
+    ``z_threshold`` tuned by ``discslabel_tune`` (``postprocessing.json``)
+    wins over the config value.
+    """
+    if mode == "off":
+        return None, None, None
+    weights_dir = os.path.dirname(os.path.abspath(weights_path))
+    path = skeleton_path or os.path.join(weights_dir, SKELETON_FILE)
+    if not os.path.isfile(path):
+        raise FileNotFoundError(
+            f"--skeleton {mode} needs a skeleton file; {path} not found (run discslabel_skeleton)."
+        )
+    tuned = None
+    pp_path = os.path.join(weights_dir, POSTPROCESSING_FILE)
+    if os.path.isfile(pp_path):
+        with open(pp_path) as f:
+            tuned = json.load(f).get("skeleton")
+        if tuned and not tuned.get("improves", True):
+            print(
+                f"[skeleton] WARNING: on the tuning split the skeleton correction did not "
+                f"improve F1 ({pp_path})."
+            )
+    return load_skeleton(path, projection), skeleton_settings(cfg, tuned), path
 
 
 def resolve_postprocessing(cfg: dict, weights_path: str) -> Tuple[float, float, str]:

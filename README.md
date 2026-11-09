@@ -74,7 +74,7 @@ export DISCSLABEL_DATA=/path/to/scratch/discslabel
 `run_pipeline.sh` reads the config and runs:
 
 ```
-download_datasets.sh  →  prepare_datasets.sh  →  discslabel_train  →  discslabel_tune  →  discslabel_inference  →  discslabel_evaluate
+download_datasets.sh  →  prepare_datasets.sh  →  discslabel_train  →  discslabel_skeleton  →  discslabel_tune  →  discslabel_inference  →  discslabel_evaluate
 ```
 
 (`run_pipeline_3d.sh` runs the same chain with the `_3d` entry points.)
@@ -224,6 +224,7 @@ The mid-sagittal projection drops the R-L voxel coordinate from each labelled vo
         "download":  true,
         "prepare":   true,
         "train":     true,
+        "skeleton":  true,     // fit the inter-disc distance prior on the train labels
         "tune":      true,     // grid-search decoding params on the valid split
         "inference": false,
         "evaluate":  false
@@ -286,6 +287,36 @@ It writes one PNG per volume (one row per augmentation forced on, original in co
 ### Inference and post-processing
 
 Inference stitches every sliding-window prediction into one heatmap with a Gaussian importance map, then decodes peaks once. `discslabel_tune` / `discslabel_tune_3d` grid-search `peak_threshold` × `min_peak_distance` (`tune_peak_thresholds`, `tune_min_peak_distances`) on the validation split and write `postprocessing.json` + `postprocessing_grid.csv` next to the weights; inference uses `postprocessing.json` automatically when present, otherwise the config's `peak_threshold` / `inference_min_peak_distance`.
+
+### Skeleton QC and correction (optional)
+
+The first labelling step numbers the disc peaks one by one away from the detected anchor, so a missed disc shifts every label past it, and a spurious or far-off peak does the opposite. `discslabel_skeleton` fits an anatomical prior on the **training** labels and writes `skeleton.json` next to the weights:
+
+- a template gap between every pair of adjacent discs (median spine), with the spread of each gap measured after normalising each subject by its own size (scale-normalised log ratio, robust MAD sigma);
+- the distribution of subject scales and of the chain's turning angle at each disc;
+- a `3d` projection (3D pipeline) and a `sagittal` one (2D pipeline, R-L component dropped).
+
+```bash
+discslabel_skeleton --manifest "$DISCSLABEL_DATA/prepared/<out_name>/manifest.json" \
+    --out-dir "$DISCSLABEL_DATA/weights/<run_name>"
+```
+
+At inference, `--skeleton {off,flag,correct}` (or `inference_skeleton` in the config, default `off`) runs the check after labelling. It finds the most plausible labelling of the peak chain under the skeleton, using dynamic programming: the anchor keeps its label; every pair of kept peaks costs `z²/2` for how far their distance is from the template; and every skipped label (missed disc) or dropped peak (off / spurious disc) costs a fixed penalty set by `skeleton_z_threshold`. With `correct`, off-chain peaks are removed, labels are fixed, and missed discs between two kept discs are placed by monotone interpolation along the chain (drawn in yellow in the PNG). With `flag`, the prediction is left unchanged and the proposed changes are only reported.
+
+Either mode writes `<name>_discs_qc.json` for each image and a `qc_summary.csv` for the run. Each image's `status` is `ok` or `flagged`, with these flags:
+
+| Flag | Meaning |
+|---|---|
+| `no_anchor` | no anchor channel cleared the threshold, so the prediction is empty |
+| `too_few_discs` | fewer than 2 labelled discs, so nothing could be checked |
+| `missed_discs` | labels missing between detected discs (imputed in `correct` mode) |
+| `outlier_discs` | peaks that do not fit the chain (removed in `correct` mode) |
+| `relabeled` | discs whose label changes once the chain is repaired |
+| `abnormal_gap` | an inter-disc distance still outside the training distribution (z-threshold Bonferroni-corrected for the image's number of gaps, ~1% false flags on a normal spine) |
+| `abnormal_angle` | the chain bends at a disc more than in any training spine |
+| `abnormal_scale` | spine size outside the training range (median ± 4 robust sigma) |
+
+When `skeleton.json` is in the weights folder, `discslabel_tune[_3d]` also scores the correction on the validation split for each `tune_skeleton_z_thresholds` value, using the best decoding parameters. It stores the best value under `"skeleton"` in `postprocessing.json`, along with `improves` (whether it beat plain decoding); inference uses that value. Other knobs: `skeleton_max_missing` (most consecutive missed discs that can be filled, default 3) and `skeleton_max_skipped` (most consecutive peaks that can be dropped inside the chain, default 3).
 
 Tuning, inference and evaluation run their CPU work in a pool of worker processes while the main process keeps the GPU busy: workers preprocess (load, reorient, resample, z-score) the next images, extract peaks / decode / write the NIfTI + PNG of the previous ones, score the tuning grid points in parallel, and score GT/prediction pairs in `discslabel_evaluate`. The pool size comes from `inference_num_workers` (`"auto"` = available CPUs − 1, capped at 8) and can be overridden with `--num-workers` on `discslabel_tune[_3d]`, `discslabel_inference[_3d]` and `discslabel_evaluate`; `0` runs everything inline (useful for debugging). Training validation keeps running inline.
 

@@ -13,6 +13,9 @@ import torch
 
 from ..decoding import extract_candidates, predict_heatmap
 
+# Which skeleton projection matches the decoded coordinates (see discslabel.skeleton).
+SKELETON_PROJECTION = "sagittal"
+
 
 def extract_slice_stack(volume: np.ndarray, d_mid: int, n_slices: int) -> np.ndarray:
     """Pull ``n_slices`` adjacent R-L slices centered on ``d_mid`` from a 3D volume.

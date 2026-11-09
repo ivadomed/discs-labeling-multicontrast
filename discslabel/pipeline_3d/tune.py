@@ -5,6 +5,9 @@ re-decodes the cached peak candidates for every grid point and writes
 ``postprocessing.json`` (best pair) + ``postprocessing_grid.csv`` (all pairs).
 ``discslabel_inference_3d`` picks up ``postprocessing.json`` automatically
 when it sits next to the weights.
+
+When ``skeleton.json`` (``discslabel_skeleton``) is present, the skeleton
+correction's ``z_threshold`` is tuned too (see ``discslabel.postprocessing``).
 """
 
 from __future__ import annotations
@@ -17,7 +20,7 @@ import torch
 from ..postprocessing import tune
 from ..training import load_inference_weights
 from .model import load_model
-from .predictor import labeled_to_voxels, predict_volume_heatmap
+from .predictor import SKELETON_PROJECTION, labeled_to_voxels, predict_volume_heatmap
 from .train import _load_config, _resolve_batch_size
 
 
@@ -39,6 +42,12 @@ def main() -> None:
         default=None,
         help="CPU worker processes for loading / peak extraction / grid scoring "
         "(default: config inference_num_workers, else 'auto'; 0 = run inline).",
+    )
+    parser.add_argument(
+        "--skeleton",
+        default=None,
+        help="skeleton.json from discslabel_skeleton (default: <out-dir>/skeleton.json). "
+        "When present, the skeleton correction z_threshold is tuned too.",
     )
     args = parser.parse_args()
 
@@ -62,6 +71,8 @@ def main() -> None:
         to_voxels=labeled_to_voxels,
         split=args.split,
         num_workers=args.num_workers,
+        projection=SKELETON_PROJECTION,
+        skeleton_path=args.skeleton,
     )
 
 

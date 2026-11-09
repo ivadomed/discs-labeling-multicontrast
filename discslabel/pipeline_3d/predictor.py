@@ -13,6 +13,9 @@ import torch
 
 from ..decoding import extract_candidates, predict_heatmap
 
+# Which skeleton projection matches the decoded coordinates (see discslabel.skeleton).
+SKELETON_PROJECTION = "3d"
+
 
 def predict_volume_heatmap(
     volume_norm: np.ndarray,

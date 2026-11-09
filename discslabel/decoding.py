@@ -226,6 +226,30 @@ def _assign_labels(
     return out
 
 
+def decode_chain(
+    candidates: Dict[str, object], peak_threshold: float, min_peak_distance: float
+) -> Optional[Tuple[List[Tuple[float, ...]], int, int]]:
+    """Threshold + NMS + anchor choice, without labelling.
+
+    Returns ``(chain, anchor_label, anchor_idx)`` where ``chain`` is every
+    kept peak ``(*coords, value)`` sorted superior → inferior and
+    ``chain[anchor_idx]`` is the peak closest to the anchor (it carries
+    ``anchor_label``). ``None`` when no anchor clears the threshold or no
+    disc peak survives. Used by the skeleton refinement, which needs the
+    unclipped chain.
+    """
+    discs = [p for p in candidates["discs"] if p[-1] >= peak_threshold]
+    merged = _merge_peaks(discs, min_distance=min_peak_distance)
+    chosen = _choose_anchor(candidates["anchors"], peak_threshold)
+    if chosen is None or not merged:
+        return None
+    _name, anchor_label, anchor_coords = chosen
+    chain = sorted(merged, key=lambda p: (-p[-2],) + tuple(p[:-2]))
+    anchor = np.asarray(anchor_coords)
+    anchor_idx = int(np.argmin([np.sum((np.asarray(p[:-1]) - anchor) ** 2) for p in chain]))
+    return chain, int(anchor_label), anchor_idx
+
+
 def label_discs(
     candidates: Dict[str, object], peak_threshold: float, min_peak_distance: float
 ) -> List[Tuple[float, ...]]:

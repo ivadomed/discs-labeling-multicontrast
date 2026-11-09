@@ -27,12 +27,21 @@ them. For each image we:
 next to the weights when ``discslabel_tune`` has been run, else from the
 config.
 
+Optional skeleton step (``--skeleton``, needs ``skeleton.json`` from
+``discslabel_skeleton``): after the anchor-based labelling, the inter-disc
+distances on the mid-sagittal plane are checked against the training
+distribution (``discslabel.skeleton``). ``flag`` only reports problems;
+``correct`` also removes off-chain peaks, fixes the labels and fills missed
+discs. Each image then gets a ``<name>_discs_qc.json`` report and the run a
+``qc_summary.csv``.
+
 No label or seg files are required. No augmentation is applied.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 from typing import List, Optional, Tuple
@@ -47,10 +56,17 @@ logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 from ..dataset import _z_score_normalize
 from ..decoding import _choose_anchor, extract_candidates, label_discs
 from ..parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers
-from ..postprocessing import resolve_postprocessing
+from ..postprocessing import resolve_postprocessing, resolve_skeleton
+from ..skeleton import (
+    SKELETON_MODES,
+    affine_spacing,
+    decode_with_skeleton,
+    qc_row as _qc_row,
+    write_qc_summary as _write_qc_summary,
+)
 from ..training import load_inference_weights
 from .model import load_model
-from .predictor import predict_volume_heatmap
+from .predictor import SKELETON_PROJECTION, predict_volume_heatmap
 from .train import (
     _display_slice,
     _intensity_window,
@@ -97,8 +113,9 @@ def _build_preview_png(
     labeled_discs: List[Tuple[int, float, float]],
     title: str,
     save_path: str,
+    imputed_labels: frozenset = frozenset(),
 ) -> None:
-    """Mid-sagittal PNG with disc labels overlaid.
+    """Mid-sagittal PNG with disc labels overlaid (skeleton-imputed discs in yellow).
 
     Reorientation and contrast window match the training preview
     (``_display_slice`` + ``_intensity_window``: superior up, anterior left,
@@ -119,11 +136,12 @@ def _build_preview_png(
         # slice (y=row=P-A, x=col=I-S) → display (row = W-1-x, col = y)
         disp_row = (W_orig - 1) - x
         disp_col = y
+        color = "yellow" if int(label) in imputed_labels else "red"
         ax.plot(
             disp_col,
             disp_row,
             "o",
-            color="red",
+            color=color,
             markersize=10,
             markeredgecolor="black",
             markeredgewidth=0.8,
@@ -132,7 +150,7 @@ def _build_preview_png(
             disp_col + 8,
             disp_row,
             str(int(label)),
-            color="red",
+            color=color,
             fontsize=14,
             fontweight="bold",
             va="center",
@@ -280,11 +298,15 @@ def _finalize_one(
     peak_threshold: float,
     min_peak_distance: float,
     out_dir: str,
-) -> Optional[str]:
+    skeleton=None,
+    skeleton_kwargs: Optional[dict] = None,
+    skeleton_mode: str = "off",
+) -> Tuple[Optional[str], Optional[dict]]:
     """Worker job: decode the stitched heatmap and write the NIfTI + PNG.
 
-    Returns a warning message (or ``None``) so the main process prints it
-    above its progress bar.
+    Returns ``(warning, qc_row)``: a message (or ``None``) the main process
+    prints above its progress bar, and the QC summary row (``None`` when the
+    skeleton step is off).
     """
     candidates = extract_candidates(heatmap, peak_threshold)
     warning = None
@@ -293,24 +315,47 @@ def _finalize_one(
             f"[warn] no anchor detected for {os.path.basename(image_path)} "
             f"(found {len(candidates['discs'])} disc candidates); writing empty NIfTI."
         )
+    stem = _stem(image_path)
+    qc_row = None
+    imputed = frozenset()
+    if skeleton is None:
+        decoded = label_discs(candidates, peak_threshold, min_peak_distance)
+    else:
+        decoded, report = decode_with_skeleton(
+            candidates,
+            peak_threshold,
+            min_peak_distance,
+            affine_spacing(affine, skeleton.projection),
+            skeleton,
+            mode=skeleton_mode,
+            **skeleton_kwargs,
+        )
+        if skeleton_mode == "correct":
+            imputed = frozenset(d["label"] for d in report.get("changes", {}).get("imputed", []))
+        report = {"image": stem, "n_discs": len(decoded), **report}
+        with open(os.path.join(out_dir, f"{stem}_discs_qc.json"), "w") as f:
+            json.dump(report, f, indent=2)
+        qc_row = _qc_row(report)
+        if report["status"] != "ok" and warning is None:
+            warning = f"[qc] {stem}: {', '.join(report['flags'])}"
     # Decoding yields (label, h, w); the preview / native projection below use
     # the slice convention (label, x = I-S = w, y = P-A = h).
-    labeled_discs = [
-        (label, w, h)
-        for label, h, w in label_discs(candidates, peak_threshold, min_peak_distance)
-    ]
+    labeled_discs = [(label, w, h) for label, h, w in decoded]
 
-    stem = _stem(image_path)
     nifti_out = os.path.join(out_dir, f"{stem}_discs.nii.gz")
     png_out = os.path.join(out_dir, f"{stem}_discs.png")
 
     # Preview first — it shows what the model actually saw, so it is kept
     # in the preprocessed frame regardless of what the output NIfTI is in.
+    title = f"{stem} — {len(labeled_discs)} discs"
+    if qc_row is not None and qc_row["status"] != "ok":
+        title += f"\nQC: {qc_row['flags']}"
     _build_preview_png(
         slice_2d,
         labeled_discs,
-        title=f"{stem} — {len(labeled_discs)} discs",
+        title=title,
         save_path=png_out,
+        imputed_labels=imputed,
     )
 
     # Project the preprocessed-frame labels back onto the user's native grid
@@ -323,7 +368,7 @@ def _finalize_one(
         native_affine=native_affine,
     )
     _write_disc_nifti(nifti_out, native_label_volume, native_affine)
-    return warning
+    return warning, qc_row
 
 
 def predict(
@@ -332,8 +377,14 @@ def predict(
     input_path: str,
     out_dir: str,
     num_workers=None,
+    skeleton_mode: str = "off",
+    skeleton_path: Optional[str] = None,
 ) -> None:
     """Sliding-window inference on every input image.
+
+    ``skeleton_mode`` (``off`` / ``flag`` / ``correct``) enables the skeleton
+    QC / correction step (``skeleton_path`` defaults to ``skeleton.json``
+    next to the weights).
 
     Three-stage pipeline: ``num_workers`` CPU processes preprocess the next
     images and decode / write the previous ones while the main process runs
@@ -368,11 +419,17 @@ def predict(
         f"[inference] peak_threshold={peak_thr} min_peak_distance={min_peak_distance} "
         f"(from {pp_source})"
     )
+    skeleton, skeleton_kwargs, sk_source = resolve_skeleton(
+        cfg, weights_path, skeleton_mode, skeleton_path, SKELETON_PROJECTION
+    )
+    if skeleton is not None:
+        print(f"[inference] skeleton={skeleton_mode} {skeleton_kwargs} (from {sk_source})")
 
     check_and_make_dir(out_dir)
     lookahead = max(2, 2 * num_workers)
     jobs = [(p, orientation, resolution_mm) for p in image_paths]
     executor = make_executor(num_workers)
+    qc_rows: List[dict] = []
     try:
         writer = BoundedSubmitter(executor, max_pending=lookahead)
         bar = tqdm.tqdm(
@@ -399,17 +456,26 @@ def predict(
                 peak_thr,
                 min_peak_distance,
                 out_dir,
+                skeleton,
+                skeleton_kwargs,
+                skeleton_mode,
             )
             del volume, heatmap, item
-            for warning in writer.pop_ready():
+            for warning, qc_row in writer.pop_ready():
                 if warning:
                     tqdm.tqdm.write(warning)
-        for warning in writer.drain():
+                if qc_row is not None:
+                    qc_rows.append(qc_row)
+        for warning, qc_row in writer.drain():
             if warning:
                 tqdm.tqdm.write(warning)
+            if qc_row is not None:
+                qc_rows.append(qc_row)
     finally:
         if executor is not None:
             executor.shutdown(cancel_futures=True)
+    if skeleton is not None:
+        _write_qc_summary(out_dir, qc_rows)
     print(f"Wrote per-image NIfTI + PNG into {out_dir}")
 
 
@@ -435,6 +501,19 @@ def main() -> None:
         help="CPU worker processes for preprocessing / decoding / writing "
         "(default: config inference_num_workers, else 'auto'; 0 = run inline).",
     )
+    parser.add_argument(
+        "--skeleton",
+        choices=SKELETON_MODES,
+        default=None,
+        help="Skeleton QC step after labelling: 'off', 'flag' (report problematic "
+        "predictions only) or 'correct' (also fix them). Default: config "
+        "inference_skeleton, else 'off'.",
+    )
+    parser.add_argument(
+        "--skeleton-path",
+        default=None,
+        help="skeleton.json from discslabel_skeleton (default: next to the weights).",
+    )
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
@@ -444,6 +523,8 @@ def main() -> None:
         input_path=args.input,
         out_dir=args.out_dir,
         num_workers=args.num_workers,
+        skeleton_mode=args.skeleton or str(cfg.get("inference_skeleton", "off")),
+        skeleton_path=args.skeleton_path,
     )
 
 

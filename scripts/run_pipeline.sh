@@ -7,7 +7,10 @@
 #   download  — git clone + git annex get the BIDS data referenced by data_json
 #   prepare   — copy to prepared/, reorient to RPI, resample to 1 mm iso
 #   train     — call discslabel_train on the prepared manifest
+#   skeleton  — call discslabel_skeleton to fit the inter-disc distance prior
+#               on the training labels (skeleton.json next to the weights)
 #   tune      — call discslabel_tune to grid-search the decoding parameters
+#               (and the skeleton z_threshold when skeleton.json exists)
 #   inference — call discslabel_inference on the chosen split
 #
 # Each step runs when either:
@@ -63,12 +66,15 @@ DO_DEBUG=$(jopt '.debug' 'false')
 DO_DOWNLOAD=$(jopt  '.steps.download'  'false')
 DO_PREPARE=$(jopt   '.steps.prepare'   'false')
 DO_TRAIN=$(jopt     '.steps.train'     'false')
+DO_SKELETON=$(jopt  '.steps.skeleton'  'false')
 DO_TUNE=$(jopt      '.steps.tune'      'false')
 DO_INFERENCE=$(jopt '.steps.inference' 'false')
 DO_EVALUATE=$(jopt  '.steps.evaluate'  'false')
 
 INFERENCE_SPLIT=$(jopt       '.inference_split'       '"test"')
 INFERENCE_SAVE_IMAGES=$(jopt '.inference_save_images' 'false')
+# Skeleton QC after labelling at inference: off | flag | correct
+INFERENCE_SKELETON=$(jopt    '.inference_skeleton'    '"off"')
 
 # -------- Resolve data_json to a file --------
 if [ ! -f "$DATA_JSON" ]; then
@@ -113,7 +119,7 @@ _bids_complete() {
 }
 
 echo ""
-echo "Pipeline steps (config): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN tune=$DO_TUNE inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
+echo "Pipeline steps (config): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN skeleton=$DO_SKELETON tune=$DO_TUNE inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
 echo "Config:   $config_json"
 echo "Data:     $DATA_JSON"
 echo "Prepared: $PREP_ROOT"
@@ -166,6 +172,15 @@ if [ "$DO_TRAIN" = "true" ]; then
         --config "$config_json"
 fi
 
+# Fit the inter-disc distance skeleton on the training labels. Also runs
+# when inference needs it (inference_skeleton != off) and it is missing.
+if [ "$DO_SKELETON" = "true" ] || { [ "$INFERENCE_SKELETON" != "off" ] && [ ! -f "$WEIGHTS_DIR/skeleton.json" ]; }; then
+    echo "==> discslabel_skeleton"
+    discslabel_skeleton \
+        --manifest "$MANIFEST" \
+        --out-dir "$WEIGHTS_DIR"
+fi
+
 # -------- 5. Tune post-processing --------
 # Grid-search peak_threshold / min_peak_distance on the validation split and
 # write postprocessing.json next to the weights; inference and evaluation
@@ -185,7 +200,8 @@ if [ "$DO_INFERENCE" = "true" ]; then
         --weights "$WEIGHTS_DIR/best_model.pt" \
         --input "$PREP_ROOT/$INFERENCE_SPLIT/images" \
         --out-dir "$WEIGHTS_DIR/predictions_${INFERENCE_SPLIT}" \
-        --config "$config_json"
+        --config "$config_json" \
+        --skeleton "$INFERENCE_SKELETON"
 fi
 
 # -------- 7. Evaluate --------
@@ -206,7 +222,8 @@ if [ "$DO_EVALUATE" = "true" ]; then
         --weights "$WEIGHTS_DIR/best_model.pt" \
         --input "$EVAL_ROOT/images" \
         --out-dir "$EVAL_PRED_DIR" \
-        --config "$config_json"
+        --config "$config_json" \
+        --skeleton "$INFERENCE_SKELETON"
 
     echo "==> discslabel_evaluate"
     discslabel_evaluate \

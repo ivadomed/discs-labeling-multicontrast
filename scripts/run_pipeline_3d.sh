@@ -51,12 +51,15 @@ DO_DEBUG=$(jopt '.debug' 'false')
 DO_DOWNLOAD=$(jopt  '.steps.download'  'false')
 DO_PREPARE=$(jopt   '.steps.prepare'   'false')
 DO_TRAIN=$(jopt     '.steps.train'     'false')
+DO_SKELETON=$(jopt  '.steps.skeleton'  'false')
 DO_TUNE=$(jopt      '.steps.tune'      'false')
 DO_INFERENCE=$(jopt '.steps.inference' 'false')
 DO_EVALUATE=$(jopt  '.steps.evaluate'  'false')
 
 INFERENCE_SPLIT=$(jopt       '.inference_split'       '"test"')
 INFERENCE_SAVE_IMAGES=$(jopt '.inference_save_images' 'false')
+# Skeleton QC after labelling at inference: off | flag | correct
+INFERENCE_SKELETON=$(jopt    '.inference_skeleton'    '"off"')
 
 if [ ! -f "$DATA_JSON" ]; then
     cand="$PROJECT_ROOT/discslabel/datasets/$(basename "${DATA_JSON%.json}").json"
@@ -98,7 +101,7 @@ _bids_complete() {
 }
 
 echo ""
-echo "Pipeline steps (config, 3D): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN tune=$DO_TUNE inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
+echo "Pipeline steps (config, 3D): download=$DO_DOWNLOAD prepare=$DO_PREPARE train=$DO_TRAIN skeleton=$DO_SKELETON tune=$DO_TUNE inference=$DO_INFERENCE evaluate=$DO_EVALUATE"
 echo "Config:   $config_json"
 echo "Data:     $DATA_JSON"
 echo "Prepared: $PREP_ROOT"
@@ -145,6 +148,15 @@ if [ "$DO_TRAIN" = "true" ]; then
         --config "$config_json"
 fi
 
+# Fit the inter-disc distance skeleton on the training labels. Also runs
+# when inference needs it (inference_skeleton != off) and it is missing.
+if [ "$DO_SKELETON" = "true" ] || { [ "$INFERENCE_SKELETON" != "off" ] && [ ! -f "$WEIGHTS_DIR/skeleton.json" ]; }; then
+    echo "==> discslabel_skeleton"
+    discslabel_skeleton \
+        --manifest "$MANIFEST" \
+        --out-dir "$WEIGHTS_DIR"
+fi
+
 # Grid-search peak_threshold / min_peak_distance on the validation split and
 # write postprocessing.json next to the weights; inference and evaluation
 # pick it up automatically.
@@ -162,7 +174,8 @@ if [ "$DO_INFERENCE" = "true" ]; then
         --weights "$WEIGHTS_DIR/best_model.pt" \
         --input "$PREP_ROOT/$INFERENCE_SPLIT/images" \
         --out-dir "$WEIGHTS_DIR/predictions_${INFERENCE_SPLIT}" \
-        --config "$config_json"
+        --config "$config_json" \
+        --skeleton "$INFERENCE_SKELETON"
 fi
 
 if [ "$DO_EVALUATE" = "true" ]; then
@@ -182,7 +195,8 @@ if [ "$DO_EVALUATE" = "true" ]; then
         --weights "$WEIGHTS_DIR/best_model.pt" \
         --input "$EVAL_ROOT/images" \
         --out-dir "$EVAL_PRED_DIR" \
-        --config "$config_json"
+        --config "$config_json" \
+        --skeleton "$INFERENCE_SKELETON"
 
     echo "==> discslabel_evaluate"
     discslabel_evaluate \
