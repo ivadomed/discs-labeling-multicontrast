@@ -221,6 +221,8 @@ if [ "$DO_EVALUATE" = "true" ]; then
     echo "==> discslabel_evaluate"
     discslabel_evaluate \
         --gt-dir "$EVAL_ROOT/labels" \
+        --image-dir "$EVAL_ROOT/images" \
+        --tolerance-mm "$(jopt '.val_tolerance_mm' '10')" \
         --pred-dir "$EVAL_PRED_DIR" \
         --out-dir "$EVAL_METRICS_DIR" \
         --run-name "$RUN_NAME"
@@ -230,6 +232,8 @@ if [ "$DO_EVALUATE" = "true" ]; then
         echo "==> discslabel_evaluate (skeleton)"
         discslabel_evaluate \
             --gt-dir "$EVAL_ROOT/labels" \
+            --image-dir "$EVAL_ROOT/images" \
+            --tolerance-mm "$(jopt '.val_tolerance_mm' '10')" \
             --pred-dir "$EVAL_PRED_DIR_SK" \
             --out-dir "$EVAL_METRICS_DIR_SK" \
             --run-name "${RUN_NAME}_skeleton"

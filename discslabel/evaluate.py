@@ -14,6 +14,10 @@ only in prediction are false positives (hallucinated or mislabeled).
 Writes to ``<out_dir>``:
   * ``metrics.json`` — summary + per-subject / per-contrast / per-image breakdown
   * ``metrics.csv``  — one row per (image, label) for easy pandas slicing
+  * ``errors/<stem>.png`` — for every image with at least one error (missed
+    disc, extra/mislabelled disc, or a disc farther than ``--tolerance-mm``),
+    a sagittal preview with the ground truth and the prediction side by side.
+    Needs the input images (``--image-dir``, default ``<gt_dir>/../images``).
 
 Each run writes to its own ``--out-dir`` (``<eval>/metrics_<run_name>``), so
 several evaluations can run concurrently. ``discslabel_aggregate_evaluation``
@@ -354,12 +358,185 @@ def _write_csv_atomic(path: str, fieldnames: List[str], rows: List[dict]) -> Non
     os.replace(tmp, path)
 
 
+PREVIEW_MODES: Tuple[str, ...] = ("errors", "all", "none")
+ERRORS_DIR = "errors"
+PREVIEWS_DIR = "previews"
+
+
+def _image_has_error(p: dict, tolerance_mm: float) -> bool:
+    """Any missed disc, extra/mislabelled disc, or disc beyond ``tolerance_mm``."""
+    return bool(
+        p["n_false_negative"]
+        or p["n_false_positive"]
+        or any(m["distance_mm"] > tolerance_mm for m in p["matched"])
+    )
+
+
+def _discs_in_image_voxels(
+    discs: Dict[int, np.ndarray], affine: np.ndarray, image_affine_inv: np.ndarray
+) -> Dict[int, np.ndarray]:
+    """Move ``{label: voxel}`` from a label volume's grid to the image's grid."""
+    return {
+        lbl: (image_affine_inv @ np.append(_voxel_to_world(v, affine), 1.0))[:3]
+        for lbl, v in discs.items()
+    }
+
+
+def _draw_discs(ax, discs, colors, shape_yz) -> None:
+    """Plot ``{label: (x, y, z)}`` RAS voxels on a sagittal panel (superior up, anterior left)."""
+    Y, Z = shape_yz
+    for lbl in sorted(discs):
+        _x, y, z = discs[lbl]
+        row, col = (Z - 1) - z, (Y - 1) - y
+        color = colors.get(lbl, "lime")
+        ax.plot(col, row, "o", color=color, markersize=8,
+                markeredgecolor="black", markeredgewidth=0.8)
+        ax.text(col + 6, row, str(lbl), color=color, fontsize=11,
+                fontweight="bold", va="center")
+
+
+def _save_error_preview(job: tuple) -> str:
+    """Worker job: GT | prediction sagittal panels for one image, saved as PNG.
+
+    Everything is drawn in the image's closest-canonical (RAS) voxel grid, so
+    GT and prediction land on the same picture whatever their own grids. The
+    slice is the median R-L position of the GT discs (prediction discs when
+    there is no GT); discs off that slice are projected onto it, as in the
+    inference previews.
+
+    Colours — GT panel: green = found, orange = missed. Prediction panel:
+    green = correct label within tolerance, red = beyond tolerance (number in
+    the title), magenta = label absent from GT (extra / mislabelled).
+    """
+    stem, image_path, gt_path, pred_path, summary, tolerance_mm, save_path = job
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    img = nib.as_closest_canonical(nib.load(image_path))
+    data = np.asarray(img.dataobj, dtype=np.float32)
+    while data.ndim > 3:
+        data = data[..., 0]
+    inv = np.linalg.inv(img.affine)
+    zooms = img.header.get_zooms()[:3]
+
+    gt_discs, gt_aff = _extract_disc_voxels(gt_path)
+    pred_discs, pred_aff = _extract_disc_voxels(pred_path)
+    gt_v = _discs_in_image_voxels(gt_discs, gt_aff, inv)
+    pred_v = _discs_in_image_voxels(pred_discs, pred_aff, inv)
+
+    ref = gt_v or pred_v
+    if ref:
+        x = int(np.clip(np.rint(np.median([v[0] for v in ref.values()])), 0, data.shape[0] - 1))
+    else:
+        x = data.shape[0] // 2
+    sl = data[x]  # (Y = P->A, Z = I->S)
+    disp = np.ascontiguousarray(sl.T[::-1, ::-1])
+    vmin, vmax = float(np.percentile(disp, 1.0)), float(np.percentile(disp, 99.0))
+    if vmax <= vmin:
+        vmin, vmax = float(disp.min()), float(disp.max() + 1e-6)
+
+    dist = {m["label"]: m["distance_mm"] for m in summary["matched"]}
+    gt_colors = {l: ("orange" if l not in dist else "lime") for l in gt_v}
+    pred_colors = {
+        l: ("magenta" if l not in dist else "red" if dist[l] > tolerance_mm else "lime")
+        for l in pred_v
+    }
+    far = [f"{l} ({dist[l]:.0f}mm)" for l in sorted(dist) if dist[l] > tolerance_mm]
+
+    aspect = float(zooms[2]) / float(zooms[1])
+    fig, axes = plt.subplots(1, 2, figsize=(12, 8))
+    for ax, discs, colors, name in (
+        (axes[0], gt_v, gt_colors, f"ground truth ({len(gt_v)})"),
+        (axes[1], pred_v, pred_colors, f"prediction ({len(pred_v)})"),
+    ):
+        ax.imshow(disp, cmap="gray", vmin=vmin, vmax=vmax, aspect=aspect)
+        _draw_discs(ax, discs, colors, sl.shape)
+        ax.set_title(name, fontsize=12)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    lines = [stem, f"F1@{tolerance_mm:g}mm = {_image_f1(summary, tolerance_mm):.2f}"]
+    if summary["false_negative_labels"]:
+        lines.append(f"missed: {summary['false_negative_labels']}")
+    if summary["false_positive_labels"]:
+        lines.append(f"extra: {summary['false_positive_labels']}")
+    if far:
+        more = f" (+{len(far) - 8} more)" if len(far) > 8 else ""
+        lines.append(f"> {tolerance_mm:g}mm: {', '.join(far[:8])}{more}")
+    lines.append("green = correct, orange = missed, red = too far, magenta = extra/mislabelled")
+    fig.suptitle("\n".join(lines), fontsize=11)
+    fig.tight_layout()
+    fig.savefig(save_path, dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    return save_path
+
+
+def _find_image(image_dir: str, stem: str) -> str:
+    for ext in NIFTI_EXTS:
+        path = os.path.join(image_dir, stem + ext)
+        if os.path.isfile(path):
+            return path
+    return ""
+
+
+def write_previews(
+    per_image: List[dict],
+    pairs: List[Tuple[str, str, str]],
+    image_dir: str,
+    out_dir: str,
+    tolerance_mm: float,
+    mode: str = "errors",
+    num_workers="auto",
+) -> int:
+    """Save GT | prediction previews into ``<out_dir>/errors`` (or ``previews`` for mode=all)."""
+    if mode == "none":
+        return 0
+    if not image_dir or not os.path.isdir(image_dir):
+        print(f"[eval] WARN: no image folder ({image_dir or 'unset'}); skipping previews")
+        return 0
+    folder = os.path.join(out_dir, ERRORS_DIR if mode == "errors" else PREVIEWS_DIR)
+    os.makedirs(folder, exist_ok=True)
+    for name in os.listdir(folder):  # drop previews of a previous run
+        if name.endswith(".png"):
+            os.remove(os.path.join(folder, name))
+
+    paths = {stem: (gt, pred) for stem, gt, pred in pairs}
+    jobs = []
+    for p in per_image:
+        if mode == "errors" and not _image_has_error(p, tolerance_mm):
+            continue
+        image_path = _find_image(image_dir, p["image"])
+        if not image_path:
+            print(f"[eval] WARN: no image for {p['image']} in {image_dir}; no preview")
+            continue
+        gt, pred = paths[p["image"]]
+        jobs.append((p["image"], image_path, gt, pred, p, tolerance_mm,
+                     os.path.join(folder, f"{p['image']}.png")))
+
+    num_workers = min(resolve_num_workers(num_workers), len(jobs))
+    executor = make_executor(num_workers)
+    try:
+        results = map(_save_error_preview, jobs) if executor is None else executor.map(
+            _save_error_preview, jobs
+        )
+        n = sum(1 for _ in results)
+    finally:
+        if executor is not None:
+            executor.shutdown()
+    print(f"[eval] wrote {n} preview(s) to {folder}")
+    return n
+
+
 def evaluate(
     gt_dir: str,
     pred_dir: str,
     out_dir: str,
     run_name: str = "",
     num_workers="auto",
+    image_dir: str = "",
+    previews: str = "errors",
+    tolerance_mm: float = 10.0,
 ) -> None:
     """Compare every GT/pred pair under the two directories, write metrics.
 
@@ -420,6 +597,11 @@ def evaluate(
             f"median={d['median']:.2f}  p95={d['p95']:.2f}  max={d['max']:.2f}  n={d['n']}"
         )
     print(f"[eval] wrote {out_dir}/metrics.json + metrics.csv")
+
+    if previews != "none":
+        if not image_dir:
+            image_dir = os.path.join(os.path.dirname(os.path.normpath(gt_dir)), "images")
+        write_previews(per_image, pairs, image_dir, out_dir, tolerance_mm, previews, num_workers)
 
 
 def aggregate_runs(eval_dir: str, out_dir: str = "") -> None:
@@ -640,6 +822,24 @@ def main() -> None:
         default="auto",
         help="Worker processes used to score the pairs (default: auto; 0 = run inline).",
     )
+    parser.add_argument(
+        "--image-dir",
+        default="",
+        help="Input images <stem>.nii[.gz] for the previews (default: <gt-dir>/../images).",
+    )
+    parser.add_argument(
+        "--previews",
+        choices=PREVIEW_MODES,
+        default="errors",
+        help="GT | prediction sagittal PNGs: 'errors' (default) -> <out-dir>/errors for images "
+        "with any error, 'all' -> <out-dir>/previews for every image, 'none' to skip.",
+    )
+    parser.add_argument(
+        "--tolerance-mm",
+        type=float,
+        default=10.0,
+        help="A matched disc farther than this counts as an error for the previews (default: 10).",
+    )
     args = parser.parse_args()
     evaluate(
         gt_dir=args.gt_dir,
@@ -647,6 +847,9 @@ def main() -> None:
         out_dir=args.out_dir,
         run_name=args.run_name,
         num_workers=args.num_workers,
+        image_dir=args.image_dir,
+        previews=args.previews,
+        tolerance_mm=args.tolerance_mm,
     )
 
 
