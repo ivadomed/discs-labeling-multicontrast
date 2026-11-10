@@ -7,7 +7,6 @@
         "git@github.com:spine-generic/data-multi-subject.git",
         "git@data.neuro.polymtl.ca:datasets/canproco.git",
         "git@data.neuro.polymtl.ca:datasets/dcm-zurich.git"
-
     ],
     "COMMIT": [
         "0c9c4e3ac3a728bf4a4d2b0069f90c4452671f7f",
@@ -288,10 +287,6 @@
             "LABEL": "canproco/derivatives/labels/sub-cal109/ses-M0/anat/sub-cal109_ses-M0_STIR_label-discs_dlabel.nii.gz"
         },
         {
-            "IMAGE": "canproco/sub-van191/ses-M12/anat/sub-van191_ses-M12_PSIR.nii.gz",
-            "LABEL": "canproco/derivatives/labels/sub-van191/ses-M12/anat/sub-van191_ses-M12_PSIR_label-discs_dlabel.nii.gz"
-        },
-        {
             "IMAGE": "canproco/sub-tor064/ses-M12/anat/sub-tor064_ses-M12_PSIR.nii.gz",
             "LABEL": "canproco/derivatives/labels/sub-tor064/ses-M12/anat/sub-tor064_ses-M12_PSIR_label-discs_dlabel.nii.gz"
         },
@@ -472,16 +467,8 @@
             "LABEL": "canproco/derivatives/labels/sub-van146/ses-M0/anat/sub-van146_ses-M0_PSIR_label-discs_dlabel.nii.gz"
         },
         {
-            "IMAGE": "canproco/sub-tor141/ses-M12/anat/sub-tor141_ses-M12_PSIR.nii.gz",
-            "LABEL": "canproco/derivatives/labels/sub-tor141/ses-M12/anat/sub-tor141_ses-M12_PSIR_label-discs_dlabel.nii.gz"
-        },
-        {
             "IMAGE": "canproco/sub-mon153/ses-M12/anat/sub-mon153_ses-M12_PSIR.nii.gz",
             "LABEL": "canproco/derivatives/labels/sub-mon153/ses-M12/anat/sub-mon153_ses-M12_PSIR_label-discs_dlabel.nii.gz"
-        },
-        {
-            "IMAGE": "canproco/sub-mon096/ses-M12/anat/sub-mon096_ses-M12_PSIR.nii.gz",
-            "LABEL": "canproco/derivatives/labels/sub-mon096/ses-M12/anat/sub-mon096_ses-M12_PSIR_label-discs_dlabel.nii.gz"
         },
         {
             "IMAGE": "canproco/sub-cal137/ses-M0/anat/sub-cal137_ses-M0_STIR.nii.gz",
@@ -574,10 +561,6 @@
         {
             "IMAGE": "canproco/sub-mon129/ses-M12/anat/sub-mon129_ses-M12_PSIR.nii.gz",
             "LABEL": "canproco/derivatives/labels/sub-mon129/ses-M12/anat/sub-mon129_ses-M12_PSIR_label-discs_dlabel.nii.gz"
-        },
-        {
-            "IMAGE": "canproco/sub-mon064/ses-M0/anat/sub-mon064_ses-M0_PSIR.nii.gz",
-            "LABEL": "canproco/derivatives/labels/sub-mon064/ses-M0/anat/sub-mon064_ses-M0_PSIR_label-discs_dlabel.nii.gz"
         },
         {
             "IMAGE": "canproco/sub-tor140/ses-M0/anat/sub-tor140_ses-M0_PSIR.nii.gz",
@@ -998,10 +981,6 @@
         {
             "IMAGE": "canproco/sub-mon131/ses-M12/anat/sub-mon131_ses-M12_PSIR.nii.gz",
             "LABEL": "canproco/derivatives/labels/sub-mon131/ses-M12/anat/sub-mon131_ses-M12_PSIR_label-discs_dlabel.nii.gz"
-        },
-        {
-            "IMAGE": "canproco/sub-edm173/ses-M0/anat/sub-edm173_ses-M0_PSIR.nii.gz",
-            "LABEL": "canproco/derivatives/labels/sub-edm173/ses-M0/anat/sub-edm173_ses-M0_PSIR_label-discs_dlabel.nii.gz"
         },
         {
             "IMAGE": "canproco/sub-mon007/ses-M12/anat/sub-mon007_ses-M12_PSIR.nii.gz",
@@ -2280,10 +2259,6 @@
             "LABEL": "canproco/derivatives/labels/sub-tor004/ses-M0/anat/sub-tor004_ses-M0_PSIR_label-discs_dlabel.nii.gz"
         },
         {
-            "IMAGE": "canproco/sub-mon198/ses-M12/anat/sub-mon198_ses-M12_PSIR.nii.gz",
-            "LABEL": "canproco/derivatives/labels/sub-mon198/ses-M12/anat/sub-mon198_ses-M12_PSIR_label-discs_dlabel.nii.gz"
-        },
-        {
             "IMAGE": "canproco/sub-van055/ses-M12/anat/sub-van055_ses-M12_PSIR.nii.gz",
             "LABEL": "canproco/derivatives/labels/sub-van055/ses-M12/anat/sub-van055_ses-M12_PSIR_label-discs_dlabel.nii.gz"
         },
@@ -2500,10 +2475,6 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-041/ses-M6/anat/sub-041_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-096/ses-M36/anat/sub-096_ses-M36_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-096/ses-M36/anat/sub-096_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-024/ses-M0/anat/sub-024_ses-M0_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-024/ses-M0/anat/sub-024_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
         },
@@ -2518,10 +2489,6 @@
         {
             "IMAGE": "dcm-zurich/sub-024/ses-M6/anat/sub-024_ses-M6_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-024/ses-M6/anat/sub-024_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-096/ses-M12/anat/sub-096_ses-M12_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-096/ses-M12/anat/sub-096_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-086/ses-M0/anat/sub-086_ses-M0_acq-axial_T2w.nii.gz",
@@ -2606,10 +2573,6 @@
         {
             "IMAGE": "dcm-zurich/sub-105/ses-M12/anat/sub-105_ses-M12_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-105/ses-M12/anat/sub-105_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-118/ses-M12/anat/sub-118_ses-M12_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-118/ses-M12/anat/sub-118_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-057/ses-M48/anat/sub-057_ses-M48_acq-axial_T2w.nii.gz",
@@ -2698,10 +2661,6 @@
         {
             "IMAGE": "dcm-zurich/sub-133/ses-M6/anat/sub-133_ses-M6_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-133/ses-M6/anat/sub-133_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-135/ses-M12/anat/sub-135_ses-M12_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-135/ses-M12/anat/sub-135_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-119/ses-M36/anat/sub-119_ses-M36_acq-axial_T2w.nii.gz",
@@ -2824,10 +2783,6 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-025/ses-M0/anat/sub-025_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-071/ses-M48/anat/sub-071_ses-M48_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-071/ses-M48/anat/sub-071_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-113/ses-M0/anat/sub-113_ses-M0_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-113/ses-M0/anat/sub-113_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
         },
@@ -2842,10 +2797,6 @@
         {
             "IMAGE": "dcm-zurich/sub-069/ses-M12/anat/sub-069_ses-M12_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-069/ses-M12/anat/sub-069_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-098/ses-M6/anat/sub-098_ses-M6_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-098/ses-M6/anat/sub-098_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-044/ses-M0/anat/sub-044_ses-M0_acq-axial_T2w.nii.gz",
@@ -2926,10 +2877,6 @@
         {
             "IMAGE": "dcm-zurich/sub-095/ses-M36/anat/sub-095_ses-M36_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-095/ses-M36/anat/sub-095_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-115/ses-M36/anat/sub-115_ses-M36_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-115/ses-M36/anat/sub-115_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-096/ses-M0/anat/sub-096_ses-M0_acq-axial_T2w.nii.gz",
@@ -3200,10 +3147,6 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-014/ses-M0/anat/sub-014_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-118/ses-M24/anat/sub-118_ses-M24_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-118/ses-M24/anat/sub-118_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-162/ses-M6/anat/sub-162_ses-M6_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-162/ses-M6/anat/sub-162_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
         },
@@ -3222,10 +3165,6 @@
         {
             "IMAGE": "dcm-zurich/sub-127/ses-M12/anat/sub-127_ses-M12_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-127/ses-M12/anat/sub-127_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-127/ses-M6/anat/sub-127_ses-M6_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-127/ses-M6/anat/sub-127_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-125/ses-M6/anat/sub-125_ses-M6_acq-axial_T2w.nii.gz",
@@ -3262,10 +3201,6 @@
         {
             "IMAGE": "dcm-zurich/sub-073/ses-M48/anat/sub-073_ses-M48_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-073/ses-M48/anat/sub-073_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-127/ses-M0/anat/sub-127_ses-M0_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-127/ses-M0/anat/sub-127_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-108/ses-M6/anat/sub-108_ses-M6_acq-axial_T2w.nii.gz",
@@ -3400,10 +3335,6 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-009/ses-M60/anat/sub-009_ses-M60_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-115/ses-M24/anat/sub-115_ses-M24_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-115/ses-M24/anat/sub-115_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-138/ses-M24/anat/sub-138_ses-M24_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-138/ses-M24/anat/sub-138_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
         },
@@ -3474,10 +3405,6 @@
         {
             "IMAGE": "dcm-zurich/sub-006/ses-M12/anat/sub-006_ses-M12_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-006/ses-M12/anat/sub-006_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-071/ses-M12/anat/sub-071_ses-M12_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-071/ses-M12/anat/sub-071_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-077/ses-M0/anat/sub-077_ses-M0_acq-sagittal_T2w.nii.gz",
@@ -3780,10 +3707,6 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-168/ses-M0/anat/sub-168_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-057/ses-M12/anat/sub-057_ses-M12_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-057/ses-M12/anat/sub-057_ses-M12_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-099/ses-M0/anat/sub-099_ses-M0_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-099/ses-M0/anat/sub-099_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
         },
@@ -3992,10 +3915,6 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-058/ses-M0/anat/sub-058_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-071/ses-M36/anat/sub-071_ses-M36_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-071/ses-M36/anat/sub-071_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-048/ses-M0/anat/sub-048_ses-M0_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-048/ses-M0/anat/sub-048_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
         },
@@ -4084,20 +4003,12 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-028/ses-M6/anat/sub-028_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-118/ses-M36/anat/sub-118_ses-M36_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-118/ses-M36/anat/sub-118_ses-M36_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-063/ses-M0/anat/sub-063_ses-M0_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-063/ses-M0/anat/sub-063_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-054/ses-M0/anat/sub-054_ses-M0_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-054/ses-M0/anat/sub-054_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-071/ses-M24/anat/sub-071_ses-M24_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-071/ses-M24/anat/sub-071_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-120/ses-M6/anat/sub-120_ses-M6_acq-axial_T2w.nii.gz",
@@ -4126,10 +4037,6 @@
         {
             "IMAGE": "dcm-zurich/sub-007/ses-M0/anat/sub-007_ses-M0_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-007/ses-M0/anat/sub-007_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-118/ses-M6/anat/sub-118_ses-M6_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-118/ses-M6/anat/sub-118_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-143/ses-M0/anat/sub-143_ses-M0_acq-axial_T2w.nii.gz",
@@ -4260,10 +4167,6 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-058/ses-M6/anat/sub-058_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-096/ses-M6/anat/sub-096_ses-M6_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-096/ses-M6/anat/sub-096_ses-M6_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-083/ses-M48/anat/sub-083_ses-M48_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-083/ses-M48/anat/sub-083_ses-M48_acq-axial_T2w_labels-manual.nii.gz"
         },
@@ -4282,10 +4185,6 @@
         {
             "IMAGE": "dcm-zurich/sub-140/ses-M0/anat/sub-140_ses-M0_acq-sagittal_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-140/ses-M0/anat/sub-140_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-096/ses-M24/anat/sub-096_ses-M24_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-096/ses-M24/anat/sub-096_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-065/ses-M24/anat/sub-065_ses-M24_acq-axial_T2w.nii.gz",
@@ -7316,13 +7215,6 @@
             "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-101/anat/sub-101_acq-lowresSag_T2w_label-canal_seg.nii.gz"
         },
         {
-            "IMAGE": "spider-challenge-2023/sub-117/anat/sub-117_acq-lowresSag_T1w.nii.gz",
-            "LABEL": "spider-challenge-2023/derivatives/labels/sub-117/anat/sub-117_acq-lowresSag_T1w_label-discs_dlabel.nii.gz",
-            "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-117/anat/sub-117_acq-lowresSag_T1w_label-spine_dseg.nii.gz",
-            "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-117/anat/sub-117_acq-lowresSag_T1w_label-SC_seg.nii.gz",
-            "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-117/anat/sub-117_acq-lowresSag_T1w_label-canal_seg.nii.gz"
-        },
-        {
             "IMAGE": "spider-challenge-2023/sub-147/anat/sub-147_acq-lowresSag_T2w.nii.gz",
             "LABEL": "spider-challenge-2023/derivatives/labels/sub-147/anat/sub-147_acq-lowresSag_T2w_label-discs_dlabel.nii.gz",
             "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-147/anat/sub-147_acq-lowresSag_T2w_label-spine_dseg.nii.gz",
@@ -7510,13 +7402,6 @@
             "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-173/anat/sub-173_acq-lowresSag_T1w_label-spine_dseg.nii.gz",
             "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-173/anat/sub-173_acq-lowresSag_T1w_label-SC_seg.nii.gz",
             "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-173/anat/sub-173_acq-lowresSag_T1w_label-canal_seg.nii.gz"
-        },
-        {
-            "IMAGE": "spider-challenge-2023/sub-200/anat/sub-200_acq-lowresSag_T1w.nii.gz",
-            "LABEL": "spider-challenge-2023/derivatives/labels/sub-200/anat/sub-200_acq-lowresSag_T1w_label-discs_dlabel.nii.gz",
-            "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-200/anat/sub-200_acq-lowresSag_T1w_label-spine_dseg.nii.gz",
-            "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-200/anat/sub-200_acq-lowresSag_T1w_label-SC_seg.nii.gz",
-            "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-200/anat/sub-200_acq-lowresSag_T1w_label-canal_seg.nii.gz"
         },
         {
             "IMAGE": "spider-challenge-2023/sub-185/anat/sub-185_acq-lowresSag_T1w.nii.gz",
@@ -7869,25 +7754,11 @@
             "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-029/anat/sub-029_acq-lowresSag_T2w_label-canal_seg.nii.gz"
         },
         {
-            "IMAGE": "spider-challenge-2023/sub-142/anat/sub-142_acq-lowresSag_T1w.nii.gz",
-            "LABEL": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-lowresSag_T1w_label-discs_dlabel.nii.gz",
-            "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-lowresSag_T1w_label-spine_dseg.nii.gz",
-            "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-lowresSag_T1w_label-SC_seg.nii.gz",
-            "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-lowresSag_T1w_label-canal_seg.nii.gz"
-        },
-        {
             "IMAGE": "spider-challenge-2023/sub-143/anat/sub-143_acq-lowresSag_T2w.nii.gz",
             "LABEL": "spider-challenge-2023/derivatives/labels/sub-143/anat/sub-143_acq-lowresSag_T2w_label-discs_dlabel.nii.gz",
             "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-143/anat/sub-143_acq-lowresSag_T2w_label-spine_dseg.nii.gz",
             "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-143/anat/sub-143_acq-lowresSag_T2w_label-SC_seg.nii.gz",
             "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-143/anat/sub-143_acq-lowresSag_T2w_label-canal_seg.nii.gz"
-        },
-        {
-            "IMAGE": "spider-challenge-2023/sub-145/anat/sub-145_acq-lowresSag_T2w.nii.gz",
-            "LABEL": "spider-challenge-2023/derivatives/labels/sub-145/anat/sub-145_acq-lowresSag_T2w_label-discs_dlabel.nii.gz",
-            "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-145/anat/sub-145_acq-lowresSag_T2w_label-spine_dseg.nii.gz",
-            "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-145/anat/sub-145_acq-lowresSag_T2w_label-SC_seg.nii.gz",
-            "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-145/anat/sub-145_acq-lowresSag_T2w_label-canal_seg.nii.gz"
         },
         {
             "IMAGE": "spider-challenge-2023/sub-047/anat/sub-047_acq-lowresSag_T1w.nii.gz",
@@ -9654,13 +9525,6 @@
             "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-187/anat/sub-187_acq-lowresSag_T1w_label-canal_seg.nii.gz"
         },
         {
-            "IMAGE": "spider-challenge-2023/sub-142/anat/sub-142_acq-highresSag_T2w.nii.gz",
-            "LABEL": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-highresSag_T2w_label-discs_dlabel.nii.gz",
-            "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-highresSag_T2w_label-spine_dseg.nii.gz",
-            "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-highresSag_T2w_label-SC_seg.nii.gz",
-            "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-highresSag_T2w_label-canal_seg.nii.gz"
-        },
-        {
             "IMAGE": "spider-challenge-2023/sub-225/anat/sub-225_acq-lowresSag_T2w.nii.gz",
             "LABEL": "spider-challenge-2023/derivatives/labels/sub-225/anat/sub-225_acq-lowresSag_T2w_label-discs_dlabel.nii.gz",
             "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-225/anat/sub-225_acq-lowresSag_T2w_label-spine_dseg.nii.gz",
@@ -11314,13 +11178,6 @@
             "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-156/anat/sub-156_acq-lowresSag_T1w_label-canal_seg.nii.gz"
         },
         {
-            "IMAGE": "spider-challenge-2023/sub-142/anat/sub-142_acq-lowresSag_T2w.nii.gz",
-            "LABEL": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-lowresSag_T2w_label-discs_dlabel.nii.gz",
-            "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-lowresSag_T2w_label-spine_dseg.nii.gz",
-            "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-lowresSag_T2w_label-SC_seg.nii.gz",
-            "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-142/anat/sub-142_acq-lowresSag_T2w_label-canal_seg.nii.gz"
-        },
-        {
             "IMAGE": "spider-challenge-2023/sub-189/anat/sub-189_acq-lowresSag_T1w.nii.gz",
             "LABEL": "spider-challenge-2023/derivatives/labels/sub-189/anat/sub-189_acq-lowresSag_T1w_label-discs_dlabel.nii.gz",
             "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-189/anat/sub-189_acq-lowresSag_T1w_label-spine_dseg.nii.gz",
@@ -11375,13 +11232,6 @@
             "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-052/anat/sub-052_acq-lowresSag_T1w_label-spine_dseg.nii.gz",
             "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-052/anat/sub-052_acq-lowresSag_T1w_label-SC_seg.nii.gz",
             "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-052/anat/sub-052_acq-lowresSag_T1w_label-canal_seg.nii.gz"
-        },
-        {
-            "IMAGE": "spider-challenge-2023/sub-145/anat/sub-145_acq-lowresSag_T1w.nii.gz",
-            "LABEL": "spider-challenge-2023/derivatives/labels/sub-145/anat/sub-145_acq-lowresSag_T1w_label-discs_dlabel.nii.gz",
-            "SEG_SPINE": "spider-challenge-2023/derivatives/labels/sub-145/anat/sub-145_acq-lowresSag_T1w_label-spine_dseg.nii.gz",
-            "SEG_CORD": "spider-challenge-2023/derivatives/labels/sub-145/anat/sub-145_acq-lowresSag_T1w_label-SC_seg.nii.gz",
-            "SEG_CANAL": "spider-challenge-2023/derivatives/labels/sub-145/anat/sub-145_acq-lowresSag_T1w_label-canal_seg.nii.gz"
         },
         {
             "IMAGE": "spider-challenge-2023/sub-226/anat/sub-226_acq-lowresSag_T2w.nii.gz",
@@ -12165,10 +12015,6 @@
             "LABEL": "dcm-zurich/derivatives/labels/sub-135/ses-M0/anat/sub-135_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
         },
         {
-            "IMAGE": "dcm-zurich/sub-071/ses-M0/anat/sub-071_ses-M0_acq-sagittal_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-071/ses-M0/anat/sub-071_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
-        },
-        {
             "IMAGE": "dcm-zurich/sub-099/ses-M0/anat/sub-099_ses-M0_acq-sagittal_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-099/ses-M0/anat/sub-099_ses-M0_acq-sagittal_T2w_labels-manual.nii.gz"
         },
@@ -12215,10 +12061,6 @@
         {
             "IMAGE": "dcm-zurich/sub-162/ses-M0/anat/sub-162_ses-M0_acq-axial_T2w.nii.gz",
             "LABEL": "dcm-zurich/derivatives/labels/sub-162/ses-M0/anat/sub-162_ses-M0_acq-axial_T2w_labels-manual.nii.gz"
-        },
-        {
-            "IMAGE": "dcm-zurich/sub-135/ses-M24/anat/sub-135_ses-M24_acq-axial_T2w.nii.gz",
-            "LABEL": "dcm-zurich/derivatives/labels/sub-135/ses-M24/anat/sub-135_ses-M24_acq-axial_T2w_labels-manual.nii.gz"
         },
         {
             "IMAGE": "dcm-zurich/sub-142/ses-M6/anat/sub-142_ses-M6_acq-axial_T2w.nii.gz",
