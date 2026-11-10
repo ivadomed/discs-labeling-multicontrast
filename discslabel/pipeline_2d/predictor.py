@@ -17,23 +17,41 @@ from ..decoding import extract_candidates, predict_heatmap
 SKELETON_PROJECTION = "sagittal"
 
 
-def extract_slice_stack(volume: np.ndarray, d_mid: int, n_slices: int) -> np.ndarray:
-    """Pull ``n_slices`` adjacent R-L slices centered on ``d_mid`` from a 3D volume.
+INPUT_MODES = ("mid", "avg")
 
-    Returns a ``(n_slices, H, W)`` array. Indices are clamped to ``[0, D-1]``
-    so a volume with fewer slices than requested degrades gracefully by
+
+def slab_indices(D: int, d_mid: int, n_slices: int) -> List[int]:
+    """``n_slices`` adjacent R-L indices centered on ``d_mid``, clamped to ``[0, D-1]``.
+
+    Clamping lets a volume thinner than the slab degrade gracefully by
     replicating the boundary slice.
     """
-    D = volume.shape[0]
     half = n_slices // 2
-    offsets = range(-half, -half + n_slices)
-    indices = [max(0, min(D - 1, d_mid + o)) for o in offsets]
-    return volume[indices]
+    return [max(0, min(D - 1, d_mid + o)) for o in range(-half, -half + n_slices)]
 
 
-def mid_slice_stack(volume: np.ndarray, n_slices: int) -> np.ndarray:
-    """The ``n_slices`` R-L slices around the volume centre (the model input)."""
-    return extract_slice_stack(volume, volume.shape[0] // 2, n_slices)
+def slab_num_slices(cfg: dict) -> int:
+    """Number of R-L slices averaged in "avg" mode: ``slab_thickness_mm`` / R-L spacing."""
+    from ..gpu_artifacts import parse_spacing
+
+    spacing_rl = parse_spacing(cfg.get("resolution", "1x1x1"))[0]
+    thickness = float(cfg.get("slab_thickness_mm", 10.0))
+    return max(1, int(round(thickness / spacing_rl)))
+
+
+def model_input(volume: np.ndarray, input_mode: str, n_slab: int) -> np.ndarray:
+    """The ``(1, H, W)`` model input from a ``(D, H, W)`` volume.
+
+    ``"mid"``: the mid-sagittal slice. ``"avg"``: the mean of the ``n_slab``
+    R-L slices around it (a thick sagittal slab).
+    """
+    d_mid = volume.shape[0] // 2
+    if input_mode == "mid":
+        return np.ascontiguousarray(volume[d_mid : d_mid + 1])
+    if input_mode == "avg":
+        idx = slab_indices(volume.shape[0], d_mid, n_slab)
+        return volume[idx].mean(axis=0, keepdims=True, dtype=np.float32)
+    raise ValueError(f"input_mode must be one of {INPUT_MODES}, got {input_mode!r}")
 
 
 def predict_volume_heatmap(
@@ -43,11 +61,12 @@ def predict_volume_heatmap(
     patch_hw: Tuple[int, int],
     overlap: float,
     batch_size: int,
-    n_mid_slices: int,
+    input_mode: str,
+    n_slab: int,
 ) -> np.ndarray:
-    """Stitched ``(NUM_CLASSES, H, W)`` heatmap of the mid-sagittal slice stack."""
-    stack = mid_slice_stack(volume_norm, n_mid_slices)
-    return predict_heatmap(stack, model, device, patch_hw, overlap, batch_size)
+    """Stitched ``(NUM_CLASSES, H, W)`` heatmap of the 2D model input."""
+    image_2d = model_input(volume_norm, input_mode, n_slab)
+    return predict_heatmap(image_2d, model, device, patch_hw, overlap, batch_size)
 
 
 def predict_candidates(
@@ -57,15 +76,16 @@ def predict_candidates(
     patch_hw: Tuple[int, int],
     overlap: float,
     batch_size: int,
-    n_mid_slices: int,
+    input_mode: str,
+    n_slab: int,
     min_threshold: float,
 ) -> Dict[str, object]:
-    """Stitched heatmap of the mid-sagittal slice stack → decoding candidates.
+    """Stitched heatmap of the 2D model input → decoding candidates.
 
     Candidate coordinates are ``(h, w)`` on the slice.
     """
     heatmap = predict_volume_heatmap(
-        volume_norm, model, device, patch_hw, overlap, batch_size, n_mid_slices
+        volume_norm, model, device, patch_hw, overlap, batch_size, input_mode, n_slab
     )
     return extract_candidates(heatmap, min_threshold)
 

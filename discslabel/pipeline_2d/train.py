@@ -77,7 +77,7 @@ from ..postprocessing import (
     preload_cases,
     score_cases,
 )
-from .predictor import labeled_to_voxels, mid_slice_stack
+from .predictor import labeled_to_voxels, model_input, slab_num_slices
 from ..training import (
     EmaTracker,
     ForegroundBatchSampler,
@@ -301,7 +301,9 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
         heatmap_sigma=cfg["heatmap_sigma"],
         heatmap_radius=cfg["heatmap_radius"],
         elastic_config=cfg.get("elastic_config"),
-        n_mid_slices=int(cfg["in_channels"]),
+        slab_slices=slab_num_slices(cfg),
+        slab_prob=float(cfg.get("slab_prob", 0.5)),
+        eval_input_mode=str(cfg.get("inference_input_mode", "avg")),
         artifact_config=cfg.get("artifact_config"),
         lowres_config=cfg.get("lowres_si_config"),
         voxel_spacing=cfg.get("resolution", "1x1x1"),
@@ -333,14 +335,10 @@ def dry_run(cfg: dict, manifest_path: str, save_model_dir: str, n_samples: int =
                 break
 
         png_path = os.path.join(out_dir, f"sample_{collected:02d}_{name_stem}.png")
-        # When the model takes >1 input channels (adjacent slice stack), the
-        # center channel is the mid-sagittal — the one closest to what the
-        # training preview was showing before the stack was introduced.
-        center_ch = image_2d.size(1) // 2
         try:
             _save_dry_run_png(
                 png_path,
-                image_2d[0, center_ch].detach().cpu().numpy(),
+                image_2d[0, 0].detach().cpu().numpy(),
                 heatmap_2d[0].detach().cpu().numpy(),
                 title=f"[dry-run #{collected}] {name_stem}",
             )
@@ -401,15 +399,19 @@ def _init_wandb(cfg: dict, save_model_dir: str, run_id: str | None = None):
 
 
 def _preload_validation(cfg: dict, manifest_path: str) -> list[PreloadedCase]:
-    """Load the validation ground truth and the z-scored mid-sagittal slice
-    stacks (the model input, a few MB per image) once, so each validation
+    """Load the validation ground truth and the z-scored 2D model inputs
+    (``inference_input_mode``, a few MB per image) once, so each validation
     round only runs the model and the decoding. Read from the NIfTIs, not the
     float16 cache, so the inputs match inference exactly (it runs once)."""
     return preload_cases(
         manifest_path,
         "valid",
         max_images=cfg.get("val_max_images"),
-        reduce_fn=functools.partial(mid_slice_stack, n_slices=int(cfg["in_channels"])),
+        reduce_fn=functools.partial(
+            model_input,
+            input_mode=str(cfg.get("inference_input_mode", "avg")),
+            n_slab=slab_num_slices(cfg),
+        ),
         keep_in_memory=True,
         num_workers=resolve_num_workers(cfg.get("inference_num_workers", "auto")),
         desc="preload validation images",
@@ -538,7 +540,9 @@ def train(
         heatmap_sigma=cfg["heatmap_sigma"],
         heatmap_radius=cfg["heatmap_radius"],
         elastic_config=cfg.get("elastic_config"),
-        n_mid_slices=int(cfg["in_channels"]),
+        slab_slices=slab_num_slices(cfg),
+        slab_prob=float(cfg.get("slab_prob", 0.5)),
+        eval_input_mode=str(cfg.get("inference_input_mode", "avg")),
         artifact_config=cfg.get("artifact_config"),
         lowres_config=cfg.get("lowres_si_config"),
         voxel_spacing=cfg.get("resolution", "1x1x1"),
@@ -642,10 +646,8 @@ def train(
                 )
             if sample is not None:
                 epoch_label = f"Epoch {epoch + 1}"
-                # Multi-channel inputs: show the mid-sagittal (center) slice.
-                center_ch = sample["image"].shape[1] // 2
                 fig = _build_gt_pred_figure(
-                    sample["image"][0, center_ch],
+                    sample["image"][0, 0],
                     sample["heatmap_gt"][0],
                     sample["heatmap_pred"][0],
                     title=f"{epoch_label} — validation sample: {sample['name']}",

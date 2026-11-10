@@ -1,7 +1,7 @@
 """Grid-search ``peak_threshold`` / ``min_peak_distance`` for a trained 2D model.
 
 Runs the stitched sliding-window prediction once per validation image (on
-the mid-sagittal slice stack), then re-decodes the cached peak candidates for
+the 2D model input), then re-decodes the cached peak candidates for
 every grid point and writes ``postprocessing.json`` (best pair) +
 ``postprocessing_grid.csv`` (all pairs).
 ``discslabel_inference`` picks up ``postprocessing.json`` automatically
@@ -21,7 +21,12 @@ import torch
 from ..postprocessing import tune
 from ..training import load_inference_weights
 from .model import load_model
-from .predictor import SKELETON_PROJECTION, labeled_to_voxels, predict_volume_heatmap
+from .predictor import (
+    SKELETON_PROJECTION,
+    labeled_to_voxels,
+    predict_volume_heatmap,
+    slab_num_slices,
+)
 from .train import _load_config, _resolve_batch_size
 
 
@@ -62,14 +67,15 @@ def main() -> None:
     patch_hw = (patch_size[1], patch_size[2])
     overlap = float(cfg.get("inference_overlap", 0.5))
     batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
-    n_mid_slices = int(cfg["in_channels"])
+    input_mode = str(cfg.get("inference_input_mode", "avg"))
+    n_slab = slab_num_slices(cfg)
 
     tune(
         cfg,
         manifest_path=args.manifest,
         out_dir=args.out_dir or os.path.dirname(os.path.abspath(args.weights)),
         predict_fn=lambda v: predict_volume_heatmap(
-            v, model, device, patch_hw, overlap, batch_size, n_mid_slices
+            v, model, device, patch_hw, overlap, batch_size, input_mode, n_slab
         ),
         to_voxels=labeled_to_voxels,
         split=args.split,

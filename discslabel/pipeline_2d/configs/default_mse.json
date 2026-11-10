@@ -5,9 +5,9 @@
     "debug": false,
 
     "steps": {
-        "download": false,
-        "prepare": false,
-        "train": false,
+        "download": true,
+        "prepare": true,
+        "train": true,
         "skeleton": true,
         "tune": true,
         "inference": false,
@@ -23,7 +23,9 @@
     "midline_jitter": 2,
 
     "model_name": "UNet",
-    "in_channels": 3,
+    "in_channels": 1,
+    "slab_thickness_mm": 10.0,
+    "slab_prob": 0.5,
     "patch_size": [96, 320, 320],
     "heatmap_sigma": 2.0,
     "heatmap_radius": 4,
@@ -34,7 +36,7 @@
     "prefetch_factor": 4,
     "use_amp": true,
 
-    "num_epochs": 500,
+    "num_epochs": 200,
     "num_iterations_per_epoch": 250,
     "num_val_iterations_per_epoch": 50,
     "oversample_foreground_percent": 0.33,
@@ -105,6 +107,7 @@
 
     "inference_split": "test",
     "inference_save_images": true,
+    "inference_input_mode": "avg",
     "inference_overlap": 0.5,
     "inference_min_peak_distance": 10.0,
     "inference_batch_size": "auto",

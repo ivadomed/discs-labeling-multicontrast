@@ -66,7 +66,7 @@ from ..skeleton import (
 )
 from ..training import load_inference_weights
 from .model import load_model
-from .predictor import SKELETON_PROJECTION, predict_volume_heatmap
+from .predictor import INPUT_MODES, SKELETON_PROJECTION, predict_volume_heatmap, slab_num_slices
 from .train import (
     _display_slice,
     _intensity_window,
@@ -410,8 +410,13 @@ def predict(
     skeleton_mode: str = "off",
     skeleton_path: Optional[str] = None,
     plain_out_dir: Optional[str] = None,
+    input_mode: Optional[str] = None,
 ) -> None:
     """Sliding-window inference on every input image.
+
+    ``input_mode`` picks the 2D model input: ``"avg"`` (mean of the
+    ``slab_thickness_mm`` R-L slab around the midline) or ``"mid"`` (the
+    mid-sagittal slice). Default: config ``inference_input_mode``, else ``"avg"``.
 
     ``skeleton_mode`` (``off`` / ``flag`` / ``correct``) enables the skeleton
     QC / correction step (``skeleton_path`` defaults to ``skeleton.json``
@@ -438,7 +443,11 @@ def predict(
     batch_size = _resolve_batch_size(cfg.get("inference_batch_size"), device)
     orientation = str(cfg.get("orientation", "RPI"))
     resolution_mm = _parse_resolution(str(cfg.get("resolution", "1x1x1")))
-    n_mid_slices = int(cfg["in_channels"])
+    if input_mode is None:
+        input_mode = str(cfg.get("inference_input_mode", "avg"))
+    if input_mode not in INPUT_MODES:
+        raise ValueError(f"input_mode must be one of {INPUT_MODES}, got {input_mode!r}")
+    n_slab = slab_num_slices(cfg)
     if num_workers is None:
         num_workers = cfg.get("inference_num_workers", "auto")
     num_workers = min(resolve_num_workers(num_workers), len(image_paths))
@@ -446,7 +455,7 @@ def predict(
         f"[inference] device={device} inputs={len(image_paths)} "
         f"orientation={orientation} resolution={resolution_mm} "
         f"patch_hw={patch_hw} overlap={overlap} batch_size={batch_size} "
-        f"n_mid_slices={n_mid_slices} num_workers={num_workers}"
+        f"input_mode={input_mode} slab_slices={n_slab} num_workers={num_workers}"
     )
     print(
         f"[inference] peak_threshold={peak_thr} min_peak_distance={min_peak_distance} "
@@ -479,13 +488,13 @@ def predict(
             volume = item["volume"]
             d_mid = volume.shape[0] // 2
             heatmap = predict_volume_heatmap(
-                volume, model, device, patch_hw, overlap, batch_size, n_mid_slices
+                volume, model, device, patch_hw, overlap, batch_size, input_mode, n_slab
             )
             writer.submit(
                 _finalize_one,
                 item["path"],
                 heatmap,
-                # Center slice of the input stack — the preview background.
+                # Mid-sagittal slice — the (sharper) preview background.
                 np.ascontiguousarray(volume[d_mid]),
                 d_mid,
                 item["affine"],
@@ -559,6 +568,14 @@ def main() -> None:
         help="With --skeleton, also write the predictions decoded without the "
         "skeleton (same heatmaps) into this folder, for comparison.",
     )
+    parser.add_argument(
+        "--input-mode",
+        choices=INPUT_MODES,
+        default=None,
+        help="2D model input: 'avg' (mean over slab_thickness_mm around the "
+        "mid-sagittal slice) or 'mid' (mid-sagittal slice only). Default: config "
+        "inference_input_mode, else 'avg'.",
+    )
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
@@ -571,6 +588,7 @@ def main() -> None:
         skeleton_mode=args.skeleton or str(cfg.get("inference_skeleton", "off")),
         skeleton_path=args.skeleton_path,
         plain_out_dir=args.plain_out_dir,
+        input_mode=args.input_mode,
     )
 
 

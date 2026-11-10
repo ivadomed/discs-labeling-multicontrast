@@ -40,6 +40,7 @@ import torch.nn.functional as F
 
 from .. import LANDMARK_CHANNEL_LABELS
 from ..gpu_artifacts import build_image_augmentations
+from .predictor import INPUT_MODES, slab_indices
 
 
 def _resolve_aug_config(name: str) -> str:
@@ -143,23 +144,30 @@ class GpuBatchProcessor(nn.Module):
         heatmap_sigma: float = 8.0,
         heatmap_radius: int = 20,
         elastic_config: Optional[dict] = None,
-        n_mid_slices: int = 1,
+        slab_slices: int = 1,
+        slab_prob: float = 0.5,
+        eval_input_mode: str = "avg",
         artifact_config: Optional[dict] = None,
         lowres_config: Optional[dict] = None,
         voxel_spacing=(1.0, 1.0, 1.0),
     ):
         super().__init__()
-        if n_mid_slices < 1:
-            raise ValueError(f"n_mid_slices must be >= 1, got {n_mid_slices}")
+        if slab_slices < 1:
+            raise ValueError(f"slab_slices must be >= 1, got {slab_slices}")
+        if eval_input_mode not in INPUT_MODES:
+            raise ValueError(f"eval_input_mode must be one of {INPUT_MODES}, got {eval_input_mode!r}")
         self.aug_config = aug_config
         self.heatmap_sigma = float(heatmap_sigma)
         self.heatmap_radius = int(heatmap_radius)
         self.elastic_config = elastic_config
-        # Number of R-L slices stacked as model input channels. For 1 we grab
-        # just the mid-sagittal slice (classic behavior); for 3 we grab the
-        # midline and its two immediate neighbors, so the model sees local
-        # context on either side of the sagittal plane.
-        self.n_mid_slices = int(n_mid_slices)
+        # Single-channel model input: either the mid-sagittal slice ("mid") or
+        # the mean of the ``slab_slices`` R-L slices around it ("avg", a thick
+        # slab, e.g. 10 mm). With augmentation on, each sample independently
+        # gets "avg" with probability ``slab_prob``; otherwise
+        # ``eval_input_mode`` is used for the whole batch.
+        self.slab_slices = int(slab_slices)
+        self.slab_prob = float(slab_prob)
+        self.eval_input_mode = eval_input_mode
         self._aug: Optional[nn.Module] = None
         self._elastic: Optional[nn.Module] = None
         # Image-only GPU augmentations (S-I low resolution, MRI artifacts),
@@ -265,14 +273,22 @@ class GpuBatchProcessor(nn.Module):
 
         D = image_3d.size(_SAGITTAL_AXIS)
         mid = D // 2
-        n = self.n_mid_slices
-        half = n // 2
-        # Clamp to [0, D-1] so volumes with fewer slices than ``n`` degrade
-        # gracefully by replicating the boundary (no OOB, no padding).
-        offsets = torch.arange(-half, -half + n, device=image_3d.device)
-        slice_indices = torch.clamp(mid + offsets, 0, D - 1)
-        # (B, 1, D, H, W) → (B, 1, n, H, W) → squeeze singleton channel → (B, n, H, W)
-        image_2d = image_3d.index_select(_SAGITTAL_AXIS, slice_indices).squeeze(1)
+        # (B, 1, D, H, W) → (B, 1, H, W)
+        mid_2d = image_3d.select(_SAGITTAL_AXIS, mid)
+        if apply_augmentation:
+            use_avg = torch.rand(image_3d.size(0), device=image_3d.device) < self.slab_prob
+        else:
+            use_avg = torch.full(
+                (image_3d.size(0),), self.eval_input_mode == "avg", device=image_3d.device
+            )
+        if bool(use_avg.any()):
+            slice_indices = torch.as_tensor(
+                slab_indices(D, mid, self.slab_slices), device=image_3d.device
+            )
+            avg_2d = image_3d.index_select(_SAGITTAL_AXIS, slice_indices).mean(dim=_SAGITTAL_AXIS)
+            image_2d = torch.where(use_avg.view(-1, 1, 1, 1), avg_2d, mid_2d)
+        else:
+            image_2d = mid_2d
         seg_2d = (
             seg_3d.narrow(_SAGITTAL_AXIS, mid, 1).squeeze(_SAGITTAL_AXIS)
             if seg_3d is not None
