@@ -5,11 +5,11 @@
     "debug": false,
 
     "steps": {
-        "download": true,
-        "prepare": true,
-        "train": true,
-        "skeleton": true,
-        "tune": true,
+        "download": false,
+        "prepare": false,
+        "train": false,
+        "skeleton": false,
+        "tune": false,
         "inference": false,
         "evaluate": true
     },

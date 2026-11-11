@@ -114,6 +114,7 @@ def _build_preview_png(
     title: str,
     save_path: str,
     imputed_labels: frozenset = frozenset(),
+    heatmap_2d: Optional[np.ndarray] = None,
 ) -> None:
     """Mid-sagittal PNG with disc labels overlaid (skeleton-imputed discs in yellow).
 
@@ -130,7 +131,11 @@ def _build_preview_png(
     H_orig, W_orig = slice_2d.shape
 
     vmin, vmax = _intensity_window(img)
-    fig, ax = plt.subplots(figsize=(8, 10))
+    n_cols = 1 if heatmap_2d is None else 2
+    # Column width follows the displayed image aspect so panels sit side by side.
+    col_w = min(8.0, max(4.0, 10.0 * img.shape[1] / img.shape[0] + 1.0))
+    fig, axes = plt.subplots(1, n_cols, figsize=(col_w * n_cols, 10), squeeze=False)
+    ax = axes[0, 0]
     ax.imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
     for label, x, y in labeled_discs:
         # slice (y=row=P-A, x=col=I-S) → display (row = W-1-x, col = y)
@@ -158,6 +163,17 @@ def _build_preview_png(
     ax.set_title(title, fontsize=12)
     ax.set_xticks([])
     ax.set_yticks([])
+    if heatmap_2d is not None:
+        # Raw sigmoid output (no peak threshold, no masking): max over all
+        # channels (discs + anchors), overlaid on the same background.
+        hm = _display_slice(heatmap_2d.max(axis=0))
+        ax_hm = axes[0, 1]
+        ax_hm.imshow(img, cmap="gray", vmin=vmin, vmax=vmax)
+        im = ax_hm.imshow(hm, cmap="hot", alpha=0.6, vmin=0.0, vmax=1.0)
+        fig.colorbar(im, ax=ax_hm, fraction=0.046, pad=0.02)
+        ax_hm.set_title(f"predicted heatmap (max over channels, peak={hm.max():.2f})", fontsize=12)
+        ax_hm.set_xticks([])
+        ax_hm.set_yticks([])
     fig.tight_layout()
     os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
     fig.savefig(save_path, dpi=110, bbox_inches="tight")
@@ -347,14 +363,14 @@ def _finalize_one(
         title += f"\nQC: {qc_row['flags']}"
     _write_outputs(
         out_dir, stem, decoded, title, imputed,
-        slice_2d, d_mid, affine, native_shape, native_affine,
+        slice_2d, d_mid, affine, native_shape, native_affine, heatmap,
     )
     if plain_out_dir is not None and skeleton is not None:
         # Same heatmap decoded without the skeleton, for side-by-side evaluation.
         plain = label_discs(candidates, peak_threshold, min_peak_distance)
         _write_outputs(
             plain_out_dir, stem, plain, f"{stem} — {len(plain)} discs", frozenset(),
-            slice_2d, d_mid, affine, native_shape, native_affine,
+            slice_2d, d_mid, affine, native_shape, native_affine, heatmap,
         )
     return warning, qc_row
 
@@ -370,6 +386,7 @@ def _write_outputs(
     affine: np.ndarray,
     native_shape: Tuple[int, int, int],
     native_affine: np.ndarray,
+    heatmap_2d: Optional[np.ndarray] = None,
 ) -> None:
     """Write ``<stem>_discs.png`` + ``<stem>_discs.nii.gz`` (native grid) into ``out_dir``.
 
@@ -386,6 +403,7 @@ def _write_outputs(
         title=title,
         save_path=os.path.join(out_dir, f"{stem}_discs.png"),
         imputed_labels=imputed,
+        heatmap_2d=heatmap_2d,
     )
     # Project the preprocessed-frame labels back onto the user's native grid
     # so the output NIfTI overlays cleanly on their input image.
