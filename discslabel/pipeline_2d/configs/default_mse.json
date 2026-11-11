@@ -7,9 +7,9 @@
     "steps": {
         "download": false,
         "prepare": false,
-        "train": false,
-        "skeleton": false,
-        "tune": false,
+        "train": true,
+        "skeleton": true,
+        "tune": true,
         "inference": false,
         "evaluate": true
     },
@@ -27,8 +27,8 @@
     "slab_thickness_mm": 10.0,
     "slab_prob": 0.5,
     "patch_size": [96, 320, 320],
-    "heatmap_sigma": 2.0,
-    "heatmap_radius": 4,
+    "heatmap_sigma": 1.0,
+    "heatmap_radius": 2,
 
     "batch_size": "auto",
     "batch_size_valid": "auto",
