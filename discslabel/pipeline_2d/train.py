@@ -7,8 +7,10 @@ GPU, and lets ``GpuBatchProcessor`` do:
 
     1. optional SmaugLab 3D augmentations on the paired (image, seg)
     2. mid-sagittal slice extraction (axis R-L)
-    3. point-wise label projection + Gaussian heatmap synthesis
-    4. optional 2D kornia random elastic transform on (image, heatmap)
+    3. point-wise label projection onto the mid-sagittal plane
+    4. optional 2D kornia random elastic transform on the image; the disc
+       points are moved by the same field
+    5. Gaussian heatmap synthesis from the (moved) points — circular blobs
 
 The 2D model then sees ``(image_2d, heatmap_2d)`` for the loss.
 

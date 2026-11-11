@@ -4,8 +4,9 @@ Takes a batch of 3D ``(image, label, seg)`` volumes, optionally runs the
 SmaugLab 3D GPU augmentations, extracts the mid-sagittal slice, projects the
 3D point-wise disc label onto the mid-sagittal plane, and builds the
 5-channel Gaussian heatmap target. When ``elastic_config`` is set, a 2D
-kornia random elastic transform is then applied jointly to the image and
-heatmap to simulate spine curvature. ``artifact_config`` /
+kornia random elastic transform warps the image and moves the disc points
+with the same field (simulating spine curvature) BEFORE the heatmap is
+rendered, so the Gaussians stay circular. ``artifact_config`` /
 ``lowres_config`` add image-only MRI artifacts and an S-I low-resolution
 simulation on the 3D batch right after the SmaugLab augmentations (see
 ``discslabel.gpu_artifacts``).
@@ -84,6 +85,67 @@ def _gaussian_kernel_2d(sigma: float, radius: int, device: torch.device, dtype: 
     kernel = torch.exp(-(xx * xx + yy * yy) / (2.0 * sigma * sigma))
     kernel = kernel.clamp(min=0.0)
     return kernel.view(1, 1, 2 * radius + 1, 2 * radius + 1)
+
+
+_NEWTON_ITERS = 3
+
+
+def _invert_sampling_map(src: torch.Tensor, b: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
+    """Solve ``g(p) = q`` for each point, where ``g = src[b]`` maps output → input pixels.
+
+    ``src`` : (B, 2, H, W) input (h, w) sampled by each output pixel.
+    ``b`` / ``q`` : (N,) batch indices and (N, 2) input positions.
+    Returns the (N, 2) output positions ``p``.
+
+    Global start (the output pixel whose ``g`` is closest to ``q``; robust to
+    large or locally compressive fields where fixed-point iteration fails),
+    then a few Newton steps with a finite-difference Jacobian for sub-pixel
+    precision.
+    """
+    _, _, H, W = src.shape
+    flat = src.flatten(2)  # (B, 2, H*W)
+    p = torch.empty_like(q)
+    for bi in b.unique().tolist():  # one (n_b, H*W) distance matrix per sample
+        m = b == bi
+        d2 = (flat[bi].T.unsqueeze(0) - q[m].unsqueeze(1)).square().sum(-1)  # (n_b, H*W)
+        idx = d2.argmin(dim=1)
+        p[m] = torch.stack([idx // W, idx % W], dim=1).to(q.dtype)
+    eh = q.new_tensor([0.5, 0.0])
+    ew = q.new_tensor([0.0, 0.5])
+    for _ in range(_NEWTON_ITERS):
+        r = q - _sample_bilinear(src, b, p)  # (N, 2)
+        jh = _sample_bilinear(src, b, p + eh) - _sample_bilinear(src, b, p - eh)  # dg/dh
+        jw = _sample_bilinear(src, b, p + ew) - _sample_bilinear(src, b, p - ew)  # dg/dw
+        J = torch.stack([jh, jw], dim=2)  # (N, 2, 2): columns = d/dh, d/dw
+        det = J[:, 0, 0] * J[:, 1, 1] - J[:, 0, 1] * J[:, 1, 0]
+        ok = det.abs() > 1e-3  # skip near-singular (folded) spots: keep the grid start
+        step = torch.stack(
+            [J[:, 1, 1] * r[:, 0] - J[:, 0, 1] * r[:, 1], -J[:, 1, 0] * r[:, 0] + J[:, 0, 0] * r[:, 1]],
+            dim=1,
+        ) / det.where(ok, torch.ones_like(det)).unsqueeze(1)
+        p = p + step.where(ok.unsqueeze(1), torch.zeros_like(step)).clamp(-1.0, 1.0)
+    return p
+
+
+def _sample_bilinear(field: torch.Tensor, b: torch.Tensor, p: torch.Tensor) -> torch.Tensor:
+    """Bilinearly sample ``field`` (B, C, H, W) at points ``p`` (N, 2) = (h, w) of batch items ``b``.
+
+    Points outside the grid are clamped to the border. Returns (N, C).
+    """
+    _, _, H, W = field.shape
+    h = p[:, 0].clamp(0, H - 1)
+    w = p[:, 1].clamp(0, W - 1)
+    h0 = h.floor().long().clamp(max=H - 2) if H > 1 else h.floor().long()
+    w0 = w.floor().long().clamp(max=W - 2) if W > 1 else w.floor().long()
+    h1 = (h0 + 1).clamp(max=H - 1)
+    w1 = (w0 + 1).clamp(max=W - 1)
+    th = (h - h0).unsqueeze(1)
+    tw = (w - w0).unsqueeze(1)
+    f00 = field[b, :, h0, w0]
+    f01 = field[b, :, h0, w1]
+    f10 = field[b, :, h1, w0]
+    f11 = field[b, :, h1, w1]
+    return (f00 * (1 - tw) + f01 * tw) * (1 - th) + (f10 * (1 - tw) + f11 * tw) * th
 
 
 def _project_label_to_2d(label_3d: torch.Tensor) -> torch.Tensor:
@@ -216,23 +278,59 @@ class GpuBatchProcessor(nn.Module):
         return self._elastic
 
     def _apply_elastic_2d(
-        self, image_2d: torch.Tensor, heatmap_2d: torch.Tensor
+        self, image_2d: torch.Tensor, label_2d: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Warp image and heatmap with the same random displacement field.
+        """Warp the image and move the disc points with the same random displacement field.
 
-        Concatenating along the channel axis guarantees kornia samples one
-        displacement field per batch item and applies it to both tensors in a
-        single call — no replay plumbing needed.
+        The heatmap is NOT warped: resampling a rendered Gaussian stretches it
+        into an ellipse. Instead the disc POINTS are moved by the field and the
+        heatmap is rendered afterwards (``build_heatmaps_2d``), so the Gaussians
+        stay circular.
+
+        Two pixel-coordinate channels (+ a ones channel) go through the same
+        kornia call as the image, which yields the sampling map ``g``: output
+        pixel ``p`` reads input location ``g(p)``. A disc at input location
+        ``q`` therefore lands at the ``p`` solving ``g(p) = q`` (see
+        ``_invert_sampling_map``). Points are rounded to the nearest pixel, so the targets keep
+        the exact shape of non-augmented ones (peak = 1). Discs pushed out of
+        the field of view are dropped.
         """
         elastic = self._ensure_elastic()
         if elastic is None:
-            return image_2d, heatmap_2d
+            return image_2d, label_2d
 
-        n_img = image_2d.size(1)
-        n_hm = heatmap_2d.size(1)
-        stacked = torch.cat([image_2d, heatmap_2d], dim=1)
-        deformed = elastic(stacked)
-        return deformed[:, :n_img], deformed[:, n_img : n_img + n_hm]
+        B, n_img, H, W = image_2d.shape
+        device = image_2d.device
+        yy, xx = torch.meshgrid(
+            torch.arange(H, device=device, dtype=image_2d.dtype),
+            torch.arange(W, device=device, dtype=image_2d.dtype),
+            indexing="ij",
+        )
+        coords = torch.stack([yy, xx, torch.ones_like(yy)]).expand(B, 3, H, W)
+        deformed = elastic(torch.cat([image_2d, coords], dim=1))
+        image_out = deformed[:, :n_img]
+        # Bilinear sampling near a zero-padded border scales every channel by
+        # the in-bounds weight; dividing by the ones channel undoes it.
+        weight = deformed[:, n_img + 2 : n_img + 3]
+        src = deformed[:, n_img : n_img + 2] / weight.clamp_min(1e-6)  # (B, 2, H, W)
+
+        label_out = torch.zeros_like(label_2d)
+        b, h, w = label_2d[:, 0].nonzero(as_tuple=True)
+        if b.numel() == 0:
+            return image_out, label_out
+        values = label_2d[b, 0, h, w]
+        q = torch.stack([h, w], dim=1).to(src.dtype)  # (N, 2) input positions
+        p = _invert_sampling_map(src, b, q)
+        p_round = p.round().long()
+        keep = (
+            (p_round[:, 0] >= 0) & (p_round[:, 0] < H)
+            & (p_round[:, 1] >= 0) & (p_round[:, 1] < W)
+        )
+        b, p_round, values = b[keep], p_round[keep], values[keep]
+        keep = weight[b, 0, p_round[:, 0], p_round[:, 1]] > 0.5  # landed inside the warped image
+        b, p_round, values = b[keep], p_round[keep], values[keep]
+        label_out[b, 0, p_round[:, 0], p_round[:, 1]] = values
+        return image_out, label_out
 
     def _augment_3d(
         self, image: torch.Tensor, seg: torch.Tensor
@@ -299,13 +397,13 @@ class GpuBatchProcessor(nn.Module):
             return image_2d, None, None, seg_2d
 
         label_2d = _project_label_to_2d(label_3d)
+        if apply_augmentation:
+            # Warp points, not the rendered heatmap, so the Gaussians stay circular.
+            image_2d, label_2d = self._apply_elastic_2d(image_2d, label_2d)
         heatmap_2d = build_heatmaps_2d(
             label_2d,
             sigma=self.heatmap_sigma,
             radius=self.heatmap_radius,
         )
-
-        if apply_augmentation:
-            image_2d, heatmap_2d = self._apply_elastic_2d(image_2d, heatmap_2d)
 
         return image_2d, heatmap_2d, label_2d, seg_2d
