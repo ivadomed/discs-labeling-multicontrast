@@ -36,7 +36,7 @@
     "prefetch_factor": 4,
     "use_amp": true,
 
-    "num_epochs": 200,
+    "num_epochs": 500,
     "num_iterations_per_epoch": 250,
     "num_val_iterations_per_epoch": 50,
     "oversample_foreground_percent": 0.33,
