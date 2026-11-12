@@ -41,8 +41,8 @@ import torch
 
 logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 
-from .dataset import _z_score_normalize
-from .gpu_artifacts import (
+from discslabel.dataset import _z_score_normalize
+from discslabel.gpu_artifacts import (
     ARTIFACTS,
     RandomLowResAxisGPU,
     _parse_artifacts,
@@ -74,7 +74,7 @@ def _load_inputs(args) -> List[Tuple[str, np.ndarray, np.ndarray, Tuple[float, f
             out.append((_stem(entry["image"]), _z_score_normalize(data), np.asarray(img.affine), spacing))
         return out
 
-    from .pipeline_2d.inference import _discover_inputs, _parse_resolution, _preprocess_image
+    from discslabel.pipeline_2d.inference import _discover_inputs, _parse_resolution, _preprocess_image
 
     orientation, resolution = "RPI", (1.0, 1.0, 1.0)
     if args.config:

@@ -54,7 +54,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from . import (
+from discslabel import (
     NUM_SEG_CHANNELS,
     SEG_CH_CANAL,
     SEG_CH_CORD,
@@ -264,7 +264,7 @@ def _image_to_float16(image: np.ndarray) -> np.ndarray:
     scale, so this only costs float16 rounding while halving the bytes read
     from the cache and moved to the GPU.
     """
-    from .cache import IMAGE_SCALE_TARGET
+    from discslabel.cache import IMAGE_SCALE_TARGET
 
     max_abs = float(np.abs(image).max()) if image.size else 0.0
     if max_abs > 0:
@@ -395,7 +395,7 @@ class DiscVolumeDataset(Dataset):
         self.cache_root = cache_root
         self._cached = [False] * len(self.entries)
         if cache_root is not None:
-            from .cache import is_cached
+            from discslabel.cache import is_cached
 
             self._cached = [
                 is_cached(cache_root, split, e, self.spine_disc_min_label) for e in self.entries
@@ -417,7 +417,7 @@ class DiscVolumeDataset(Dataset):
     def _load_case(self, index: int) -> Dict[str, object]:
         entry = self.entries[index]
         if self._cached[index]:
-            from .cache import load_case_cached
+            from discslabel.cache import load_case_cached
 
             return load_case_cached(self.cache_root, self.split, entry)
         return load_case_nifti(entry, self.spine_disc_min_label)

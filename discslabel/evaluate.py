@@ -46,7 +46,7 @@ from typing import Dict, List, Tuple
 import nibabel as nib
 import numpy as np
 
-from .parallel import make_executor, resolve_num_workers
+from discslabel.parallel import make_executor, resolve_num_workers
 
 
 NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")

@@ -32,11 +32,11 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import tqdm
 
-from .dataset import _load_nifti, _z_score_normalize
-from .decoding import extract_candidates, label_discs
-from .evaluate import _aggregate, _extract_disc_voxels, compare_discs, f1_at_tolerance
-from .parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers, submit
-from .skeleton import (
+from discslabel.dataset import _load_nifti, _z_score_normalize
+from discslabel.decoding import extract_candidates, label_discs
+from discslabel.evaluate import _aggregate, _extract_disc_voxels, compare_discs, f1_at_tolerance
+from discslabel.parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers, submit
+from discslabel.skeleton import (
     SKELETON_FILE,
     SkeletonModel,
     affine_spacing,
@@ -148,7 +148,7 @@ def _load_volume_norm(entry: dict, cache_root: Optional[str], split: str, cached
     the scale, so only float16 rounding differs from the NIfTI path.
     """
     if cached:
-        from .cache import case_paths
+        from discslabel.cache import case_paths
 
         image = np.load(case_paths(cache_root, split, entry)["image"]).astype(np.float32)
     else:
@@ -195,7 +195,7 @@ def preload_cases(
     the volume at each call (fast when it is in the ``.npy`` cache).
     ``reduce_fn`` must be picklable when ``num_workers > 0``.
     """
-    from .cache import is_cached
+    from discslabel.cache import is_cached
 
     with open(manifest_path) as f:
         entries = [e for e in json.load(f)[split] if e.get("label")]

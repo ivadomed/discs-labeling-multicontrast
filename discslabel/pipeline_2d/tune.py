@@ -18,16 +18,16 @@ import os
 
 import torch
 
-from ..postprocessing import tune
-from ..training import load_inference_weights
-from .model import load_model
-from .predictor import (
+from discslabel.postprocessing import tune
+from discslabel.training import load_inference_weights
+from discslabel.pipeline_2d.model import load_model
+from discslabel.pipeline_2d.predictor import (
     SKELETON_PROJECTION,
     labeled_to_voxels,
     predict_volume_heatmap,
     slab_num_slices,
 )
-from .train import _load_config, _resolve_batch_size
+from discslabel.pipeline_2d.train import _load_config, _resolve_batch_size
 
 
 def main() -> None:

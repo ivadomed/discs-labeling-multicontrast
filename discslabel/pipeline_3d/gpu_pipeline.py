@@ -29,8 +29,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .. import LANDMARK_CHANNEL_LABELS
-from ..gpu_artifacts import build_image_augmentations
+from discslabel import LANDMARK_CHANNEL_LABELS
+from discslabel.gpu_artifacts import build_image_augmentations
 
 
 def _resolve_aug_config(name: str) -> str:

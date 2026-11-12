@@ -39,9 +39,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .. import LANDMARK_CHANNEL_LABELS
-from ..gpu_artifacts import build_image_augmentations
-from .predictor import INPUT_MODES, slab_indices
+from discslabel import LANDMARK_CHANNEL_LABELS
+from discslabel.gpu_artifacts import build_image_augmentations
+from discslabel.pipeline_2d.predictor import INPUT_MODES, slab_indices
 
 
 def _resolve_aug_config(name: str) -> str:

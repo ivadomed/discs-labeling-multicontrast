@@ -53,28 +53,28 @@ import tqdm
 
 logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 
-from ..dataset import _z_score_normalize
-from ..decoding import _choose_anchor, extract_candidates, label_discs
-from ..parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers
-from ..postprocessing import resolve_postprocessing, resolve_skeleton
-from ..skeleton import (
+from discslabel.dataset import _z_score_normalize
+from discslabel.decoding import _choose_anchor, extract_candidates, label_discs
+from discslabel.parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers
+from discslabel.postprocessing import resolve_postprocessing, resolve_skeleton
+from discslabel.skeleton import (
     SKELETON_MODES,
     affine_spacing,
     decode_with_skeleton,
     qc_row as _qc_row,
     write_qc_summary as _write_qc_summary,
 )
-from ..training import load_inference_weights
-from .model import load_model
-from .predictor import INPUT_MODES, SKELETON_PROJECTION, predict_volume_heatmap, slab_num_slices
-from .train import (
+from discslabel.training import load_inference_weights
+from discslabel.pipeline_2d.model import load_model
+from discslabel.pipeline_2d.predictor import INPUT_MODES, SKELETON_PROJECTION, predict_volume_heatmap, slab_num_slices
+from discslabel.pipeline_2d.train import (
     _display_slice,
     _intensity_window,
     _load_config,
     _resolve_batch_size,
 )
-from ..utils.image import Image, resample_nib
-from ..utils.io import check_and_make_dir
+from discslabel.utils.image import Image, resample_nib
+from discslabel.utils.io import check_and_make_dir
 
 
 NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")

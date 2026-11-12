@@ -99,7 +99,7 @@ def is_cached(cache_root: str, split: str, entry: dict, spine_disc_min_label: in
 
 def _build_case(job: Tuple[str, str, dict, int]) -> int:
     """Worker job: write the cache files of one case; returns bytes written."""
-    from .dataset import load_case_nifti
+    from discslabel.dataset import load_case_nifti
 
     cache_root, split, entry, spine_disc_min_label = job
     paths = case_paths(cache_root, split, entry)
@@ -137,7 +137,7 @@ def build_cache(
     num_workers: int = 0,
 ) -> None:
     """Cache every labelled entry of ``splits`` that is missing or stale."""
-    from .parallel import imap_ordered, make_executor
+    from discslabel.parallel import imap_ordered, make_executor
 
     with open(manifest_path) as f:
         manifest = json.load(f)

@@ -9,7 +9,7 @@ import numpy as np
 from skimage import draw as sk_draw
 from skimage import io as sk_io
 
-from .. import HEATMAP_CHANNELS, NUM_CLASSES
+from discslabel import HEATMAP_CHANNELS, NUM_CLASSES
 
 
 def heatmap_argmax(heatmap: np.ndarray) -> Tuple[float, float, float]:

@@ -64,23 +64,23 @@ import torch
 import tqdm
 from torch.utils.data import DataLoader
 
-from .. import HEATMAP_CHANNELS
-from ..cache import build_cache, resolve_cache_root
-from ..dataset import DiscVolumeDataset, batch_to_device
-from .gpu_pipeline import GpuBatchProcessor
-from ..losses import DeepSupervisionLoss, load_loss
-from .model import load_model
-from ..decoding import predict_heatmap
-from ..parallel import resolve_num_workers
-from ..postprocessing import (
+from discslabel import HEATMAP_CHANNELS
+from discslabel.cache import build_cache, resolve_cache_root
+from discslabel.dataset import DiscVolumeDataset, batch_to_device
+from discslabel.pipeline_2d.gpu_pipeline import GpuBatchProcessor
+from discslabel.losses import DeepSupervisionLoss, load_loss
+from discslabel.pipeline_2d.model import load_model
+from discslabel.decoding import predict_heatmap
+from discslabel.parallel import resolve_num_workers
+from discslabel.postprocessing import (
     DEFAULT_TOLERANCE_MM,
     PreloadedCase,
     collect_preloaded_cases,
     preload_cases,
     score_cases,
 )
-from .predictor import labeled_to_voxels, model_input, slab_num_slices
-from ..training import (
+from discslabel.pipeline_2d.predictor import labeled_to_voxels, model_input, slab_num_slices
+from discslabel.training import (
     EmaTracker,
     ForegroundBatchSampler,
     PolyLRScheduler,
@@ -88,7 +88,7 @@ from ..training import (
     resume_training_state,
     save_training_state,
 )
-from ..utils.io import check_and_make_dir
+from discslabel.utils.io import check_and_make_dir
 
 
 GRAD_CLIP_NORM = 12.0

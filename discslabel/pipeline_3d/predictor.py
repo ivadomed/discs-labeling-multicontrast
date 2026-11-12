@@ -11,7 +11,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import torch
 
-from ..decoding import extract_candidates, predict_heatmap
+from discslabel.decoding import extract_candidates, predict_heatmap
 
 # Which skeleton projection matches the decoded coordinates (see discslabel.skeleton).
 SKELETON_PROJECTION = "3d"

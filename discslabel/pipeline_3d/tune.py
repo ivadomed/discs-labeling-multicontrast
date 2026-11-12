@@ -17,11 +17,11 @@ import os
 
 import torch
 
-from ..postprocessing import tune
-from ..training import load_inference_weights
-from .model import load_model
-from .predictor import SKELETON_PROJECTION, labeled_to_voxels, predict_volume_heatmap
-from .train import _load_config, _resolve_batch_size
+from discslabel.postprocessing import tune
+from discslabel.training import load_inference_weights
+from discslabel.pipeline_3d.model import load_model
+from discslabel.pipeline_3d.predictor import SKELETON_PROJECTION, labeled_to_voxels, predict_volume_heatmap
+from discslabel.pipeline_3d.train import _load_config, _resolve_batch_size
 
 
 def main() -> None:

@@ -54,9 +54,9 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import tqdm
 
-from .decoding import MAX_DISC_LABEL, MIN_DISC_LABEL, decode_chain
-from .evaluate import _extract_disc_voxels
-from .parallel import imap_ordered, make_executor, resolve_num_workers
+from discslabel.decoding import MAX_DISC_LABEL, MIN_DISC_LABEL, decode_chain
+from discslabel.evaluate import _extract_disc_voxels
+from discslabel.parallel import imap_ordered, make_executor, resolve_num_workers
 
 
 SKELETON_FILE = "skeleton.json"

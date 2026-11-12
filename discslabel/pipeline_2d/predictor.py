@@ -11,7 +11,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import torch
 
-from ..decoding import extract_candidates, predict_heatmap
+from discslabel.decoding import extract_candidates, predict_heatmap
 
 # Which skeleton projection matches the decoded coordinates (see discslabel.skeleton).
 SKELETON_PROJECTION = "sagittal"
@@ -32,7 +32,7 @@ def slab_indices(D: int, d_mid: int, n_slices: int) -> List[int]:
 
 def slab_num_slices(cfg: dict) -> int:
     """Number of R-L slices averaged in "avg" mode: ``slab_thickness_mm`` / R-L spacing."""
-    from ..gpu_artifacts import parse_spacing
+    from discslabel.gpu_artifacts import parse_spacing
 
     spacing_rl = parse_spacing(cfg.get("resolution", "1x1x1"))[0]
     thickness = float(cfg.get("slab_thickness_mm", 10.0))

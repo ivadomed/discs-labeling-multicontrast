@@ -27,7 +27,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import torch
 
-from . import HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS, NUM_CLASSES
+from discslabel import HEATMAP_CHANNELS, LANDMARK_CHANNEL_LABELS, NUM_CLASSES
 
 
 # C2C3 (3) > L5S1 (25) > C7T1 (8) > T12L1 (20).

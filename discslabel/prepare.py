@@ -20,8 +20,8 @@ import os
 import shutil
 from typing import Dict, List
 
-from . import SEG_KEYS
-from .utils.io import check_and_make_dir
+from discslabel import SEG_KEYS
+from discslabel.utils.io import check_and_make_dir
 
 
 _SPLITS = ("train", "valid", "test")

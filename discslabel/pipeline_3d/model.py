@@ -9,7 +9,7 @@ be divisible by 8.
 import torch
 import torch.nn as nn
 
-from .. import NUM_CLASSES
+from discslabel import NUM_CLASSES
 
 
 class LUConv(nn.Module):
