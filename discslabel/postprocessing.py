@@ -13,8 +13,9 @@
   scored in parallel across the worker pool.
 * When ``skeleton.json`` (``discslabel_skeleton``) sits in the output folder,
   ``tune`` also scores the skeleton refinement (``discslabel.skeleton``) with
-  the best decoding parameters for every ``tune_skeleton_z_thresholds`` value
-  and stores the best one (and whether it beats plain decoding) under the
+  the best decoding parameters for every ``tune_skeleton_z_thresholds`` x
+  ``tune_skeleton_soft_floors`` pair (``null`` floor = soft matching off) and
+  stores the best one (and whether it beats plain decoding) under the
   ``"skeleton"`` key of ``postprocessing.json``.
 
 Scores use ``f1_at_tolerance``: a disc is a hit only when its label is right
@@ -33,7 +34,7 @@ import numpy as np
 import tqdm
 
 from discslabel.dataset import _load_nifti, _z_score_normalize
-from discslabel.decoding import extract_candidates, label_discs
+from discslabel.decoding import extract_candidates, label_discs, soft_settings
 from discslabel.evaluate import _aggregate, _extract_disc_voxels, compare_discs, f1_at_tolerance
 from discslabel.parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers, submit
 from discslabel.skeleton import (
@@ -51,6 +52,8 @@ DEFAULT_PEAK_THRESHOLDS: Tuple[float, ...] = tuple(round(0.05 * i, 2) for i in r
 DEFAULT_MIN_PEAK_DISTANCES: Tuple[float, ...] = (4.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0)
 DEFAULT_TOLERANCE_MM = 10.0
 DEFAULT_SKELETON_Z_THRESHOLDS: Tuple[float, ...] = (2.0, 2.5, 3.0, 3.5, 4.0, 5.0)
+# ``None`` = soft matching off (plain thresholded chain), listed first so it wins ties.
+DEFAULT_SKELETON_SOFT_FLOORS: Tuple[Optional[float], ...] = (None, 0.05, 0.1, 0.15, 0.2)
 
 
 @dataclass
@@ -86,11 +89,13 @@ def collect_cases(
     desc: str = "validation",
     executor=None,
     num_workers: int = 0,
+    soft: Optional[dict] = None,
 ) -> List[ValidationCase]:
     """Run ``predict_fn`` on every labelled image of ``split``.
 
     ``predict_fn(volume_norm)`` returns the stitched heatmap; candidates are
-    then extracted with ``extract_candidates(heatmap, min_threshold)``.
+    then extracted with ``extract_candidates(heatmap, min_threshold, soft)``
+    (``soft``: ``decoding.soft_settings``, for the skeleton soft matching).
 
     Images in the manifest are already reoriented + resampled, so only the
     whole-volume z-score of inference is applied. The ground-truth label
@@ -114,7 +119,7 @@ def collect_cases(
         desc=desc,
     ):
         heatmap = predict_fn(volume)
-        extractor.submit(extract_candidates, heatmap, min_threshold)
+        extractor.submit(extract_candidates, heatmap, min_threshold, soft)
         meta.append((stem, tuple(int(s) for s in volume.shape), gt_discs, affine))
         del volume, heatmap
 
@@ -321,10 +326,11 @@ def _skeleton_row(
     skeleton: SkeletonModel,
     skeleton_kwargs: dict,
 ) -> dict:
-    """Worker job: score the skeleton correction at one ``z_threshold``."""
+    """Worker job: score the skeleton correction at one ``(z_threshold, soft_floor)``."""
     s = score_cases(cases, to_voxels, thr, dist, tolerance_mm, skeleton, skeleton_kwargs)
     return {
         "z_threshold": skeleton_kwargs["z_threshold"],
+        "soft_floor": skeleton_kwargs["soft_floor"],
         "f1_at_tolerance": s["f1_at_tolerance"],
         "recall": s["recall"],
         "precision": s["precision"],
@@ -395,6 +401,12 @@ def tune(
     default_thr = float(cfg.get("peak_threshold", 0.3))
     default_dist = float(cfg.get("inference_min_peak_distance", 10.0))
 
+    skeleton_path = skeleton_path or os.path.join(out_dir, SKELETON_FILE)
+    tune_skeleton = projection is not None and os.path.isfile(skeleton_path)
+    # Soft candidates are extracted once at the lowest floor of the grid.
+    soft_floors = [f for f in _skeleton_soft_floors(cfg) if f is not None] if tune_skeleton else []
+    soft = soft_settings(cfg, min(soft_floors)) if soft_floors else None
+
     executor = make_executor(num_workers)
     try:
         cases = collect_cases(
@@ -405,6 +417,7 @@ def tune(
             desc=f"predict {split}",
             executor=executor,
             num_workers=num_workers,
+            soft=soft,
         )
         if not cases:
             raise RuntimeError(f"No labelled images in split '{split}' of {manifest_path}.")
@@ -412,8 +425,7 @@ def tune(
             cases, to_voxels, thresholds, distances, tolerance, executor=executor
         )
         skeleton_result = None
-        skeleton_path = skeleton_path or os.path.join(out_dir, SKELETON_FILE)
-        if projection is not None and os.path.isfile(skeleton_path):
+        if tune_skeleton:
             skeleton_result = _tune_skeleton(
                 cfg, cases, to_voxels, best, tolerance,
                 load_skeleton(skeleton_path, projection), skeleton_path, executor,
@@ -460,12 +472,19 @@ def tune(
     if skeleton_result is not None:
         print(
             f"[tune] skeleton z_threshold={skeleton_result['z_threshold']} "
+            f"soft_floor={skeleton_result['soft_floor']} "
             f"F1@{tolerance:g}mm={skeleton_result['f1_at_tolerance']:.4f} "
             f"(without skeleton: {result['f1_at_tolerance']:.4f}"
             f"{'' if skeleton_result['improves'] else ' -> skeleton does NOT help on ' + split})"
         )
     print(f"[tune] wrote {os.path.join(out_dir, POSTPROCESSING_FILE)} + postprocessing_grid.csv")
     return result
+
+
+def _skeleton_soft_floors(cfg: dict) -> List[Optional[float]]:
+    """Soft-matching floors of the skeleton grid (``None`` = off)."""
+    floors = cfg.get("tune_skeleton_soft_floors", DEFAULT_SKELETON_SOFT_FLOORS)
+    return [None if f is None else float(f) for f in floors]
 
 
 def _tune_skeleton(
@@ -478,7 +497,7 @@ def _tune_skeleton(
     skeleton_path: str,
     executor,
 ) -> dict:
-    """Score the skeleton correction for each ``z_threshold`` at the best decoding parameters."""
+    """Score the skeleton correction for each ``(soft_floor, z_threshold)`` at the best decoding parameters."""
     z_values = [
         float(z) for z in cfg.get("tune_skeleton_z_thresholds", DEFAULT_SKELETON_Z_THRESHOLDS)
     ]
@@ -487,8 +506,9 @@ def _tune_skeleton(
         submit(
             executor, _skeleton_row, list(cases), to_voxels,
             best["peak_threshold"], best["min_peak_distance"], tolerance,
-            skeleton, {**base, "z_threshold": z},
+            skeleton, {**base, "z_threshold": z, "soft_floor": floor},
         )
+        for floor in _skeleton_soft_floors(cfg)
         for z in z_values
     ]
     rows = [f.result() for f in tqdm.tqdm(futures, desc="skeleton search")]
@@ -497,6 +517,7 @@ def _tune_skeleton(
         "path": os.path.abspath(skeleton_path),
         "projection": skeleton.projection,
         "z_threshold": top["z_threshold"],
+        "soft_floor": top["soft_floor"],
         "f1_at_tolerance": top["f1_at_tolerance"],
         "recall": top["recall"],
         "precision": top["precision"],
@@ -510,8 +531,8 @@ def resolve_skeleton(cfg: dict, weights_path: str, mode: str, skeleton_path: Opt
     """``(SkeletonModel, refine kwargs, source)`` for inference, or ``(None, None, None)`` when off.
 
     ``skeleton_path`` defaults to ``skeleton.json`` next to the weights; the
-    ``z_threshold`` tuned by ``discslabel_tune`` (``postprocessing.json``)
-    wins over the config value.
+    ``z_threshold`` / ``soft_floor`` tuned by ``discslabel_tune``
+    (``postprocessing.json``) win over the config values.
     """
     if mode == "off":
         return None, None, None

@@ -32,7 +32,8 @@ Optional skeleton step (``--skeleton``, needs ``skeleton.json`` from
 distances on the mid-sagittal plane are checked against the training
 distribution (``discslabel.skeleton``). ``flag`` only reports problems;
 ``correct`` also removes off-chain peaks, fixes the labels and fills missed
-discs. Each image then gets a ``<name>_discs_qc.json`` report and the run a
+discs; with ``skeleton_soft_floor`` it can also keep a weak peak (below
+``peak_threshold``) where the skeleton expects a disc. Each image then gets a ``<name>_discs_qc.json`` report and the run a
 ``qc_summary.csv``.
 
 No label or seg files are required. No augmentation is applied.
@@ -54,7 +55,7 @@ import tqdm
 logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 
 from discslabel.dataset import _z_score_normalize
-from discslabel.decoding import _choose_anchor, extract_candidates, label_discs
+from discslabel.decoding import _choose_anchor, extract_candidates, label_discs, soft_settings
 from discslabel.parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers
 from discslabel.postprocessing import resolve_postprocessing, resolve_skeleton
 from discslabel.skeleton import (
@@ -318,6 +319,7 @@ def _finalize_one(
     skeleton_kwargs: Optional[dict] = None,
     skeleton_mode: str = "off",
     plain_out_dir: Optional[str] = None,
+    soft: Optional[dict] = None,
 ) -> Tuple[Optional[str], Optional[dict]]:
     """Worker job: decode the stitched heatmap and write the NIfTI + PNG.
 
@@ -328,7 +330,7 @@ def _finalize_one(
     prints above its progress bar, and the QC summary row (``None`` when the
     skeleton step is off).
     """
-    candidates = extract_candidates(heatmap, peak_threshold)
+    candidates = extract_candidates(heatmap, peak_threshold, soft)
     warning = None
     if _choose_anchor(candidates["anchors"], peak_threshold) is None:
         warning = (
@@ -487,6 +489,10 @@ def predict(
             raise ValueError("--plain-out-dir needs --skeleton flag|correct.")
         check_and_make_dir(plain_out_dir)
         print(f"[inference] predictions without skeleton also written to {plain_out_dir}")
+    # Soft matching (skeleton "correct" only): also extract the weak disc candidates.
+    soft = None
+    if skeleton is not None and skeleton_mode == "correct":
+        soft = soft_settings(cfg, skeleton_kwargs["soft_floor"])
     if skeleton is not None:
         print(f"[inference] skeleton={skeleton_mode} {skeleton_kwargs} (from {sk_source})")
 
@@ -525,6 +531,7 @@ def predict(
                 skeleton_kwargs,
                 skeleton_mode,
                 plain_out_dir,
+                soft,
             )
             del volume, heatmap, item
             for warning, qc_row in writer.pop_ready():

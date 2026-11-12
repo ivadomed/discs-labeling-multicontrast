@@ -15,6 +15,16 @@ without re-running the model:
        threshold, Euclidean NMS, anchor choice and superior → inferior
        labelling.
 
+Soft candidates (optional, used by the skeleton correction): with ``soft``
+settings, ``extract_candidates`` also returns ``"soft_discs"``, the local
+maxima of a *local-mass* score map down to a low floor. The score is the
+all-discs channel filtered with the training target Gaussian and normalised
+so a perfect target blob scores 1: a blob that falls between voxels or is
+split into close sub-peaks keeps a high score although its maximum is low.
+``decode_chain_soft`` turns them into a chain with a confidence weight per
+peak, so the skeleton can keep a weak peak where a disc is expected instead
+of losing it to the hard threshold.
+
 Coordinates are array indices of the heatmap's spatial axes: ``(d, h, w)`` in
 3D, ``(h, w)`` for the 2D mid-sagittal slice. In both cases the LAST axis is
 I-S (RPI orientation, higher = superior).
@@ -40,6 +50,11 @@ MAX_DISC_LABEL = 25
 # Candidate peaks are at least this many voxels apart (Chebyshev). Keeps the
 # candidate list short; the real spacing is enforced by ``min_peak_distance``.
 CANDIDATE_MIN_DISTANCE = 2
+
+# Soft candidates: default floor of the local-mass score, and the most kept
+# per image (strongest first) so a noisy heatmap cannot blow up the decoding.
+DEFAULT_SOFT_FLOOR = 0.1
+SOFT_MAX_CANDIDATES = 100
 
 
 def gaussian_importance_map(
@@ -141,10 +156,73 @@ def predict_heatmap(
     return heatmap[(slice(None),) + crop].cpu().numpy()
 
 
-def extract_candidates(heatmap: np.ndarray, min_threshold: float) -> Dict[str, object]:
+def soft_settings(cfg: dict, floor: Optional[float]) -> Optional[dict]:
+    """``soft`` argument of ``extract_candidates`` (``None`` = no soft candidates).
+
+    The score filter matches the training target (``heatmap_sigma`` /
+    ``heatmap_radius``); ``floor`` is the lowest score kept.
+    """
+    if floor is None:
+        return None
+    return {
+        "sigma": float(cfg["heatmap_sigma"]),
+        "radius": int(cfg["heatmap_radius"]),
+        "floor": float(floor),
+    }
+
+
+def _soft_norm(ndim: int, sigma: float, radius: int) -> float:
+    """Filter response at the centre of a perfect target blob (peak 1, truncated at ``radius``)."""
+    from scipy.ndimage import gaussian_filter
+
+    axes = np.meshgrid(*([np.arange(-2 * radius, 2 * radius + 1)] * ndim), indexing="ij")
+    blob = np.exp(-sum(a.astype(np.float64) ** 2 for a in axes) / (2.0 * sigma * sigma))
+    blob[np.max(np.abs(np.stack(axes)), axis=0) > radius] = 0.0
+    out = gaussian_filter(blob, sigma, mode="constant", truncate=radius / sigma)
+    return float(out[(2 * radius,) * ndim])
+
+
+def soft_disc_candidates(
+    disc_map: np.ndarray, sigma: float, radius: int, floor: float
+) -> List[Tuple[float, ...]]:
+    """Local maxima ``(*coords, score)`` of the local-mass score map above ``floor``.
+
+    Score = ``disc_map`` filtered with the target Gaussian, divided by the
+    response of a perfect target blob (so that one scores 1). Only the
+    bounding box of the voxels that can contribute is filtered, which keeps
+    the 3D case cheap.
+    """
+    from scipy.ndimage import gaussian_filter
+    from skimage.feature import peak_local_max
+
+    norm = _soft_norm(disc_map.ndim, sigma, radius)
+    # The filter is an average, so score <= (local max) / norm: voxels below
+    # floor * norm cannot produce a candidate on their own.
+    active = np.nonzero(disc_map > floor * norm * 0.5)
+    if active[0].size == 0:
+        return []
+    pad = 2 * radius  # a candidate lies within ``radius`` of an active voxel, plus its own support
+    lo = [max(0, int(a.min()) - pad) for a in active]
+    hi = [min(n, int(a.max()) + pad + 1) for a, n in zip(active, disc_map.shape)]
+    crop = disc_map[tuple(slice(a, b) for a, b in zip(lo, hi))].astype(np.float32)
+    score = gaussian_filter(crop, sigma, mode="constant", truncate=radius / sigma) / norm
+    coords = peak_local_max(
+        score, min_distance=CANDIDATE_MIN_DISTANCE, threshold_abs=floor, exclude_border=False
+    )
+    peaks = [
+        tuple(float(c + o) for c, o in zip(pt, lo)) + (float(score[tuple(pt)]),) for pt in coords
+    ]
+    return sorted(peaks, key=lambda p: -p[-1])[:SOFT_MAX_CANDIDATES]
+
+
+def extract_candidates(
+    heatmap: np.ndarray, min_threshold: float, soft: Optional[dict] = None
+) -> Dict[str, object]:
     """Stage 1 of decoding: raw peaks, independent of the final threshold.
 
-    Returns ``{"discs": [(*coords, value), ...], "anchors": {name: (*coords, value)}}``.
+    Returns ``{"discs": [(*coords, value), ...], "anchors": {name: (*coords, value)}}``,
+    plus ``"soft_discs": [(*coords, score), ...]`` when ``soft`` (see
+    ``soft_settings``) is given.
     """
     from skimage.feature import peak_local_max
 
@@ -166,7 +244,12 @@ def extract_candidates(heatmap: np.ndarray, min_threshold: float) -> Dict[str, o
         peak = float(channel.max())
         where = np.nonzero(channel == peak)
         anchors[HEATMAP_CHANNELS[ch]] = tuple(float(np.mean(w)) for w in where) + (peak,)
-    return {"discs": discs, "anchors": anchors}
+    out: Dict[str, object] = {"discs": discs, "anchors": anchors}
+    if soft is not None:
+        out["soft_discs"] = soft_disc_candidates(
+            disc_map, soft["sigma"], soft["radius"], soft["floor"]
+        )
+    return out
 
 
 def _merge_peaks(
@@ -248,6 +331,38 @@ def decode_chain(
     anchor = np.asarray(anchor_coords)
     anchor_idx = int(np.argmin([np.sum((np.asarray(p[:-1]) - anchor) ** 2) for p in chain]))
     return chain, int(anchor_label), anchor_idx
+
+
+def decode_chain_soft(
+    candidates: Dict[str, object],
+    peak_threshold: float,
+    min_peak_distance: float,
+    soft_floor: float,
+) -> Optional[Tuple[List[Tuple[float, ...]], int, int, np.ndarray]]:
+    """``decode_chain`` on the soft candidates, with a confidence weight per peak.
+
+    Every soft candidate scoring at least ``soft_floor`` enters the chain
+    (after the same NMS). Returns ``(chain, anchor_label, anchor_idx,
+    weights)``: ``weights[i]`` rises linearly from 0 at ``soft_floor`` to 1 at
+    ``peak_threshold`` (1 = as trusted as a peak that passed the hard
+    threshold). The anchor peak always gets weight 1.
+    """
+    discs = [p for p in candidates["soft_discs"] if p[-1] >= soft_floor]
+    merged = _merge_peaks(discs, min_distance=min_peak_distance)
+    chosen = _choose_anchor(candidates["anchors"], peak_threshold)
+    if chosen is None or not merged:
+        return None
+    _name, anchor_label, anchor_coords = chosen
+    chain = sorted(merged, key=lambda p: (-p[-2],) + tuple(p[:-2]))
+    anchor = np.asarray(anchor_coords)
+    anchor_idx = int(np.argmin([np.sum((np.asarray(p[:-1]) - anchor) ** 2) for p in chain]))
+    scores = np.array([p[-1] for p in chain], dtype=np.float64)
+    if peak_threshold > soft_floor:
+        weights = np.clip((scores - soft_floor) / (peak_threshold - soft_floor), 0.0, 1.0)
+    else:
+        weights = np.ones_like(scores)
+    weights[anchor_idx] = 1.0
+    return chain, int(anchor_label), anchor_idx, weights
 
 
 def label_discs(

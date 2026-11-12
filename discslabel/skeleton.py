@@ -35,9 +35,25 @@ Missed discs are then placed between their kept neighbours by monotone
 interpolation along the chain, parameterised by the template position of
 each label.
 
+Soft matching (``soft_floor``, ``"correct"`` mode only)
+-------------------------------------------------------
+A disc whose heatmap blob stays just under ``peak_threshold`` never reaches
+the chain above, and can only come back as an interpolated guess. With
+``soft_floor`` the chain is built from the *soft candidates* instead
+(``decoding.soft_disc_candidates``: local-mass score, down to
+``soft_floor``) and each peak carries a confidence weight ``w`` in [0, 1]
+(0 at the floor, 1 from ``peak_threshold`` up). The fixed penalties become
+evidence-dependent: dropping a peak costs ``w * drop_penalty`` and keeping
+it costs ``(1 - w) * keep_penalty``. A confident peak behaves exactly as
+before; a weak one is kept only where the skeleton expects a disc (it is
+never worse than imputing that disc, so a weak peak in a hole wins over
+interpolation, while a weak peak past the end of the chain needs a
+substantial score). Kept weak peaks are reported as ``recovered`` and raise
+the ``weak_discs`` flag.
+
 Quality control flags are reported for each image (``no_anchor``,
 ``too_few_discs``, ``abnormal_gap``, ``abnormal_angle``, ``abnormal_scale``,
-``missed_discs``, ``outlier_discs``, ``relabeled``) so problematic
+``missed_discs``, ``outlier_discs``, ``relabeled``, ``weak_discs``) so problematic
 predictions can be reviewed.
 """
 
@@ -54,7 +70,13 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import tqdm
 
-from discslabel.decoding import MAX_DISC_LABEL, MIN_DISC_LABEL, decode_chain
+from discslabel.decoding import (
+    DEFAULT_SOFT_FLOOR,
+    MAX_DISC_LABEL,
+    MIN_DISC_LABEL,
+    decode_chain,
+    decode_chain_soft,
+)
 from discslabel.evaluate import _extract_disc_voxels
 from discslabel.parallel import imap_ordered, make_executor, resolve_num_workers
 
@@ -72,6 +94,13 @@ DEFAULT_MAX_SKIPPED = 3
 # single missed one is kept (and the gap filled) rather than dropped; above
 # 0.5 so a far-away end peak is dropped rather than explained by 2+ misses.
 MISS_TO_DROP_RATIO = 0.75
+# Soft matching: cost of keeping a zero-confidence peak relative to dropping a
+# confident one. Equal to the miss ratio, so using a weak peak where a disc
+# is expected never costs more than imputing that disc.
+KEEP_TO_DROP_RATIO = MISS_TO_DROP_RATIO
+# Soft matching: most consecutive WEAK peaks (weight < 1) that can be dropped
+# between two kept ones, on top of ``max_skipped`` confident peaks.
+SOFT_MAX_WEAK_SKIPPED = 6
 
 MIN_SAMPLES = 10
 MIN_LOG_SIGMA = 0.04
@@ -343,35 +372,58 @@ def _best_labelling(
     miss_penalty: float,
     max_missing: int,
     max_skipped: int,
+    weights: Optional[np.ndarray] = None,
 ) -> List[Tuple[int, int]]:
-    """Viterbi over ``(peak, label)``; returns the kept ``[(peak_idx, label), ...]``."""
+    """Viterbi over ``(peak, label)``; returns the kept ``[(peak_idx, label), ...]``.
+
+    ``weights`` (soft matching, see the module docstring) is the confidence
+    of each peak in [0, 1]; ``None`` = every peak fully trusted.
+    """
     n = len(pts_mm)
     lo, hi = MIN_DISC_LABEL, MAX_DISC_LABEL
     dist = np.linalg.norm(pts_mm[:, None, :] - pts_mm[None, :, :], axis=-1)
     cost = np.full((n, hi + 1), np.inf)
     back: Dict[Tuple[int, int], Optional[Tuple[int, int]]] = {}
 
+    w = np.ones(n) if weights is None else np.asarray(weights, dtype=np.float64)
+    keep_cost = KEEP_TO_DROP_RATIO * drop_penalty * (1.0 - w)
+    # dropped[k] = cost of dropping peaks 0..k-1; n_strong[k] = confident peaks among them.
+    dropped = np.concatenate([[0.0], np.cumsum(drop_penalty * w)])
+    n_strong = np.concatenate([[0], np.cumsum(w >= 1.0)])
+
     for j in range(n):
+        # Earliest previous kept peak: at most ``max_skipped`` confident and
+        # ``SOFT_MAX_WEAK_SKIPPED`` weak peaks dropped in between, never the anchor.
+        i_min = j
+        while i_min > 0:
+            i = i_min - 1
+            skipped_strong = n_strong[j] - n_strong[i + 1]
+            if (
+                i < anchor_idx < j
+                or skipped_strong > max_skipped
+                or (j - i - 1) - skipped_strong > SOFT_MAX_WEAK_SKIPPED
+            ):
+                break
+            i_min = i
         labels = [anchor_label] if j == anchor_idx else range(lo, hi + 1)
         for m in labels:
             # Start the chain here: every peak above is dropped (not the anchor).
-            best = drop_penalty * j if j <= anchor_idx else np.inf
+            best = dropped[j] if j <= anchor_idx else np.inf
             bp = None
-            for i in range(max(0, j - 1 - max_skipped), j):
-                if i < anchor_idx < j:
-                    continue
+            for i in range(i_min, j):
+                between = dropped[j] - dropped[i + 1]
                 for l in range(max(lo, m - 1 - max_missing), m):
                     c = cost[i, l]
                     if not np.isfinite(c):
                         continue
                     z = model.gap_z(dist[i, j], l, m, scale)
-                    c += drop_penalty * (j - i - 1) + miss_penalty * (m - l - 1) + 0.5 * z * z
+                    c += between + miss_penalty * (m - l - 1) + 0.5 * z * z
                     if c < best:
                         best, bp = c, (i, l)
-            cost[j, m] = best
+            cost[j, m] = best + keep_cost[j]
             back[(j, m)] = bp
 
-    total = cost + drop_penalty * (n - 1 - np.arange(n))[:, None]
+    total = cost + (dropped[n] - dropped[1:])[:, None]
     total[:anchor_idx] = np.inf
     j, m = np.unravel_index(int(np.argmin(total)), total.shape)
     path: List[Tuple[int, int]] = []
@@ -468,6 +520,7 @@ def refine_chain(
     z_threshold: float = DEFAULT_Z_THRESHOLD,
     max_missing: int = DEFAULT_MAX_MISSING,
     max_skipped: int = DEFAULT_MAX_SKIPPED,
+    weights: Optional[Sequence[float]] = None,
 ) -> Tuple[List[Tuple[float, ...]], dict]:
     """Check (and in ``"correct"`` mode repair) a decoded peak chain.
 
@@ -476,6 +529,11 @@ def refine_chain(
     chain's coordinate axes. Returns ``(labeled, report)`` where ``labeled``
     is ``[(label, *coords), ...]`` like ``label_discs`` (the uncorrected
     labelling in ``"flag"`` mode) and ``report`` holds the QC flags.
+
+    ``weights`` (from ``decoding.decode_chain_soft``) enables soft matching:
+    the confidence of each chain peak in [0, 1]. Peaks below 1 are *weak*:
+    they are ignored by the first labelling step and only enter the result
+    when the skeleton keeps them.
     """
     if mode not in ("flag", "correct"):
         raise ValueError(f"mode must be 'flag' or 'correct', got {mode!r}")
@@ -483,11 +541,15 @@ def refine_chain(
     coords = np.array([p[:-1] for p in chain], dtype=np.float64)
     pts_mm = coords * spacing
 
-    # First labelling step, identical to decoding._assign_labels.
+    w = None if weights is None else np.asarray(weights, dtype=np.float64)
+    # First labelling step, identical to decoding._assign_labels (on the
+    # confident peaks only when soft matching is on).
+    strong = range(len(chain)) if w is None else [i for i in range(len(chain)) if w[i] >= 1.0]
+    anchor_rank = list(strong).index(anchor_idx)
     initial = {
-        i: anchor_label + (i - anchor_idx)
-        for i in range(len(chain))
-        if MIN_DISC_LABEL <= anchor_label + (i - anchor_idx) <= MAX_DISC_LABEL
+        i: anchor_label + (rank - anchor_rank)
+        for rank, i in enumerate(strong)
+        if MIN_DISC_LABEL <= anchor_label + (rank - anchor_rank) <= MAX_DISC_LABEL
     }
     initial_idx = sorted(initial)
     initial_labeled = [(initial[i],) + tuple(coords[i]) for i in initial_idx]
@@ -505,7 +567,7 @@ def refine_chain(
     for _ in range(2):  # re-estimate the scale on the repaired chain
         path = _best_labelling(
             pts_mm, anchor_idx, anchor_label, model, scale,
-            drop_penalty, miss_penalty, max_missing, max_skipped,
+            drop_penalty, miss_penalty, max_missing, max_skipped, w,
         )
         new_scale = _estimate_scale(model, [l for _, l in path], pts_mm[[i for i, _ in path]])
         if new_scale is None or abs(new_scale - scale) < 1e-3 * scale:
@@ -524,12 +586,20 @@ def refine_chain(
         if i in initial and initial[i] != l
     ]
     imputed = _impute(model, [(l, coords[i]) for i, l in path])
+    recovered = [
+        {"label": l, "coords": _round(coords[i]), "score": round(float(chain[i][-1]), 3)}
+        for i, l in path
+        if w is not None and w[i] < 1.0
+    ]
     report["changes"] = {
         "applied": mode == "correct",
         "removed": removed,
         "relabeled": relabeled,
         "imputed": [{"label": l, "coords": _round(c)} for l, c in imputed],
+        "recovered": recovered,
     }
+    if recovered:
+        report["flags"].append("weak_discs")
     if imputed:
         report["flags"].append("missed_discs")
     if removed:
@@ -574,16 +644,33 @@ def decode_with_skeleton(
     z_threshold: float = DEFAULT_Z_THRESHOLD,
     max_missing: int = DEFAULT_MAX_MISSING,
     max_skipped: int = DEFAULT_MAX_SKIPPED,
+    soft_floor: Optional[float] = None,
 ) -> Tuple[List[Tuple[float, ...]], dict]:
-    """``label_discs`` followed by ``refine_chain`` (``spacing`` in mm per coordinate axis)."""
-    decoded = decode_chain(candidates, peak_threshold, min_peak_distance)
+    """``label_discs`` followed by ``refine_chain`` (``spacing`` in mm per coordinate axis).
+
+    With ``soft_floor`` (and ``"soft_discs"`` in ``candidates``, ``"correct"``
+    mode only) the chain is built from the soft candidates down to that
+    score, weighted by confidence — see the module docstring. ``"flag"`` mode
+    always reports on the plain thresholded chain, since it leaves the
+    prediction unchanged.
+    """
+    weights = None
+    if mode == "correct" and soft_floor is not None and "soft_discs" in candidates:
+        decoded = decode_chain_soft(candidates, peak_threshold, min_peak_distance, soft_floor)
+        if decoded is not None:
+            *decoded, weights = decoded
+    else:
+        decoded = decode_chain(candidates, peak_threshold, min_peak_distance)
     if decoded is None:
         return [], {"mode": mode, "flags": ["no_anchor"], "status": "flagged"}
     chain, anchor_label, anchor_idx = decoded
-    return refine_chain(
+    labeled, report = refine_chain(
         chain, anchor_label, anchor_idx, spacing, model,
         mode=mode, z_threshold=z_threshold, max_missing=max_missing, max_skipped=max_skipped,
+        weights=weights,
     )
+    report["soft_floor"] = soft_floor if weights is not None else None
+    return labeled, report
 
 
 def affine_spacing(affine: np.ndarray, projection: str) -> np.ndarray:
@@ -593,11 +680,18 @@ def affine_spacing(affine: np.ndarray, projection: str) -> np.ndarray:
 
 
 def skeleton_settings(cfg: dict, tuned: Optional[dict] = None) -> dict:
-    """Refinement keyword arguments: tuned ``z_threshold`` first, then the config."""
+    """Refinement keyword arguments: tuned ``z_threshold`` / ``soft_floor`` first, then the config.
+
+    ``soft_floor`` is ``None`` when soft matching is off (``skeleton_soft_floor: null``).
+    """
     z = cfg.get("skeleton_z_threshold", DEFAULT_Z_THRESHOLD)
     if tuned and tuned.get("z_threshold") is not None:
         z = tuned["z_threshold"]
+    soft_floor = cfg.get("skeleton_soft_floor", DEFAULT_SOFT_FLOOR)
+    if tuned and "soft_floor" in tuned:
+        soft_floor = tuned["soft_floor"]
     return {
+        "soft_floor": None if soft_floor is None else float(soft_floor),
         "z_threshold": float(z),
         "max_missing": int(cfg.get("skeleton_max_missing", DEFAULT_MAX_MISSING)),
         "max_skipped": int(cfg.get("skeleton_max_skipped", DEFAULT_MAX_SKIPPED)),
@@ -605,7 +699,7 @@ def skeleton_settings(cfg: dict, tuned: Optional[dict] = None) -> dict:
 
 
 QC_FIELDS = (
-    "image", "status", "flags", "n_discs", "n_imputed", "n_removed",
+    "image", "status", "flags", "n_discs", "n_imputed", "n_recovered", "n_removed",
     "n_relabeled", "max_abs_gap_z", "scale",
 )
 
@@ -620,6 +714,7 @@ def qc_row(report: dict) -> dict:
         "flags": ";".join(report["flags"]),
         "n_discs": report["n_discs"],
         "n_imputed": len(changes.get("imputed", [])),
+        "n_recovered": len(changes.get("recovered", [])),
         "n_removed": len(changes.get("removed", [])),
         "n_relabeled": len(changes.get("relabeled", [])),
         "max_abs_gap_z": round(max(gap_z), 2) if gap_z else "",

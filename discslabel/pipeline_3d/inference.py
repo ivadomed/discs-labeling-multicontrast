@@ -49,7 +49,7 @@ import tqdm
 logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 
 from discslabel.dataset import _z_score_normalize
-from discslabel.decoding import _choose_anchor, extract_candidates, label_discs
+from discslabel.decoding import _choose_anchor, extract_candidates, label_discs, soft_settings
 from discslabel.parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers
 from discslabel.postprocessing import resolve_postprocessing, resolve_skeleton
 from discslabel.skeleton import (
@@ -296,6 +296,7 @@ def _finalize_one(
     skeleton_kwargs: Optional[dict] = None,
     skeleton_mode: str = "off",
     plain_out_dir: Optional[str] = None,
+    soft: Optional[dict] = None,
 ) -> Tuple[Optional[str], Optional[dict]]:
     """Worker job: decode the stitched heatmap and write the NIfTI + PNG.
 
@@ -306,7 +307,7 @@ def _finalize_one(
     prints above its progress bar, and the QC summary row (``None`` when the
     skeleton step is off).
     """
-    candidates = extract_candidates(heatmap, peak_threshold)
+    candidates = extract_candidates(heatmap, peak_threshold, soft)
     # (C, D, H, W) → (C, H, W): max along R-L so off-midline peaks stay visible.
     heatmap_2d = heatmap.max(axis=1)
     del heatmap
@@ -447,6 +448,10 @@ def predict(
             raise ValueError("--plain-out-dir needs --skeleton flag|correct.")
         check_and_make_dir(plain_out_dir)
         print(f"[inference] predictions without skeleton also written to {plain_out_dir}")
+    # Soft matching (skeleton "correct" only): also extract the weak disc candidates.
+    soft = None
+    if skeleton is not None and skeleton_mode == "correct":
+        soft = soft_settings(cfg, skeleton_kwargs["soft_floor"])
     if skeleton is not None:
         print(f"[inference 3D] skeleton={skeleton_mode} {skeleton_kwargs} (from {sk_source})")
 
@@ -484,6 +489,7 @@ def predict(
                 skeleton_kwargs,
                 skeleton_mode,
                 plain_out_dir,
+                soft,
             )
             del volume, heatmap, item
             for warning, qc_row in writer.pop_ready():
