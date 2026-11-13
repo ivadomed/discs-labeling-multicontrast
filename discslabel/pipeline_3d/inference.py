@@ -544,12 +544,12 @@ def main() -> None:
         help=f"Checkpoint file name inside --model-dir (default: {CHECKPOINT_FILE}).",
     )
     parser.add_argument(
-        "--input",
+        "--input", "-i",
         required=True,
         help="Path to a .nii/.nii.gz file or a flat folder of them.",
     )
     parser.add_argument(
-        "--out-dir",
+        "--out-dir", "-o",
         required=True,
         help="Directory for the per-image <name>_discs.nii.gz outputs.",
     )
