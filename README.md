@@ -4,6 +4,9 @@ UNet heatmap-regression method for intervertebral disc landmark detection on **m
 
 Point-wise 3D disc labels (values `1..25`, with the anchors `3 = C2C3`, `8 = C7T1`, `20 = T12L1`, `25 = L5S1`) and the 3D MR images are reoriented to RPI and resampled to 1 mm iso offline.
 
+<img src="https://github.com/user-attachments/assets/1974c748-93f7-43b9-8f66-af5703cf484e" alt="Image description" width="50%">
+
+
 ## Installation
 
 Requirements:
