@@ -1,6 +1,8 @@
 """File-system helpers."""
 
+import functools
 import os
+import subprocess
 
 
 def check_and_make_dir(dir_path: str) -> None:
@@ -12,10 +14,40 @@ def check_and_make_dir(dir_path: str) -> None:
         os.makedirs(dir_path, exist_ok=True)
 
 
+@functools.lru_cache(maxsize=1)
+def code_version() -> str:
+    """Commit of the running code: ``git rev-parse HEAD`` of the repo checkout,
+    with a ``-dirty`` suffix when tracked files have uncommitted changes.
+
+    Falls back to the installed package version (no git checkout), else ``"unknown"``.
+    """
+    repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    def git(*args: str) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["git", "-C", repo, *args], capture_output=True, text=True, timeout=10
+        )
+
+    try:
+        head = git("rev-parse", "HEAD")
+        if head.returncode == 0:
+            dirty = git("diff", "--quiet", "HEAD").returncode == 1
+            return head.stdout.strip() + ("-dirty" if dirty else "")
+    except (OSError, subprocess.SubprocessError):
+        pass
+    try:
+        from importlib.metadata import version
+
+        return version("discslabel")
+    except Exception:
+        return "unknown"
+
+
 def write_prediction_sidecar(nifti_path: str, weights_name: str) -> None:
     """Write the BIDS-style JSON sidecar next to a predicted NIfTI.
 
-    ``<name>.nii.gz`` → ``<name>.json``, recording which weights produced it.
+    ``<name>.nii.gz`` → ``<name>.json``, recording which weights and which
+    code version (``code_version``) produced it.
     """
     import json
     from datetime import datetime
@@ -30,6 +62,7 @@ def write_prediction_sidecar(nifti_path: str, weights_name: str) -> None:
         "GeneratedBy": [
             {
                 "Name": "discslabel prediction",
+                "Version": code_version(),
                 "weights": weights_name,
                 "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
