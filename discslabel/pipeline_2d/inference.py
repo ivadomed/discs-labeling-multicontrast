@@ -24,7 +24,9 @@ them. For each image we:
        preprocessed slice rendered with the same ``p1..p99`` contrast window
        used by the training previews.
 
-Everything comes from ``--model-dir`` (the training output folder):
+Everything comes from ``--model-dir`` (the training output folder; default:
+the pretrained weights, downloaded once from the GitHub release into
+``data/weights``, see ``discslabel.weights``):
 ``config.json``, ``best_model.pt`` (or ``--checkpoint``), and optionally
 ``skeleton.json`` / ``postprocessing.json``.
 
@@ -85,6 +87,7 @@ from discslabel.pipeline_2d.train import (
 )
 from discslabel.utils.image import Image, resample_nib
 from discslabel.utils.io import check_and_make_dir
+from discslabel.weights import WEIGHTS_URL_ENV, ensure_weights
 
 
 NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")
@@ -576,9 +579,16 @@ def main() -> None:
     )
     parser.add_argument(
         "--model-dir",
-        required=True,
+        default=None,
         help="Trained model folder with config.json, the checkpoint and (optionally) "
-        "skeleton.json / postprocessing.json.",
+        "skeleton.json / postprocessing.json. Default: the pretrained weights, "
+        "downloaded from the GitHub release on first use and cached in data/weights.",
+    )
+    parser.add_argument(
+        "--weights-url",
+        default=None,
+        help=f"Zip to download when --model-dir is not given (default: ${WEIGHTS_URL_ENV}, "
+        "else the release URL).",
     )
     parser.add_argument(
         "--checkpoint",
@@ -630,12 +640,13 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    cfg, weights_path, has_skeleton = resolve_model_dir(args.model_dir, args.checkpoint)
+    model_dir = args.model_dir or ensure_weights(args.weights_url)
+    cfg, weights_path, has_skeleton = resolve_model_dir(model_dir, args.checkpoint)
     skeleton_mode = args.skeleton
     if skeleton_mode is None:
         skeleton_mode = "correct" if has_skeleton else "off"
         if not has_skeleton:
-            print(f"[inference] no skeleton.json in {args.model_dir}; skeleton correction disabled.")
+            print(f"[inference] no skeleton.json in {model_dir}; skeleton correction disabled.")
     predict(
         cfg,
         weights_path=weights_path,

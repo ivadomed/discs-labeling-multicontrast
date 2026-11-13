@@ -97,6 +97,8 @@ discslabel_inference \
   [--save-preview]
 ```
 
+Without `--model-dir`, `discslabel_inference` downloads the pretrained weights from the GitHub release the first time and caches them in `data/weights/` at the repo root (git-ignored). `--weights-url` or the `DISCSLABEL_WEIGHTS_URL` environment variable replaces the release URL, e.g. to test a zip served locally with `python -m http.server`.
+
 `--model-dir` is the training output folder. It must hold `config.json` and `best_model.pt` (use `--checkpoint` to pick another file). When `skeleton.json` is in that folder, the predictions are corrected with the skeleton by default (`--skeleton off|flag|correct` overrides this), and `postprocessing.json` is used when present. The `<name>_discs.png` previews are only written with `--save-preview`.
 
 ## Pipeline shape
