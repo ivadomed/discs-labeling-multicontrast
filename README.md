@@ -2,7 +2,7 @@
 
 UNet heatmap-regression method for intervertebral disc landmark detection on **mid-sagittal MRI slices** extracted from 3D volumes.
 
-Point-wise 3D disc labels (values `1..25`, with the anchors `3 = C2C3`, `8 = C7T1`, `20 = T12L1`, `25 = L5S1`) and the 3D MR images are reoriented to RPI and resampled to 1 mm iso offline. **Everything else happens inside the GPU data loader**: the batch is passed through SmaugLab's 3D GPU augmentations, the mid-sagittal slice is picked, the point-wise 3D label is projected onto that slice, and Gaussian heatmaps are synthesised as the training targets.
+Point-wise 3D disc labels (values `1..25`, with the anchors `3 = C2C3`, `8 = C7T1`, `20 = T12L1`, `25 = L5S1`) and the 3D MR images are reoriented to RPI and resampled to 1 mm iso offline.
 
 Model output — **5 heatmap channels**:
 
@@ -13,8 +13,6 @@ Model output — **5 heatmap channels**:
 | 2 | C7T1 (`label = 8`) |
 | 3 | T12L1 (`label = 20`) |
 | 4 | L5S1 (`label = 25`) |
-
-The data-management layout (dataset JSONs + download / prepare shell scripts) follows [SmaugLab-benchmark](https://github.com/NathanMolinier/SmaugLab-benchmark); training and inference are plain Python entry points installed as console scripts.
 
 ## Installation
 
@@ -58,11 +56,7 @@ python3 -m pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --inde
 export DISCSLABEL_DATA=/path/to/scratch/discslabel
 ```
 
-[SmaugLab](https://github.com/neuropoly/SmaugLab) is an **optional** dependency — needed only at training time when `aug_config` points to a GPU-augmentation JSON. Inference and preprocessing never import it.
-
-The package is versioned automatically from git tags via `poetry-dynamic-versioning` (same mechanism as SmaugLab-benchmark — `pyproject.toml` carries `version = "0.0.0"` as a placeholder; the real version is substituted at build time).
-
-## Quick start
+## Training
 
 The whole pipeline is driven from one JSON config:
 
