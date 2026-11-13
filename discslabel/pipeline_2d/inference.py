@@ -40,8 +40,12 @@ distances on the mid-sagittal plane are checked against the training
 distribution (``discslabel.skeleton``). ``flag`` only reports problems;
 ``correct`` also removes off-chain peaks, fixes the labels and fills missed
 discs; with ``skeleton_soft_floor`` it can also keep a weak peak (below
-``peak_threshold``) where the skeleton expects a disc. Each image then gets a ``<name>_discs_qc.json`` report and the run a
+``peak_threshold``) where the skeleton expects a disc. With ``--save-qc``,
+each image also gets a ``<name>_discs_qc.json`` report and the run a
 ``qc_summary.csv``.
+
+Every ``<name>_discs.nii.gz`` comes with a ``<name>_discs.json`` sidecar
+recording the weights used and the date.
 
 No label or seg files are required. No augmentation is applied.
 """
@@ -86,8 +90,8 @@ from discslabel.pipeline_2d.train import (
     _resolve_batch_size,
 )
 from discslabel.utils.image import Image, resample_nib
-from discslabel.utils.io import check_and_make_dir
-from discslabel.weights import WEIGHTS_URL_ENV, ensure_weights
+from discslabel.utils.io import check_and_make_dir, write_prediction_sidecar
+from discslabel.weights import WEIGHTS_URL_ENV, ensure_weights, weights_name as _weights_name
 
 
 NIFTI_EXTS: Tuple[str, ...] = (".nii.gz", ".nii")
@@ -333,15 +337,19 @@ def _finalize_one(
     plain_out_dir: Optional[str] = None,
     soft: Optional[dict] = None,
     save_preview: bool = False,
+    save_qc: bool = False,
+    weights_name: str = "",
 ) -> Tuple[Optional[str], Optional[dict]]:
     """Worker job: decode the stitched heatmap and write the NIfTI (+ PNG with ``save_preview``).
 
     With a skeleton and ``plain_out_dir``, the decoding without the skeleton
     is also written there (same heatmap, no second forward pass).
 
+    ``save_qc`` also writes the skeleton ``<stem>_discs_qc.json`` report.
+
     Returns ``(warning, qc_row)``: a message (or ``None``) the main process
     prints above its progress bar, and the QC summary row (``None`` when the
-    skeleton step is off).
+    skeleton step is off or ``save_qc`` is not set).
     """
     candidates = extract_candidates(heatmap, peak_threshold, soft)
     warning = None
@@ -368,18 +376,20 @@ def _finalize_one(
         if skeleton_mode == "correct":
             imputed = frozenset(d["label"] for d in report.get("changes", {}).get("imputed", []))
         report = {"image": stem, "n_discs": len(decoded), **report}
-        with open(os.path.join(out_dir, f"{stem}_discs_qc.json"), "w") as f:
-            json.dump(report, f, indent=2)
-        qc_row = _qc_row(report)
+        if save_qc:
+            with open(os.path.join(out_dir, f"{stem}_discs_qc.json"), "w") as f:
+                json.dump(report, f, indent=2)
+            qc_row = _qc_row(report)
         if report["status"] != "ok" and warning is None:
             warning = f"[qc] {stem}: {', '.join(report['flags'])}"
     title = f"{stem} — {len(decoded)} discs"
-    if qc_row is not None and qc_row["status"] != "ok":
-        title += f"\nQC: {qc_row['flags']}"
+    if skeleton is not None and report["status"] != "ok":
+        title += f"\nQC: {', '.join(report['flags'])}"
     _write_outputs(
         out_dir, stem, decoded, title, imputed,
         slice_2d, d_mid, affine, native_shape, native_affine, heatmap,
         save_preview,
+        weights_name,
     )
     if plain_out_dir is not None and skeleton is not None:
         # Same heatmap decoded without the skeleton, for side-by-side evaluation.
@@ -388,6 +398,7 @@ def _finalize_one(
             plain_out_dir, stem, plain, f"{stem} — {len(plain)} discs", frozenset(),
             slice_2d, d_mid, affine, native_shape, native_affine, heatmap,
             save_preview,
+            weights_name,
         )
     return warning, qc_row
 
@@ -405,9 +416,11 @@ def _write_outputs(
     native_affine: np.ndarray,
     heatmap_2d: Optional[np.ndarray] = None,
     save_preview: bool = False,
+    weights_name: str = "",
 ) -> None:
     """Write ``<stem>_discs.nii.gz`` (native grid) into ``out_dir``, plus
-    ``<stem>_discs.png`` when ``save_preview`` is set.
+    ``<stem>_discs.png`` when ``save_preview`` is set, and the ``<stem>_discs.json``
+    sidecar (weights name + date).
 
     ``decoded`` is ``[(label, h, w), ...]`` as returned by the decoding.
     """
@@ -434,9 +447,9 @@ def _write_outputs(
         native_shape=native_shape,
         native_affine=native_affine,
     )
-    _write_disc_nifti(
-        os.path.join(out_dir, f"{stem}_discs.nii.gz"), native_label_volume, native_affine
-    )
+    nifti_path = os.path.join(out_dir, f"{stem}_discs.nii.gz")
+    _write_disc_nifti(nifti_path, native_label_volume, native_affine)
+    write_prediction_sidecar(nifti_path, weights_name)
 
 
 def predict(
@@ -450,6 +463,8 @@ def predict(
     plain_out_dir: Optional[str] = None,
     input_mode: Optional[str] = None,
     save_preview: bool = False,
+    save_qc: bool = False,
+    weights_name: Optional[str] = None,
 ) -> None:
     """Sliding-window inference on every input image.
 
@@ -462,13 +477,18 @@ def predict(
     next to the weights). ``plain_out_dir`` additionally writes the
     predictions decoded WITHOUT the skeleton from the same heatmaps, so both
     can be evaluated with a single forward pass. ``save_preview`` also writes
-    a ``<name>_discs.png`` preview per image.
+    a ``<name>_discs.png`` preview per image; ``save_qc`` the skeleton
+    ``<name>_discs_qc.json`` reports and ``qc_summary.csv``. Every prediction
+    gets a ``<name>_discs.json`` sidecar naming ``weights_name`` (default: the
+    weights folder name).
 
     Three-stage pipeline: ``num_workers`` CPU processes preprocess the next
     images and decode / write the previous ones while the main process runs
     the model on the current one.
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if weights_name is None:
+        weights_name = _weights_name(os.path.dirname(weights_path))
 
     image_paths = _discover_inputs(input_path)
 
@@ -553,6 +573,8 @@ def predict(
                 plain_out_dir,
                 soft,
                 save_preview,
+                save_qc,
+                weights_name,
             )
             del volume, heatmap, item
             for warning, qc_row in writer.pop_ready():
@@ -568,7 +590,7 @@ def predict(
     finally:
         if executor is not None:
             executor.shutdown(cancel_futures=True)
-    if skeleton is not None:
+    if skeleton is not None and save_qc:
         _write_qc_summary(out_dir, qc_rows)
     print(f"Wrote per-image NIfTI{' + PNG' if save_preview else ''} into {out_dir}")
 
@@ -609,6 +631,12 @@ def main() -> None:
         "--save-preview",
         action="store_true",
         help="Also write a <name>_discs.png preview (mid-sagittal slice + labels) per image.",
+    )
+    parser.add_argument(
+        "--save-qc",
+        action="store_true",
+        help="With the skeleton step, also write a <name>_discs_qc.json report per image "
+        "and a qc_summary.csv for the run.",
     )
     parser.add_argument(
         "--num-workers",
@@ -657,6 +685,8 @@ def main() -> None:
         plain_out_dir=args.plain_out_dir,
         input_mode=args.input_mode,
         save_preview=args.save_preview,
+        save_qc=args.save_qc,
+        weights_name=_weights_name(model_dir),
     )
 
 

@@ -74,12 +74,12 @@ discslabel_inference \
   --input <image.nii.gz or folder of images> \
   --out-dir <output folder> \
   [--model-dir "custom weights folder"] \
-  [--save-preview]
+  [--save-preview] [--save-qc]
 ```
 
 Without `--model-dir`, `discslabel_inference` downloads the pretrained weights from the GitHub release the first time and caches them in `data/weights/` at the repo root (git-ignored). `--weights-url` or the `DISCSLABEL_WEIGHTS_URL` environment variable replaces the release URL, e.g. to test a zip served locally with `python -m http.server`.
 
-`--model-dir` is the training output folder. It must hold `config.json` and `best_model.pt` (use `--checkpoint` to pick another file). When `skeleton.json` is in that folder, the predictions are corrected with the skeleton by default (`--skeleton off|flag|correct` overrides this), and `postprocessing.json` is used when present. The `<name>_discs.png` previews are only written with `--save-preview`.
+`--model-dir` is the training output folder. It must hold `config.json` and `best_model.pt` (use `--checkpoint` to pick another file). When `skeleton.json` is in that folder, the predictions are corrected with the skeleton by default (`--skeleton off|flag|correct` overrides this), and `postprocessing.json` is used when present. Each `<name>_discs.nii.gz` comes with a `<name>_discs.json` sidecar that records the weights (release tag or folder name) and the date. The `<name>_discs.png` previews are only written with `--save-preview`, and the skeleton QC reports (`<name>_discs_qc.json`, `qc_summary.csv`) only with `--save-qc`.
 
 ## License
 

@@ -104,3 +104,11 @@ def ensure_weights(url: Optional[str] = None, cache_dir: Optional[Path] = None) 
         shutil.move(str(root), str(target))
     print(f"[weights] installed into {target}")
     return str(target)
+
+
+def weights_name(model_dir: str) -> str:
+    """Name recorded in the prediction sidecars: the release tag for downloaded
+    weights (``discslabel_weights_<release>`` → ``<release>``), else the folder name."""
+    name = os.path.basename(os.path.normpath(os.path.abspath(model_dir)))
+    prefix = "discslabel_weights_"
+    return name[len(prefix):] if name.startswith(prefix) else name
