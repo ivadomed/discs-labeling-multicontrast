@@ -41,10 +41,19 @@ pip install -e ".[training]"
 python3 -m pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu118 --upgrade
 ```
 
-4. Define a folder where data and weights will be stored:
+## Inference
+
+Running the inference:
+
 ```bash
-export DISCSLABEL_DATA=/path/to/scratch/discslabel
+discslabel_inference \
+  --input <image.nii.gz or folder of images> \
+  --out-dir <output folder> \
+  [--model-dir "custom weights folder"] \
+  [--save-preview] [--save-qc]
 ```
+
+Without `--model-dir`, `discslabel_inference` downloads the pretrained weights from the GitHub release the first time and caches them in `data/weights/` at the repo root (git-ignored). `--weights-url` or the `DISCSLABEL_WEIGHTS_URL` environment variable replaces the release URL, e.g. to test a zip served locally with `python -m http.server`.
 
 ## Training
 
@@ -64,22 +73,6 @@ download_datasets.sh  →  prepare_datasets.sh  →  discslabel_train  →  disc
 (`run_pipeline_3d.sh` runs the same chain with the `_3d` entry points.)
 
 Each step runs when either `steps.<name>` is `true` **or** its output is missing from disk — so a fresh checkout always catches up, and setting a step to `false` only skips when the previous output is already present.
-
-## Inference
-
-Running the inference:
-
-```bash
-discslabel_inference \
-  --input <image.nii.gz or folder of images> \
-  --out-dir <output folder> \
-  [--model-dir "custom weights folder"] \
-  [--save-preview] [--save-qc]
-```
-
-Without `--model-dir`, `discslabel_inference` downloads the pretrained weights from the GitHub release the first time and caches them in `data/weights/` at the repo root (git-ignored). `--weights-url` or the `DISCSLABEL_WEIGHTS_URL` environment variable replaces the release URL, e.g. to test a zip served locally with `python -m http.server`.
-
-`--model-dir` is the training output folder. It must hold `config.json` and `best_model.pt` (use `--checkpoint` to pick another file). When `skeleton.json` is in that folder, the predictions are corrected with the skeleton by default (`--skeleton off|flag|correct` overrides this), and `postprocessing.json` is used when present. Each `<name>_discs.nii.gz` comes with a `<name>_discs.json` sidecar that records the weights (release tag or folder name), the code version (git commit, with `-dirty` when there are uncommitted changes) and the date. The `<name>_discs.png` previews are only written with `--save-preview`, and the skeleton QC reports (`<name>_discs_qc.json`, `qc_summary.csv`) only with `--save-qc`.
 
 ## License
 
