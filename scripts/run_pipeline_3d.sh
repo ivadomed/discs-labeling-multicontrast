@@ -176,13 +176,15 @@ if [ "$DO_TUNE" = "true" ]; then
 fi
 
 if [ "$DO_INFERENCE" = "true" ]; then
+    PREVIEW_ARGS=()
+    if [ "$INFERENCE_SAVE_IMAGES" = "true" ]; then PREVIEW_ARGS=(--save-preview); fi
     echo "==> discslabel_inference_3d"
     discslabel_inference_3d \
-        --weights "$WEIGHTS_DIR/best_model.pt" \
+        --model-dir "$WEIGHTS_DIR" \
         --input "$PREP_ROOT/$INFERENCE_SPLIT/images" \
         --out-dir "$WEIGHTS_DIR/predictions_${INFERENCE_SPLIT}" \
-        --config "$config_json" \
-        --skeleton "$INFERENCE_SKELETON"
+        --skeleton "$INFERENCE_SKELETON" \
+        "${PREVIEW_ARGS[@]}"
 fi
 
 if [ "$DO_EVALUATE" = "true" ]; then
@@ -202,19 +204,17 @@ if [ "$DO_EVALUATE" = "true" ]; then
         # $EVAL_PRED_DIR_SK and the plain ones (same heatmaps) to $EVAL_PRED_DIR.
         echo "==> discslabel_inference_3d (evaluation, without + with skeleton)"
         discslabel_inference_3d \
-            --weights "$WEIGHTS_DIR/best_model.pt" \
+            --model-dir "$WEIGHTS_DIR" \
             --input "$EVAL_ROOT/images" \
             --out-dir "$EVAL_PRED_DIR_SK" \
             --plain-out-dir "$EVAL_PRED_DIR" \
-            --config "$config_json" \
             --skeleton correct
     else
         echo "==> discslabel_inference_3d (evaluation)"
         discslabel_inference_3d \
-            --weights "$WEIGHTS_DIR/best_model.pt" \
+            --model-dir "$WEIGHTS_DIR" \
             --input "$EVAL_ROOT/images" \
             --out-dir "$EVAL_PRED_DIR" \
-            --config "$config_json" \
             --skeleton "$INFERENCE_SKELETON"
     fi
 

@@ -527,6 +527,31 @@ def _tune_skeleton(
     }
 
 
+CONFIG_FILE = "config.json"
+CHECKPOINT_FILE = "best_model.pt"
+
+
+def resolve_model_dir(model_dir: str, checkpoint: str = CHECKPOINT_FILE) -> Tuple[dict, str, bool]:
+    """``(cfg, weights_path, has_skeleton)`` for a trained model folder.
+
+    The folder holds ``config.json``, the checkpoint (``best_model.pt`` by
+    default; ``checkpoint`` may also be an absolute path) and, optionally,
+    ``skeleton.json`` / ``postprocessing.json``.
+    """
+    model_dir = os.path.abspath(model_dir)
+    if not os.path.isdir(model_dir):
+        raise FileNotFoundError(f"model folder not found: {model_dir}")
+    config_path = os.path.join(model_dir, CONFIG_FILE)
+    if not os.path.isfile(config_path):
+        raise FileNotFoundError(f"{CONFIG_FILE} not found in {model_dir}")
+    weights_path = os.path.join(model_dir, checkpoint)
+    if not os.path.isfile(weights_path):
+        raise FileNotFoundError(f"checkpoint not found: {weights_path}")
+    with open(config_path) as f:
+        cfg = json.load(f)
+    return cfg, weights_path, os.path.isfile(os.path.join(model_dir, SKELETON_FILE))
+
+
 def resolve_skeleton(cfg: dict, weights_path: str, mode: str, skeleton_path: Optional[str], projection: str):
     """``(SkeletonModel, refine kwargs, source)`` for inference, or ``(None, None, None)`` when off.
 

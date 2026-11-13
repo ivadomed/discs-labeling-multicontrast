@@ -48,7 +48,7 @@ pip install -e .
 pip install -e ".[training]"
 ```
 
-3. Install pytorch following the instructions on their [website](https://pytorch.org/)
+3. Install pytorch following the instructions on their [website](https://pytorch.org/). For example, for CUDA 11.8:
 ```bash
 python3 -m pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu118 --upgrade
 ```
@@ -91,13 +91,13 @@ discslabel_train \
   --save-model-dir "$DISCSLABEL_DATA/weights/<your-dataset>" \
   --config discslabel/configs/default.json
 discslabel_inference \
-  --weights "$DISCSLABEL_DATA/weights/<your-dataset>/best_model.pt" \
-  --manifest "$DISCSLABEL_DATA/prepared/<your-dataset>/manifest.json" \
-  --split test \
-  --out-csv "$DISCSLABEL_DATA/weights/<your-dataset>/predictions_test.csv" \
-  --save-image-dir "$DISCSLABEL_DATA/weights/<your-dataset>/visualize_test" \
-  --config discslabel/configs/default.json
+  --model-dir "$DISCSLABEL_DATA/weights/<your-dataset>" \
+  --input <image.nii.gz or folder of images> \
+  --out-dir <output folder> \
+  [--save-preview]
 ```
+
+`--model-dir` is the training output folder. It must hold `config.json` and `best_model.pt` (use `--checkpoint` to pick another file). When `skeleton.json` is in that folder, the predictions are corrected with the skeleton by default (`--skeleton off|flag|correct` overrides this), and `postprocessing.json` is used when present. The `<name>_discs.png` previews are only written with `--save-preview`.
 
 ## Pipeline shape
 

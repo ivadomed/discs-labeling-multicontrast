@@ -20,15 +20,20 @@ them. For each image we:
        via pure affine arithmetic (points, no interpolation)
     7. write a 3D NIfTI with single-voxel discs on the mid-sagittal plane
        (shape and affine match the ORIGINAL input, not the preprocessed
-       volume) plus a PNG preview of the preprocessed slice rendered with
-       the same ``p1..p99`` contrast window used by the training previews.
+       volume) and, with ``--save-preview``, a PNG preview of the
+       preprocessed slice rendered with the same ``p1..p99`` contrast window
+       used by the training previews.
+
+Everything comes from ``--model-dir`` (the training output folder):
+``config.json``, ``best_model.pt`` (or ``--checkpoint``), and optionally
+``skeleton.json`` / ``postprocessing.json``.
 
 ``peak_threshold`` / ``min_peak_distance`` come from ``postprocessing.json``
 next to the weights when ``discslabel_tune`` has been run, else from the
 config.
 
-Optional skeleton step (``--skeleton``, needs ``skeleton.json`` from
-``discslabel_skeleton``): after the anchor-based labelling, the inter-disc
+Skeleton step (``--skeleton``, default ``correct`` when ``skeleton.json``
+from ``discslabel_skeleton`` is in the model folder, else ``off``): after the anchor-based labelling, the inter-disc
 distances on the mid-sagittal plane are checked against the training
 distribution (``discslabel.skeleton``). ``flag`` only reports problems;
 ``correct`` also removes off-chain peaks, fixes the labels and fills missed
@@ -57,7 +62,12 @@ logging.getLogger("discslabel.utils.image").setLevel(logging.ERROR)
 from discslabel.dataset import _z_score_normalize
 from discslabel.decoding import _choose_anchor, extract_candidates, label_discs, soft_settings
 from discslabel.parallel import BoundedSubmitter, imap_ordered, make_executor, resolve_num_workers
-from discslabel.postprocessing import resolve_postprocessing, resolve_skeleton
+from discslabel.postprocessing import (
+    CHECKPOINT_FILE,
+    resolve_model_dir,
+    resolve_postprocessing,
+    resolve_skeleton,
+)
 from discslabel.skeleton import (
     SKELETON_MODES,
     affine_spacing,
@@ -71,7 +81,6 @@ from discslabel.pipeline_2d.predictor import INPUT_MODES, SKELETON_PROJECTION, p
 from discslabel.pipeline_2d.train import (
     _display_slice,
     _intensity_window,
-    _load_config,
     _resolve_batch_size,
 )
 from discslabel.utils.image import Image, resample_nib
@@ -320,8 +329,9 @@ def _finalize_one(
     skeleton_mode: str = "off",
     plain_out_dir: Optional[str] = None,
     soft: Optional[dict] = None,
+    save_preview: bool = False,
 ) -> Tuple[Optional[str], Optional[dict]]:
-    """Worker job: decode the stitched heatmap and write the NIfTI + PNG.
+    """Worker job: decode the stitched heatmap and write the NIfTI (+ PNG with ``save_preview``).
 
     With a skeleton and ``plain_out_dir``, the decoding without the skeleton
     is also written there (same heatmap, no second forward pass).
@@ -366,6 +376,7 @@ def _finalize_one(
     _write_outputs(
         out_dir, stem, decoded, title, imputed,
         slice_2d, d_mid, affine, native_shape, native_affine, heatmap,
+        save_preview,
     )
     if plain_out_dir is not None and skeleton is not None:
         # Same heatmap decoded without the skeleton, for side-by-side evaluation.
@@ -373,6 +384,7 @@ def _finalize_one(
         _write_outputs(
             plain_out_dir, stem, plain, f"{stem} — {len(plain)} discs", frozenset(),
             slice_2d, d_mid, affine, native_shape, native_affine, heatmap,
+            save_preview,
         )
     return warning, qc_row
 
@@ -389,8 +401,10 @@ def _write_outputs(
     native_shape: Tuple[int, int, int],
     native_affine: np.ndarray,
     heatmap_2d: Optional[np.ndarray] = None,
+    save_preview: bool = False,
 ) -> None:
-    """Write ``<stem>_discs.png`` + ``<stem>_discs.nii.gz`` (native grid) into ``out_dir``.
+    """Write ``<stem>_discs.nii.gz`` (native grid) into ``out_dir``, plus
+    ``<stem>_discs.png`` when ``save_preview`` is set.
 
     ``decoded`` is ``[(label, h, w), ...]`` as returned by the decoding.
     """
@@ -399,14 +413,15 @@ def _write_outputs(
     labeled_discs = [(label, w, h) for label, h, w in decoded]
     # Preview first — it shows what the model actually saw, so it is kept
     # in the preprocessed frame regardless of what the output NIfTI is in.
-    _build_preview_png(
-        slice_2d,
-        labeled_discs,
-        title=title,
-        save_path=os.path.join(out_dir, f"{stem}_discs.png"),
-        imputed_labels=imputed,
-        heatmap_2d=heatmap_2d,
-    )
+    if save_preview:
+        _build_preview_png(
+            slice_2d,
+            labeled_discs,
+            title=title,
+            save_path=os.path.join(out_dir, f"{stem}_discs.png"),
+            imputed_labels=imputed,
+            heatmap_2d=heatmap_2d,
+        )
     # Project the preprocessed-frame labels back onto the user's native grid
     # so the output NIfTI overlays cleanly on their input image.
     native_label_volume = _resample_discs_to_native(
@@ -431,6 +446,7 @@ def predict(
     skeleton_path: Optional[str] = None,
     plain_out_dir: Optional[str] = None,
     input_mode: Optional[str] = None,
+    save_preview: bool = False,
 ) -> None:
     """Sliding-window inference on every input image.
 
@@ -442,7 +458,8 @@ def predict(
     QC / correction step (``skeleton_path`` defaults to ``skeleton.json``
     next to the weights). ``plain_out_dir`` additionally writes the
     predictions decoded WITHOUT the skeleton from the same heatmaps, so both
-    can be evaluated with a single forward pass.
+    can be evaluated with a single forward pass. ``save_preview`` also writes
+    a ``<name>_discs.png`` preview per image.
 
     Three-stage pipeline: ``num_workers`` CPU processes preprocess the next
     images and decode / write the previous ones while the main process runs
@@ -532,6 +549,7 @@ def predict(
                 skeleton_mode,
                 plain_out_dir,
                 soft,
+                save_preview,
             )
             del volume, heatmap, item
             for warning, qc_row in writer.pop_ready():
@@ -549,14 +567,24 @@ def predict(
             executor.shutdown(cancel_futures=True)
     if skeleton is not None:
         _write_qc_summary(out_dir, qc_rows)
-    print(f"Wrote per-image NIfTI + PNG into {out_dir}")
+    print(f"Wrote per-image NIfTI{' + PNG' if save_preview else ''} into {out_dir}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Image-only sliding-window inference with a trained disc-landmark UNet."
     )
-    parser.add_argument("--weights", required=True, help="Path to best_model.pt.")
+    parser.add_argument(
+        "--model-dir",
+        required=True,
+        help="Trained model folder with config.json, the checkpoint and (optionally) "
+        "skeleton.json / postprocessing.json.",
+    )
+    parser.add_argument(
+        "--checkpoint",
+        default=CHECKPOINT_FILE,
+        help=f"Checkpoint file name inside --model-dir (default: {CHECKPOINT_FILE}).",
+    )
     parser.add_argument(
         "--input",
         required=True,
@@ -565,9 +593,13 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         required=True,
-        help="Directory for per-image <name>_discs.nii.gz + <name>_discs.png outputs.",
+        help="Directory for the per-image <name>_discs.nii.gz outputs.",
     )
-    parser.add_argument("--config", required=True, help="JSON config.")
+    parser.add_argument(
+        "--save-preview",
+        action="store_true",
+        help="Also write a <name>_discs.png preview (mid-sagittal slice + labels) per image.",
+    )
     parser.add_argument(
         "--num-workers",
         default=None,
@@ -579,13 +611,8 @@ def main() -> None:
         choices=SKELETON_MODES,
         default=None,
         help="Skeleton QC step after labelling: 'off', 'flag' (report problematic "
-        "predictions only) or 'correct' (also fix them). Default: config "
-        "inference_skeleton, else 'off'.",
-    )
-    parser.add_argument(
-        "--skeleton-path",
-        default=None,
-        help="skeleton.json from discslabel_skeleton (default: next to the weights).",
+        "predictions only) or 'correct' (also fix them). Default: 'correct' when "
+        "skeleton.json is in --model-dir, else 'off'.",
     )
     parser.add_argument(
         "--plain-out-dir",
@@ -603,17 +630,22 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    cfg = _load_config(args.config)
+    cfg, weights_path, has_skeleton = resolve_model_dir(args.model_dir, args.checkpoint)
+    skeleton_mode = args.skeleton
+    if skeleton_mode is None:
+        skeleton_mode = "correct" if has_skeleton else "off"
+        if not has_skeleton:
+            print(f"[inference] no skeleton.json in {args.model_dir}; skeleton correction disabled.")
     predict(
         cfg,
-        weights_path=args.weights,
+        weights_path=weights_path,
         input_path=args.input,
         out_dir=args.out_dir,
         num_workers=args.num_workers,
-        skeleton_mode=args.skeleton or str(cfg.get("inference_skeleton", "off")),
-        skeleton_path=args.skeleton_path,
+        skeleton_mode=skeleton_mode,
         plain_out_dir=args.plain_out_dir,
         input_mode=args.input_mode,
+        save_preview=args.save_preview,
     )
 
 
